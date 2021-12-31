@@ -1,0 +1,12 @@
+{
+	"extends": "@uwu-codes/eslint-config/ts.json",
+	"rules": {
+		"key-spacing": [
+			"error", {
+				"beforeColon": false,
+				"afterColon": true,
+				"align": "value"
+			}
+		]
+	}
+}

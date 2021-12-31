@@ -1,0 +1,23 @@
+{
+  "extends": "@uwu-codes/tsconfig",
+  "compilerOptions": {
+    "outDir": "./build",
+    "baseUrl": "./src",
+    "strictPropertyInitialization": false,
+    "skipLibCheck": true,
+    "inlineSourceMap": true,
+		"paths": {
+			"@root/*": ["../*"],
+			"@config": ["config/index.ts"],
+			"@config/*": ["config/*"],
+			"@util/*": ["util/*"],
+			"@db": ["db/index.ts"],
+			"@db/*": ["db/*"],
+			"@models": ["db/Models/index.js"],
+			"@models/*": ["db/Models/*"],
+			"@lib/*": ["lib/*"]
+		}
+  },
+  "include": ["**/*"],
+  "exclude": ["node_modules", "build"]
+}

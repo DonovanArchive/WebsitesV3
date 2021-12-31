@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+	<title>YiffyAPI State</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<meta content="Furry Bot - The current state of api V2." name="description">
+
+	<!-- Icons -->
+	<link rel="apple-touch-icon" sizes="57x57" href="https://i.furry.bot/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="https://i.furry.bot/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="https://i.furry.bot/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="https://i.furry.bot/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="https://i.furry.bot/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="https://i.furry.bot/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144" href="https://i.furry.bot/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="https://i.furry.bot/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="https://i.furry.bot/apple-icon-180x180.png">
+	<link rel="icon" type="image/png" sizes="192x192" href="https://i.furry.bot/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="https://i.furry.bot/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="https://i.furry.bot/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="https://i.furry.bot/favicon-16x16.png">
+	<link rel="manifest" href="https://furry.bot/manifest.json">
+	<meta name="msapplication-TileColor" content="#00FFFF">
+	<meta name="msapplication-TileImage" content="https://i.furry.bot/ms-icon-144x144.png">
+	<meta name="theme-color" content="#00FFFF">
+	<style>
+		table,
+		thead,
+		th,
+		tbody,
+		tr,
+		td {
+			text-align: center;
+		}
+
+		table {
+			width: 100%;
+		}
+
+		table,
+		th,
+		td {
+			border: 1px solid black;
+			border-collapse: collapse;
+		}
+
+		.red {
+			background-color: #f00;
+		}
+
+		.green {
+			background-color: #008000;
+		}
+
+		.yellow {
+			background-color: #FF0;
+		}
+	</style>
+</head>
+
+<body>
+	<table>
+		<thead>
+			<th>Category Name</th>
+			<th>Image Count</th>
+			<th>Has Images</th>
+		</thead>
+		<tbody>
+			{{#unless images}}
+			<tr>
+				<td>No Data Recieved.</td>
+				<td>No Data Recieved.</td>
+				<td>No Data Recieved.</td>
+			</tr>
+			{{else}}
+			{{#each images}}
+			<tr class="{{#if this.hasImages}}{{#when this.count "lt" 5}}yellow{{else}}green{{/when}}{{else}}red{{/if}}">
+				<td>{{this.name}}</td>
+				<td>{{this.count}}</td>
+				<td>{{#if this.hasImages}}Yes{{else}}No{{/if}}</td>
+			</tr>
+			{{/each}}
+			{{/unless}}
+		</tbody>
+	</table>
+</body>
+
+</html>

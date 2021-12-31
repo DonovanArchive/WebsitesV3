@@ -1,0 +1,158 @@
+version: "3"
+
+services:
+  build_image:
+    image: websites
+    container_name: websites_build
+    command: [ "echo", "it's in the gay" ]
+    build: .
+    volumes:
+      - build:/app/build
+      - modules:/app/node_modules
+      - ./src/config/ssl:/app/ssl
+  butts-are.cool:
+    image: websites
+    container_name: butts-are.cool
+    volumes:
+      - build:/app
+      - modules:/app/node_modules
+      - ./src/config/ssl:/app/ssl
+      - ./src/sites/butts-are.cool/views:/app/views
+      - /var/www/sites/butts-are.cool:/app/public
+      - /var/www/screenshots:/app/public/screenshots
+    environment:
+      SITE: butts-are.cool
+    restart: always
+    healthcheck:
+      interval: 10s
+      timeout: 2s
+      test: lsof -i :443 || exit 1
+    depends_on:
+      - build_image
+    networks:
+      default:
+        ipv4_address: 172.20.1.1
+  furry.cool:
+    image: websites
+    container_name: furry.cool
+    volumes:
+      - build:/app
+      - modules:/app/node_modules
+      - ./src/config/ssl:/app/ssl
+      - ./src/sites/furry.cool/views:/app/views
+      - /var/www/sites/furry.cool:/app/public
+      - /var/www/screenshots:/data/screenshots
+    environment:
+      SITE: furry.cool
+    restart: always
+    healthcheck:
+      interval: 10s
+      timeout: 2s
+      test: lsof -i :443 || exit 1
+    depends_on:
+      - build_image
+    networks:
+      default:
+        ipv4_address: 172.20.2.1
+  maid.gay:
+    image: websites
+    container_name: maid.gay
+    volumes:
+      - build:/app
+      - modules:/app/node_modules
+      - ./src/config/ssl:/app/ssl
+      - ./src/sites/maid.gay/views:/app/views
+      - /var/www/sites/maid.gay:/app/public
+    environment:
+      SITE: maid.gay
+    restart: always
+    healthcheck:
+      interval: 10s
+      timeout: 2s
+      test: lsof -i :443 || exit 1
+    depends_on:
+      - build_image
+    networks:
+      default:
+        ipv4_address: 172.20.3.1
+  yiff.media:
+    image: websites
+    container_name: yiff.media
+    volumes:
+      - build:/app
+      - modules:/app/node_modules
+      - ./src/config/ssl:/app/ssl
+      - ./src/sites/yiff.media/views:/app/views
+      - /var/www/sites/yiff.media:/app/public
+      - /opt/YiffyAPI/data/posts:/data/yiffyapi_v3
+    environment:
+      SITE: yiff.media
+    restart: always
+    healthcheck:
+      interval: 10s
+      timeout: 2s
+      test: lsof -i :443 || exit 1
+    depends_on:
+      - build_image
+    networks:
+      default:
+        ipv4_address: 172.20.4.1
+  yiff.rest:
+    image: websites
+    container_name: yiff.rest
+    volumes:
+      - build:/app
+      - modules:/app/node_modules
+      - ./src/config/ssl:/app/ssl
+      - ./src/sites/yiff.rest/views:/app/views
+      - /var/www/sites/yiff.rest:/app/public
+      - /tmp/e621-thumb:/data/e621-thumb
+    environment:
+      SITE: yiff.rest
+      FFMPEG_PATH: /usr/bin/ffmpeg
+      FFPROBE_PATH: /usr/bin/ffprobe
+    restart: always
+    healthcheck:
+      interval: 10s
+      timeout: 2s
+      test: lsof -i :443 || exit 1
+    depends_on:
+      - build_image
+    networks:
+      default:
+        ipv4_address: 172.20.5.1
+#  yiff.rocks:
+#    image: websites
+#    container_name: yiff.rocks
+#    volumes:
+#      - build:/app
+#      - modules:/app/node_modules
+#      - ./src/config/ssl:/app/ssl
+#      - ./src/sites/yiff.rocks/views:/app/views
+#      - /var/www/sites/yiff.rocks:/app/public
+#    environment:
+#      SITE: yiff.rocks
+#    restart: always
+#    healthcheck:
+#      interval: 10s
+#      timeout: 2s
+#      test: lsof -i :443 || exit 1
+#    depends_on:
+#      - build_image
+#    networks:
+#      default:
+#        ipv4_address: 172.20.6.1
+
+networks:
+  default:
+    name: websites
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+
+volumes:
+  build: null
+  modules: null

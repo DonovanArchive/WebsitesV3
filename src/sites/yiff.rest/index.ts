@@ -1,6 +1,7 @@
 import v2Route from "./routes/api_v2";
 import erisPRRoute from "./routes/eris-pr-merge";
 import discordRoute from "./routes/discord";
+import botRoute from "./routes/bot";
 import Website from "@lib/Website";
 import { APIImage } from "@models";
 import { categories } from "@config";
@@ -49,6 +50,7 @@ export default class YiffRest extends Website {
 					.use(async(req, res) => res.redirect("https://discord.yiff.rest"))
 			)
 			.addSubdomain("discord", discordRoute)
+			.addSubdomain("bot", botRoute)
 			.addSubdomain("flow",
 				express.Router()
 					.use(async(req,res) => res.status(501).json({

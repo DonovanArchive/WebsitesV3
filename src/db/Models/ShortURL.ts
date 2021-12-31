@@ -58,7 +58,7 @@ export default class ShortURL {
 	}
 
 	static async new(data: Omit<ConvertFromRaw<RawShortURL>, "modified_at" | "pos">) {
-		return db.query(`INSERT INTO ${ShortURL.DB}.${ShortURL.TABLE} (id, ${Object.keys(data).join(", ")}) VALUES (${Object.values(data).map(() => "?").join(", ")})`, Object.values(data)).then((r: UpsertResult) => r.affectedRows === 1 ? this.get(data.code) : null);
+		return db.query(`INSERT INTO ${ShortURL.DB}.${ShortURL.TABLE} (${Object.keys(data).join(", ")}) VALUES (${Object.values(data).map(() => "?").join(", ")})`, Object.values(data)).then((r: UpsertResult) => r.affectedRows === 1 ? this.get(data.code) : null);
 	}
 
 	async setCreatorName(name: string) {

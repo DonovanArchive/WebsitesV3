@@ -8,6 +8,7 @@ export default class FurryCool extends Website {
 			.setSecure(true)
 			.setPort(443)
 			.setCSPExtra("script", "assets.furry.bot")
+			.disableNonce()
 			.init();
 
 		this

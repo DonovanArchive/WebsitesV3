@@ -24,7 +24,7 @@ export { APIImage };
 export default class APIImage {
 	static DB = "yiffyapi2";
 	static TABLE = "images";
-	static CDN_URL = "https://v2.yiff.media";
+	static CDN_URL = "https://yiff.media/V2";
 	static CF_URL = "https://cf.yiff.media";
 	static CF_RAW_URL = "https://imagedelivery.net/hCTZQZviUXhEogYvzUlP8Q";
 	id: string;

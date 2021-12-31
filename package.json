@@ -9,7 +9,8 @@
     "up": "sudo docker-compose up",
     "down": "sudo docker-compose down --rmi 'all' --volumes --remove-orphans",
     "up:dev": "sudo docker-compose up --force-recreate --build",
-    "dev": "npm run down && npm run up:dev"
+    "dev": "npm run down && npm run up:dev",
+    "update": "npm run down && git pull && git submodule update --init --recursive && npm run up:d"
   },
   "repository": {
     "type": "git",

@@ -121,27 +121,27 @@ services:
     networks:
       default:
         ipv4_address: 172.20.5.1
-#  yiff.rocks:
-#    image: websites
-#    container_name: yiff.rocks
-#    volumes:
-#      - build:/app
-#      - modules:/app/node_modules
-#      - ./src/config/ssl:/app/ssl
-#      - ./src/sites/yiff.rocks/views:/app/views
-#      - /var/www/sites/yiff.rocks:/app/public
-#    environment:
-#      SITE: yiff.rocks
-#    restart: always
-#    healthcheck:
-#      interval: 10s
-#      timeout: 2s
-#      test: lsof -i :443 || exit 1
-#    depends_on:
-#      - build_image
-#    networks:
-#      default:
-#        ipv4_address: 172.20.6.1
+  yiff.rocks:
+    image: websites
+    container_name: yiff.rocks
+    volumes:
+      - build:/app
+      - modules:/app/node_modules
+      - ./src/config/ssl:/app/ssl
+      - ./src/sites/yiff.rocks/views:/app/views
+      - /var/www/sites/yiff.rocks:/app/public
+    environment:
+      SITE: yiff.rocks
+    restart: always
+    healthcheck:
+      interval: 10s
+      timeout: 2s
+      test: lsof -i :443 || exit 1
+    depends_on:
+      - build_image
+    networks:
+      default:
+        ipv4_address: 172.20.6.1
 
 networks:
   default:

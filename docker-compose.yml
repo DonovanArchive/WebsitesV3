@@ -111,6 +111,7 @@ services:
       SITE: yiff.rest
       FFMPEG_PATH: /usr/bin/ffmpeg
       FFPROBE_PATH: /usr/bin/ffprobe
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
     restart: always
     healthcheck:
       interval: 10s

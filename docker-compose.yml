@@ -20,6 +20,7 @@ services:
       - ./src/sites/butts-are.cool/views:/app/views
       - /var/www/sites/butts-are.cool:/app/public
       - /var/www/screenshots:/app/public/screenshots
+      - /etc/hostname:/data/hostname:ro
     environment:
       SITE: butts-are.cool
     restart: always
@@ -43,6 +44,7 @@ services:
       - ./src/sites/furry.cool/views:/app/views
       - /var/www/sites/furry.cool:/app/public
       - /var/www/screenshots:/data/screenshots
+      - /etc/hostname:/data/hostname:ro
     environment:
       SITE: furry.cool
     restart: always
@@ -65,6 +67,7 @@ services:
       - ./src/config/ssl:/app/ssl
       - ./src/sites/maid.gay/views:/app/views
       - /var/www/sites/maid.gay:/app/public
+      - /etc/hostname:/data/hostname:ro
     environment:
       SITE: maid.gay
     restart: always
@@ -88,6 +91,7 @@ services:
       - ./src/sites/yiff.media/views:/app/views
       - /var/www/sites/yiff.media:/app/public
       - /opt/YiffyAPI/data/posts:/data/yiffyapi_v3
+      - /etc/hostname:/data/hostname:ro
     environment:
       SITE: yiff.media
     restart: always
@@ -112,6 +116,7 @@ services:
       - /var/www/sites/yiff.rest:/app/public
       - /var/www/sites/yiff.media/V2:/app/public/V2
       - /var/www/e621-thumb:/data/e621-thumb
+      - /etc/hostname:/data/hostname:ro
     environment:
       SITE: yiff.rest
       FFMPEG_PATH: /usr/bin/ffmpeg
@@ -137,6 +142,7 @@ services:
       - ./src/config/ssl:/app/ssl
       - ./src/sites/yiff.rocks/views:/app/views
       - /var/www/sites/yiff.rocks:/app/public
+      - /etc/hostname:/data/hostname:ro
     environment:
       SITE: yiff.rocks
     restart: always

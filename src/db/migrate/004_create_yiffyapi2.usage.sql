@@ -2,7 +2,7 @@ CREATE TABLE `yiffyapi2`.`usage` (
 	-- a unique identifier for this usage entry, completely irrelevant
 	`id`          CHAR(40)      NOT NULL PRIMARY KEY,
 	-- the api key used for this request, null if none
-	`key`         CHAR(20)      DEFAULT NULL,
+	`key`         CHAR(40)      DEFAULT NULL,
 	-- the ip address this request came from
 	`ip`          CHAR(15)      NOT NULL,
 	-- the user agent of this request

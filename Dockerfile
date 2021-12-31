@@ -1,5 +1,6 @@
 FROM node:16-alpine
 
+ENV TZ=America/Chicago
 WORKDIR /app
 COPY . .
 RUN apk add --no-cache lsof ffmpeg

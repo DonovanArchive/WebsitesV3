@@ -106,6 +106,7 @@ services:
       - ./src/config/ssl:/app/ssl
       - ./src/sites/yiff.rest/views:/app/views
       - /var/www/sites/yiff.rest:/app/public
+      - /var/www/sites/yiff.media/V2:/app/public/V2
       - /tmp/e621-thumb:/data/e621-thumb
     environment:
       SITE: yiff.rest

@@ -29,6 +29,7 @@ services:
       test: lsof -i :443 || exit 1
     depends_on:
       - build_image
+    hostname: butts-are-cool.websites.containers.local
     networks:
       default:
         ipv4_address: 172.20.1.1
@@ -49,6 +50,7 @@ services:
       interval: 10s
       timeout: 2s
       test: lsof -i :443 || exit 1
+    hostname: furry-cool.websites.containers.local
     depends_on:
       - build_image
     networks:
@@ -72,6 +74,7 @@ services:
       test: lsof -i :443 || exit 1
     depends_on:
       - build_image
+    hostname: maid-gay.websites.containers.local
     networks:
       default:
         ipv4_address: 172.20.3.1
@@ -94,6 +97,7 @@ services:
       test: lsof -i :443 || exit 1
     depends_on:
       - build_image
+    hostname: yiff-media.websites.containers.local
     networks:
       default:
         ipv4_address: 172.20.4.1
@@ -120,6 +124,7 @@ services:
       test: lsof -i :443 || exit 1
     depends_on:
       - build_image
+    hostname: yiff-rest.websites.containers.local
     networks:
       default:
         ipv4_address: 172.20.5.1
@@ -141,6 +146,7 @@ services:
       test: lsof -i :443 || exit 1
     depends_on:
       - build_image
+    hostname: yiff-rocks.websites.containers.local
     networks:
       default:
         ipv4_address: 172.20.6.1

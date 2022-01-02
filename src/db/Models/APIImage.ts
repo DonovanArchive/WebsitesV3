@@ -85,11 +85,11 @@ export default class APIImage {
 	}
 
 	get cfURL() {
-		return this.cfID === null || this.size >= 10000000 ? null : `${APIImage.CF_URL}/${this.id}`;
+		return null; // this.cfID === null || this.size >= 10000000 ? null : `${APIImage.CF_URL}/${this.id}`;
 	}
 
 	get cfRawURL() {
-		return this.cfID === null || this.size >= 10000000 ? null : `${APIImage.CF_RAW_URL}/${this.id}/default`;
+		return null; // this.cfID === null || this.size >= 10000000 ? null : `${APIImage.CF_RAW_URL}/${this.id}/default`;
 	}
 
 	get json() {
@@ -127,8 +127,8 @@ export default class APIImage {
 			"X-Yiffy-Image-Height":            this.height,
 			"X-Yiffy-Image-URL":               this.cfID || this.cdnURL,
 			"X-Yiffy-Image-YiffMedia-URL":     this.cdnURL,
-			"X-Yiffy-Image-CloudFlare-URL":    this.cfURL,
-			"X-Yiffy-Image-CloudFlare-RawURL": this.cfRawURL,
+			"X-Yiffy-Image-CloudFlare-URL":    this.cfURL || "NONE",
+			"X-Yiffy-Image-CloudFlare-RawURL": this.cfRawURL || "NONE",
 			"X-Yiffy-Image-Type":              this.type,
 			"X-Yiffy-Image-Name":              `${this.id}.${this.ext}`,
 			"X-Yiffy-Image-Extension":         this.ext,

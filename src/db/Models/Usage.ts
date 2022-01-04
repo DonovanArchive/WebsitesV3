@@ -42,10 +42,11 @@ export default class Usage {
 	}
 
 	static async track(req: Request) {
-		const res = await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} VALUES (?, ?, ?, ?, ?, ?, ?)`, [req.socket.remoteAddress, req.headers["user-agent"] || null, req.headers.authorization || null, JSON.stringify(chunk(req.rawHeaders).map(r => [r[0], r[1]])), req.method.toUpperCase(), req.originalUrl, req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!]) as UpsertResult;
+		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
+		const res = await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} VALUES (?, ?, ?, ?, ?, ?, ?)`, [ip, req.headers["user-agent"] || null, req.headers.authorization || null, JSON.stringify(chunk(req.rawHeaders).map(r => [r[0], r[1]])), req.method.toUpperCase(), req.originalUrl, req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!]) as UpsertResult;
 		await db.r
 			.multi()
-			.incr(`websites3:ip:${req.socket.remoteAddress!}`)
+			.incr(`websites3:ip:${ip}`)
 			.incr(`websites3:host:${req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!}`)
 			.incr(`websites3:rawHost:${req.hostname}`)
 			.exec();

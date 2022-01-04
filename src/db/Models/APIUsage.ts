@@ -1,7 +1,7 @@
 import db from "@db";
 import type { DataTypes } from "@uwu-codes/types";
 import type { Request } from "express";
-import { randomBytes } from "crypto";
+import type { UpsertResult } from "mariadb";
 
 export interface RawAPIUsage {
 	id: string;
@@ -39,11 +39,10 @@ export default class APIUsage {
 
 	static async track(category: string, req: Request) {
 		const ip = (req.socket.remoteAddress || req.headers["x-forwarded-for"] || req.ip).toString();
-		const id = randomBytes(16).toString("hex");
-		await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} VALUES (?, ?, ?, ?, ?, ?)`, [id, req.headers.authorization || null, ip, req.headers["user-agent"], category, req.method.toUpperCase(), req.originalUrl]);
+		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} VALUES (?, ?, ?, ?, ?)`, [req.headers.authorization || null, ip, req.headers["user-agent"], category, req.method.toUpperCase(), req.originalUrl]) as UpsertResult;
 		await db.r.incr(`yiffy2:ip:${ip}`);
 		if (req.headers.authorization) await db.r.incr(`yiffy2:key:${req.headers.authorization}`);
 		await db.r.incr(`yiffy2:category:${category}`);
-		return id;
+		return res.insertId;
 	}
 }

@@ -2,7 +2,7 @@ import db from "@db";
 import type { DataTypes } from "@uwu-codes/types";
 import type { Request } from "express";
 import chunk from "chunk";
-import { randomBytes } from "crypto";
+import type { UpsertResult } from "mariadb";
 
 export interface RawUsage {
 	id: string;
@@ -42,14 +42,13 @@ export default class Usage {
 	}
 
 	static async track(req: Request) {
-		const id = randomBytes(16).toString("hex");
-		await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [id, req.socket.remoteAddress, req.headers["user-agent"] || null, req.headers.authorization || null, JSON.stringify(chunk(req.rawHeaders).map(r => [r[0], r[1]])), req.method.toUpperCase(), req.originalUrl, req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!]);
+		const res = await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} VALUES (?, ?, ?, ?, ?, ?, ?)`, [req.socket.remoteAddress, req.headers["user-agent"] || null, req.headers.authorization || null, JSON.stringify(chunk(req.rawHeaders).map(r => [r[0], r[1]])), req.method.toUpperCase(), req.originalUrl, req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!]) as UpsertResult;
 		await db.r
 			.multi()
 			.incr(`websites3:ip:${req.socket.remoteAddress!}`)
 			.incr(`websites3:host:${req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!}`)
 			.incr(`websites3:rawHost:${req.hostname}`)
 			.exec();
-		return id;
+		return res.insertId;
 	}
 }

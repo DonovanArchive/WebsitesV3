@@ -39,7 +39,7 @@ export default class APIUsage {
 
 	static async track(category: string, req: Request) {
 		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
-		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} (key, ip, user_agent, type, method, path) VALUES (?, ?, ?, ?, ?, ?)`, [
+		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} ('key', ip, user_agent, type, method, path) VALUES (?, ?, ?, ?, ?, ?)`, [
 			req.headers.authorization || null,
 			ip,
 			req.headers["user-agent"] || null,

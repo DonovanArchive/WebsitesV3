@@ -43,7 +43,7 @@ export default class Usage {
 
 	static async track(req: Request) {
 		const id = randomBytes(16).toString("hex");
-		await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [id, req.socket.remoteAddress, req.headers["user-agent"] || null, req.headers.authorization || null, JSON.stringify(chunk(req.rawHeaders).map(r => [r[0], r[1]])), req.method.toUpperCase(), req.originalUrl, req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!, new Date().toISOString()]);
+		await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [id, req.socket.remoteAddress, req.headers["user-agent"] || null, req.headers.authorization || null, JSON.stringify(chunk(req.rawHeaders).map(r => [r[0], r[1]])), req.method.toUpperCase(), req.originalUrl, req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!]);
 		await db.r
 			.multi()
 			.incr(`websites3:ip:${req.socket.remoteAddress!}`)

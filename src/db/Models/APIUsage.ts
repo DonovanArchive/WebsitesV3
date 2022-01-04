@@ -39,7 +39,14 @@ export default class APIUsage {
 
 	static async track(category: string, req: Request) {
 		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
-		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} VALUES (?, ?, ?, ?, ?, ?)`, [req.headers.authorization || null, ip, req.headers["user-agent"], category, req.method.toUpperCase(), req.originalUrl]) as UpsertResult;
+		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} (key, ip, user_agent, type, method, path) VALUES (?, ?, ?, ?, ?, ?)`, [
+			req.headers.authorization || null,
+			ip,
+			req.headers["user-agent"] || null,
+			category,
+			req.method.toUpperCase(),
+			req.originalUrl
+		]) as UpsertResult;
 		await db.r.incr(`yiffy2:ip:${ip}`);
 		if (req.headers.authorization) await db.r.incr(`yiffy2:key:${req.headers.authorization}`);
 		await db.r.incr(`yiffy2:category:${category}`);

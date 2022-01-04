@@ -4,7 +4,7 @@ import type { Request } from "express";
 import type { UpsertResult } from "mariadb";
 
 export interface RawAPIUsage {
-	id: string;
+	id: bigint;
 	key: string;
 	ip: string;
 	user_agent: string;
@@ -18,7 +18,7 @@ export { APIUsage };
 export default class APIUsage {
 	static DB = "yiffyapi2";
 	static TABLE = "usage";
-	id: string;
+	id: bigint;
 	key: string;
 	ip: string;
 	userAgent: string;
@@ -39,7 +39,7 @@ export default class APIUsage {
 
 	static async track(category: string, req: Request) {
 		const ip = (req.socket.remoteAddress || req.headers["x-forwarded-for"] || req.ip).toString();
-		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} VALUES (?, ?, ?, ?, ?)`, [req.headers.authorization || null, ip, req.headers["user-agent"], category, req.method.toUpperCase(), req.originalUrl]) as UpsertResult;
+		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} VALUES (?, ?, ?, ?, ?, ?)`, [req.headers.authorization || null, ip, req.headers["user-agent"], category, req.method.toUpperCase(), req.originalUrl]) as UpsertResult;
 		await db.r.incr(`yiffy2:ip:${ip}`);
 		if (req.headers.authorization) await db.r.incr(`yiffy2:key:${req.headers.authorization}`);
 		await db.r.incr(`yiffy2:category:${category}`);

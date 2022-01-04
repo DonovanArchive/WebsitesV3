@@ -5,7 +5,7 @@ import chunk from "chunk";
 import type { UpsertResult } from "mariadb";
 
 export interface RawUsage {
-	id: string;
+	id: bigint;
 	ip: string;
 	user_agent: string | null;
 	authorization: string | null;
@@ -20,7 +20,7 @@ export { Usage };
 export default class Usage {
 	static DB = "websites3";
 	static TABLE = "usage";
-	id: string;
+	id: bigint;
 	ip: string;
 	userAgent: string | null;
 	authorization: string | null;

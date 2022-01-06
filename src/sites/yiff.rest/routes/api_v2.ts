@@ -41,15 +41,15 @@ const app = Router();
 
 const rlWithoutKey = new RateLimiterRedis({
 	storeClient: db.r,
-	points:      1,
-	duration:    1,
+	points:      5,
+	duration:    5,
 	keyPrefix:   "rl:yiff.rest:withoutKey"
 });
 
 const rlWithKey = new RateLimiterRedis({
 	storeClient: db.r,
-	points:      2,
-	duration:    1,
+	points:      10,
+	duration:    5,
 	keyPrefix:   "rl:yiff.rest:withKey"
 });
 
@@ -62,8 +62,8 @@ app
 		async(req, res, next) => {
 			if (!req.headers.authorization) {
 				res.header({
-					"X-RateLimit-Limit":     1,
-					"X-RateLimit-Remaining": rlWithoutKey.points,
+					"X-RateLimit-Limit":     5,
+					"X-RateLimit-Remaining": rlWithoutKey.points - 1,
 					"X-RateLimit-Reset":     new Date(Date.now() + rlWithoutKey.msBlockDuration)
 				});
 				return rlWithoutKey.consume(req.socket.remoteAddress!, 1)
@@ -100,7 +100,7 @@ app
 					return next();
 				} else {
 					res.header({
-						"X-RateLimit-Limit":     2,
+						"X-RateLimit-Limit":     10,
 						"X-RateLimit-Remaining": rlWithKey.points,
 						"X-RateLimit-Reset":     new Date(Date.now() + rlWithKey.msBlockDuration)
 					});

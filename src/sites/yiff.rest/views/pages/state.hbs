@@ -24,7 +24,7 @@
 	<meta name="msapplication-TileColor" content="#00FFFF">
 	<meta name="msapplication-TileImage" content="https://i.furry.bot/ms-icon-144x144.png">
 	<meta name="theme-color" content="#00FFFF">
-	<style>
+	<style nonce="{{ nonce }}">
 		table,
 		thead,
 		th,
@@ -75,7 +75,8 @@
 			</tr>
 			{{else}}
 			{{#each images}}
-			<tr class="{{#if this.hasImages}}{{#when this.count "lt" 5}}yellow{{else}}green{{/when}}{{else}}red{{/if}}">
+			<tr class="{{#if this.hasImages}}{{#when this.count " lt"
+				5}}yellow{{else}}green{{/when}}{{else}}red{{/if}}">
 				<td>{{this.name}}</td>
 				<td>{{this.count}}</td>
 				<td>{{#if this.hasImages}}Yes{{else}}No{{/if}}</td>

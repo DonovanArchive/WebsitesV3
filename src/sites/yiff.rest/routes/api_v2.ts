@@ -60,10 +60,16 @@ app
 		diskSpaceCheck,
 		userAgentCheck,
 		async(req, res, next) => {
-			if (!req.headers.authorization) return rlWithoutKey.consume(req.socket.remoteAddress!, 1)
-				.then(() => next())
-				.catch(() => res.status(429).json({ success: false, error: "Too many requests." }));
-			else {
+			if (!req.headers.authorization) {
+				res.header({
+					"X-RateLimit-Limit":     1,
+					"X-RateLimit-Remaining": rlWithoutKey.points,
+					"X-RateLimit-Reset":     new Date(Date.now() + rlWithoutKey.msBlockDuration)
+				});
+				return rlWithoutKey.consume(req.socket.remoteAddress!, 1)
+					.then(() => next())
+					.catch(() => res.header("Retry-After", (rlWithoutKey.msBlockDuration / 1000).toString()).status(429).json({ success: false, error: "Too many requests." }));
+			} else {
 				if (req.headers.authorization === secretKey) return next();
 				const key = await APIKey.get(req.headers.authorization);
 				if (!key) return res.status(401).json({
@@ -85,10 +91,23 @@ app
 					}
 				});
 
-				if (key.unlimited) return next();
-				else return rlWithKey.consume(req.socket.remoteAddress!, 1)
-					.then(() => next())
-					.catch(() => res.status(429).json({ success: false, error: "Too many requests." }));
+				if (key.unlimited) {
+					res.header({
+						"X-RateLimit-Limit":     999,
+						"X-RateLimit-Remaining": 999,
+						"X-RateLimit-Reset":     0
+					});
+					return next();
+				} else {
+					res.header({
+						"X-RateLimit-Limit":     2,
+						"X-RateLimit-Remaining": rlWithKey.points,
+						"X-RateLimit-Reset":     new Date(Date.now() + rlWithKey.msBlockDuration)
+					});
+					return rlWithKey.consume(req.socket.remoteAddress!, 1)
+						.then(() => next())
+						.catch(() => res.header("Retry-After", (rlWithKey.msBlockDuration / 1000).toString()).status(429).json({ success: false, error: "Too many requests." }));
+				}
 			}
 		}
 	)

@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../../../util/@types/simple-thumbnail.d.ts" />
 import mimeTypes from "../../../util/mimeTypes.json";
+import RateLimiter from "../util/RateLimiter";
 import {
 	yiffyNotes,
 	categories,
@@ -9,15 +10,20 @@ import {
 	e621Thumb,
 	userAgent
 } from "@config";
-import db from "@db";
 import diskSpaceCheck from "@util/diskSpaceCheck";
 import userAgentCheck from "@util/userAgentCheck";
-import { APIKey, APIImage, APIUsage } from "@models";
+import { APIImage, APIUsage } from "@models";
+import {
+	APIKey,
+	DEFAULT_WINDOW_LONG,
+	DEFAULT_LIMIT_LONG,
+	DEFAULT_WINDOW_SHORT,
+	DEFAULT_LIMIT_SHORT
+} from "@models/APIKey";
 import Webhooks from "@util/Webhooks";
 import ezgifPreview from "@util/ezgifPreview";
 import type { Request } from "express";
 import { Router, static as serveStatic } from "express";
-import { RateLimiterRedis } from "rate-limiter-flexible";
 import bytes from "bytes";
 import ffmpeg from "fluent-ffmpeg";
 import p from "ffmpeg-static";
@@ -25,6 +31,7 @@ import ffprobe from "ffprobe-static";
 import thumb from "simple-thumbnail";
 import type { ThenArg } from "@uwu-codes/types";
 import fetch from "node-fetch";
+import debug from "debug";
 import { resolve as rp } from "path";
 import {
 	createWriteStream,
@@ -39,20 +46,6 @@ import { tmpdir } from "os";
 import { spawnSync } from "child_process";
 const app = Router();
 
-const rlWithoutKey = new RateLimiterRedis({
-	storeClient: db.r,
-	points:      5,
-	duration:    5,
-	keyPrefix:   "rl:yiff.rest:withoutKey"
-});
-
-const rlWithKey = new RateLimiterRedis({
-	storeClient: db.r,
-	points:      10,
-	duration:    5,
-	keyPrefix:   "rl:yiff.rest:withKey"
-});
-
 app
 	.get("/state", async (req, res) => res.redirect("https://state.yiff.rest"))
 	.get("/online", async (req, res) => res.status(200).json({ success: true, uptime: process.uptime() }))
@@ -61,14 +54,9 @@ app
 		userAgentCheck,
 		async(req, res, next) => {
 			if (!req.headers.authorization) {
-				res.header({
-					"X-RateLimit-Limit":     5,
-					"X-RateLimit-Remaining": rlWithoutKey.points - 1,
-					"X-RateLimit-Reset":     new Date(Date.now() + rlWithoutKey.msBlockDuration)
-				});
-				return rlWithoutKey.consume(req.socket.remoteAddress!, 1)
-					.then(() => next())
-					.catch(() => res.header("Retry-After", (rlWithoutKey.msBlockDuration / 1000).toString()).status(429).json({ success: false, error: "Too many requests." }));
+				const r = await RateLimiter.process(req, res, DEFAULT_WINDOW_LONG, DEFAULT_LIMIT_LONG, DEFAULT_WINDOW_SHORT, DEFAULT_LIMIT_SHORT);
+				if (!r) return;
+				else return next();
 			} else {
 				if (req.headers.authorization === secretKey) return next();
 				const key = await APIKey.get(req.headers.authorization);
@@ -91,23 +79,9 @@ app
 					}
 				});
 
-				if (key.unlimited) {
-					res.header({
-						"X-RateLimit-Limit":     999,
-						"X-RateLimit-Remaining": 999,
-						"X-RateLimit-Reset":     0
-					});
-					return next();
-				} else {
-					res.header({
-						"X-RateLimit-Limit":     10,
-						"X-RateLimit-Remaining": rlWithKey.points,
-						"X-RateLimit-Reset":     new Date(Date.now() + rlWithKey.msBlockDuration)
-					});
-					return rlWithKey.consume(req.socket.remoteAddress!, 1)
-						.then(() => next())
-						.catch(() => res.header("Retry-After", (rlWithKey.msBlockDuration / 1000).toString()).status(429).json({ success: false, error: "Too many requests." }));
-				}
+				const r = await RateLimiter.process(req, res, key.windowLong, key.limitLong, key.windowShort, key.limitShort);
+				if (!r) return;
+				else return next();
 			}
 		}
 	)

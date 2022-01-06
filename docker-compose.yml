@@ -29,7 +29,12 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      - build_image
+      build_image:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     hostname: butts-are-cool.websites.containers.local
     networks:
       default:
@@ -54,7 +59,12 @@ services:
       test: lsof -i :443 || exit 1
     hostname: furry-cool.websites.containers.local
     depends_on:
-      - build_image
+      build_image:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       default:
         ipv4_address: 172.20.2.1
@@ -76,7 +86,12 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      - build_image
+      build_image:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     hostname: maid-gay.websites.containers.local
     networks:
       default:
@@ -100,7 +115,12 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      - build_image
+      build_image:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     hostname: yiff-media.websites.containers.local
     networks:
       default:
@@ -128,7 +148,12 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      - build_image
+      build_image:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     hostname: yiff-rest.websites.containers.local
     networks:
       default:
@@ -151,12 +176,48 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      - build_image
+      build_image:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     hostname: yiff-rocks.websites.containers.local
     networks:
       default:
         ipv4_address: 172.20.6.1
-
+  mariadb:
+    image: mariadb
+    container_name: mariadb.websites
+    volumes:
+      - ./data/db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "$MARIADB_ROOT_PASSWORD"
+    restart: always
+    healthcheck:
+      interval: 5s
+      timeout: 2s
+      test: mysqladmin --user=root --password=$$MYSQL_ROOT_PASSWORD ping
+    hostname: mariadb.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.20.244.2
+  redis:
+    image: redis:alpine
+    command: redis-server --disable-thp yes --supervised no --bind 0.0.0.0
+      --requirepass "$REDIS_PASSWORD"
+    container_name: redis.websites
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: redis-cli ping
+      interval: 10s
+      timeout: 5s
+    restart: always
+    hostname: redis.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.20.244.3
 networks:
   default:
     name: websites

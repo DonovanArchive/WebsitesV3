@@ -31,7 +31,6 @@ import ffprobe from "ffprobe-static";
 import thumb from "simple-thumbnail";
 import type { ThenArg } from "@uwu-codes/types";
 import fetch from "node-fetch";
-import debug from "debug";
 import { resolve as rp } from "path";
 import {
 	createWriteStream,

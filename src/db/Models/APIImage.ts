@@ -25,8 +25,8 @@ export default class APIImage {
 	static DB = "yiffyapi2";
 	static TABLE = "images";
 	static CDN_URL = "https://yiff.media/V2";
-	static CF_URL = "https://cf.yiff.media";
-	static CF_RAW_URL = "https://imagedelivery.net/hCTZQZviUXhEogYvzUlP8Q";
+	static NEW_URL = "https://v2.yiff.media";
+	static NEW_RAW_URL = "https://s3.us-west-1.wasabisys.com/yiffyapi2";
 	id: string;
 	artists: Array<string>;
 	sources: Array<string>;
@@ -53,7 +53,6 @@ export default class APIImage {
 		this.originalURL = data.original_url;
 		this.ext = data.ext;
 		this.size = data.size;
-		this.cfID = data.cf_id;
 	}
 
 	static async get(id: string) {
@@ -84,12 +83,12 @@ export default class APIImage {
 		return `${APIImage.CDN_URL}/${this.category.replace(/\./g, "/")}/${this.id}.${this.ext}`;
 	}
 
-	get cfURL() {
-		return null; // this.cfID === null || this.size >= 10000000 ? null : `${APIImage.CF_URL}/${this.id}`;
+	get newURL() {
+		return `${APIImage.NEW_URL}/${this.category.replace(/\./g, "/")}/${this.id}`;
 	}
 
-	get cfRawURL() {
-		return null; // this.cfID === null || this.size >= 10000000 ? null : `${APIImage.CF_RAW_URL}/${this.id}/default`;
+	get newRawURL() {
+		return `${APIImage.NEW_RAW_URL}/${this.category.replace(/\./g, "/")}/${this.id}`;
 	}
 
 	get json() {
@@ -98,14 +97,13 @@ export default class APIImage {
 			sources:      this.sources,
 			width:        this.width,
 			height:       this.height,
-			url:          this.cfURL || this.cdnURL,
+			url:          this.newURL || this.cdnURL,
 			yiffMediaURL: this.cdnURL,
-			cfURL:        this.cfURL,
-			cfRawURL:     this.cfRawURL,
+			newURL:       this.newURL,
+			newRawURL:    this.newRawURL,
 			type:         this.type,
 			name:         `${this.id}.${this.ext}`,
 			id:           this.id,
-			cfID:         this.cfID,
 			ext:          this.ext,
 			size:         this.size,
 			reportURL:    null
@@ -121,22 +119,21 @@ export default class APIImage {
 
 	get headers() {
 		return {
-			"X-Yiffy-Artist":                  this.artists,
-			"X-Yiffy-Source":                  this.sources,
-			"X-Yiffy-Image-Width":             this.width,
-			"X-Yiffy-Image-Height":            this.height,
-			"X-Yiffy-Image-URL":               this.cfID || this.cdnURL,
-			"X-Yiffy-Image-YiffMedia-URL":     this.cdnURL,
-			"X-Yiffy-Image-CloudFlare-URL":    this.cfURL || "NONE",
-			"X-Yiffy-Image-CloudFlare-RawURL": this.cfRawURL || "NONE",
-			"X-Yiffy-Image-Type":              this.type,
-			"X-Yiffy-Image-Name":              `${this.id}.${this.ext}`,
-			"X-Yiffy-Image-Extension":         this.ext,
-			"X-Yiffy-Image-Size":              this.size,
-			"X-Yiffy-CloudFlare-ID":           this.cfID || "NONE",
-			"X-Yiffy-Report-URL":              "NONE",
-			"X-Yiffy-Schema":                  "https://schema.yiff.rest/V2.json",
-			"X-Yiffy-Version":                 2
+			"X-Yiffy-Artist":              this.artists,
+			"X-Yiffy-Source":              this.sources,
+			"X-Yiffy-Image-Width":         this.width,
+			"X-Yiffy-Image-Height":        this.height,
+			"X-Yiffy-Image-URL":           this.cfID || this.cdnURL,
+			"X-Yiffy-Image-YiffMedia-URL": this.cdnURL,
+			"X-Yiffy-Image-New-URL":       this.newURL || "NONE",
+			"X-Yiffy-Image-New-RawURL":    this.newRawURL || "NONE",
+			"X-Yiffy-Image-Type":          this.type,
+			"X-Yiffy-Image-Name":          `${this.id}.${this.ext}`,
+			"X-Yiffy-Image-Extension":     this.ext,
+			"X-Yiffy-Image-Size":          this.size,
+			"X-Yiffy-Report-URL":          "NONE",
+			"X-Yiffy-Schema":              "https://schema.yiff.rest/V2.json",
+			"X-Yiffy-Version":             2
 		};
 	}
 
@@ -148,6 +145,6 @@ export default class APIImage {
 	}
 
 	async getShortURL() {
-		return YiffRocks.create(this.cfURL || this.cdnURL, `YiffyAPI-${yiffRocksOverride}`, this.id, false).then(v => v.fullURL);
+		return YiffRocks.create(this.newURL || this.cdnURL, `YiffyAPI-${yiffRocksOverride}`, this.id, false).then(v => v.fullURL);
 	}
 }

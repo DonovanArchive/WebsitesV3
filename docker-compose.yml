@@ -19,7 +19,7 @@ services:
       - ./src/config/ssl:/app/ssl
       - ./src/sites/butts-are.cool/views:/app/views
       - /var/www/sites/butts-are.cool:/app/public
-      - /var/www/screenshots:/app/public/screenshots
+      - /var/www/screenshots:/data/screenshots
       - /etc/hostname:/data/hostname:ro
     environment:
       SITE: butts-are.cool

@@ -46,6 +46,7 @@ import { spawnSync } from "child_process";
 const app = Router();
 
 app
+	.get("/robots.txt", async(req, res) => res.header("Content-Type", "text/plain").status(200).end("User-Agent: *\nDisallow: /"))
 	.get("/state", async (req, res) => res.redirect("https://state.yiff.rest"))
 	.get("/online", async (req, res) => res.status(200).json({ success: true, uptime: process.uptime() }))
 	.use(

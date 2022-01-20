@@ -67,7 +67,7 @@ export default class APIKey {
 	}
 
 	static async get(id: string): Promise<APIKey | null> {
-		return db.query(`SELECT * FROM ${APIKey.DB}.${APIKey.TABLE} WHERE id = ? LIMIT 1`, [id]).then((k: Array<RawAPIKey>) => new APIKey(k[0]));
+		return db.query(`SELECT * FROM ${APIKey.DB}.${APIKey.TABLE} WHERE id = ? LIMIT 1`, [id]).then((k: Array<RawAPIKey>) => k.length === 0 ? null : new APIKey(k[0]));
 	}
 
 	static async getOwned(owner: string): Promise<Array<APIKey>> {

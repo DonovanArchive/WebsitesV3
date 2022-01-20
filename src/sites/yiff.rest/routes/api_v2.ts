@@ -59,6 +59,10 @@ app
 				else return next();
 			} else {
 				if (req.headers.authorization === secretKey) return next();
+				if (req.originalUrl.startsWith("/e621-thumb") && req.method === "POST") {
+					if (req.headers.authorization !== e621Thumb) return res.status(401).end("Not Authorized.");
+					else return next();
+				}
 				const key = await APIKey.get(req.headers.authorization);
 				if (!key) return res.status(401).json({
 					success: false,
@@ -269,7 +273,6 @@ app
 	})
 	.use("/e621-thumb/get", serveStatic("/data/e621-thumb"))
 	.post("/e621-thumb/create", async(req: Request<never, unknown, Record<string, string>>, res) => {
-		if (req.headers.authorization !== e621Thumb) return res.status(401).end("Not Authorized.");
 		const d = Date.now();
 
 		if (!req.body.url) return res.status(400).json({

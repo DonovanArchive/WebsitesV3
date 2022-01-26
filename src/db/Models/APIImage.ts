@@ -84,11 +84,11 @@ export default class APIImage {
 	}
 
 	get newURL() {
-		return `${APIImage.NEW_URL}/${this.category.replace(/\./g, "/")}/${this.id}`;
+		return `${APIImage.NEW_URL}/${this.category.replace(/\./g, "/")}/${this.id}.${this.ext}`;
 	}
 
 	get newRawURL() {
-		return `${APIImage.NEW_RAW_URL}/${this.category.replace(/\./g, "/")}/${this.id}`;
+		return `${APIImage.NEW_RAW_URL}/${this.category.replace(/\./g, "/")}/${this.id}.${this.ext}`;
 	}
 
 	get json() {
@@ -123,7 +123,7 @@ export default class APIImage {
 			"X-Yiffy-Source":              this.sources,
 			"X-Yiffy-Image-Width":         this.width,
 			"X-Yiffy-Image-Height":        this.height,
-			"X-Yiffy-Image-URL":           this.cfID || this.cdnURL,
+			"X-Yiffy-Image-URL":           this.newURL || this.cdnURL,
 			"X-Yiffy-Image-YiffMedia-URL": this.cdnURL,
 			"X-Yiffy-Image-New-URL":       this.newURL || "NONE",
 			"X-Yiffy-Image-New-RawURL":    this.newRawURL || "NONE",

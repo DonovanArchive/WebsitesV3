@@ -5,7 +5,7 @@ import type { UpsertResult } from "mariadb";
 
 export interface RawAPIUsage {
 	id: bigint;
-	key: string;
+	key: string | null;
 	ip: string;
 	user_agent: string;
 	type: string;
@@ -19,7 +19,7 @@ export default class APIUsage {
 	static DB = "yiffyapi2";
 	static TABLE = "usage";
 	id: bigint;
-	key: string;
+	key: string | null;
 	ip: string;
 	userAgent: string;
 	type: string;

@@ -51,9 +51,9 @@ app
 	.get("/state", async (req, res) => res.redirect("https://state.yiff.rest"))
 	.get("/online", async (req, res) => res.status(200).json({ success: true, uptime: process.uptime() }))
 	.use(
+		checkForBlock,
 		diskSpaceCheck,
 		userAgentCheck,
-		checkForBlock,
 		async(req, res, next) => {
 			if (!req.headers.authorization) {
 				const r = await RateLimiter.process(req, res, DEFAULT_WINDOW_LONG, DEFAULT_LIMIT_LONG, DEFAULT_WINDOW_SHORT, DEFAULT_LIMIT_SHORT);

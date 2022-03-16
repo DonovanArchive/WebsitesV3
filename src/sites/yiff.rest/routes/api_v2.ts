@@ -2,6 +2,7 @@
 /// <reference path="../../../util/@types/simple-thumbnail.d.ts" />
 import mimeTypes from "../../../util/mimeTypes.json";
 import RateLimiter from "../util/RateLimiter";
+import checkForBlock from "../../../config/checkForBlock";
 import {
 	yiffyNotes,
 	categories,
@@ -52,6 +53,7 @@ app
 	.use(
 		diskSpaceCheck,
 		userAgentCheck,
+		checkForBlock,
 		async(req, res, next) => {
 			if (!req.headers.authorization) {
 				const r = await RateLimiter.process(req, res, DEFAULT_WINDOW_LONG, DEFAULT_LIMIT_LONG, DEFAULT_WINDOW_SHORT, DEFAULT_LIMIT_SHORT);

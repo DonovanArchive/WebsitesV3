@@ -43,15 +43,16 @@ export default class Usage {
 
 	static async track(req: Request) {
 		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
-		const res = await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} (ip, user_agent, authorization, raw_headers, method, path, domain, referrer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
+		const res = await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} (ip, user_agent, authorization, raw_headers, method, path, domain, referrer, query) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
 			ip,
 			req.query._ua || req.headers["user-agent"] || null,
 			req.headers.authorization || null,
 			JSON.stringify(chunk(req.rawHeaders).map(r => [r[0], r[1]])),
 			req.method.toUpperCase(),
-			req.originalUrl,
+			req.originalUrl.split("?")[0],
 			req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!,
-			req.headers.referer || null
+			req.headers.referer || null,
+			JSON.stringify(req.query)
 		]) as UpsertResult;
 		await db.r
 			.multi()

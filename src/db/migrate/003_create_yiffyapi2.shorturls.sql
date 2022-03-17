@@ -7,7 +7,7 @@ CREATE TABLE `yiffyapi2`.`shorturls` (
 	`modified_at`      TINYTEXT     NULL,
 	-- the user agent in use when this short url was created
 	`creator_ua`       TINYTEXT     NOT NULL,
-	-- the ip this user agent was created from
+	-- the ip this short url was created from
 	`creator_ip`       TINYTEXT     NOT NULL,
 	-- the name (credit) for this short url
 	`creator_name`     TINYTEXT     NOT NULL,

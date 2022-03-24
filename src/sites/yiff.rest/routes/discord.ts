@@ -1,7 +1,7 @@
 import { discord, userAgent } from "@config";
 import { Router } from "express";
 import fetch from "node-fetch";
-import type { RESTGetAPICurrentUserGuildsResult, RESTGetAPICurrentUserResult, RESTPostOAuth2AccessTokenResult } from "discord-api-types";
+import type { RESTGetAPICurrentUserGuildsResult, RESTGetAPICurrentUserResult, RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
 
 const app = Router();
 

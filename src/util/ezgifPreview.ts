@@ -17,16 +17,17 @@ export default async function ezgifPreview(url: string, startTime: number, endTi
 	});
 	const rawBody = await v.text();
 	const body = cheerio.load(rawBody);
-	const token = body("input[type=hidden][name=token]").attr("value");
+	// const token = body("input[type=hidden][name=token]").attr("value");
 	const vidLocation = `https://ezgif.com${body("form").attr("action")!}`;
-	if (!token) throw new Error("Failed to get token");
+	// if (!token) throw new Error("Failed to get token");
 	const uploadEnd = process.hrtime.bigint();
 
 	// cut
 	const cutStart = process.hrtime.bigint();
 	const fdC = new FormData();
 	fdC.append("file", vidLocation.split("/").slice(-1)[0]);
-	fdC.append("token", token);
+	// from what I can see, they don't even send a token around anymore
+	// fdC.append("token", token);
 	fdC.append("start", startTime);
 	fdC.append("end", endTime);
 	fdC.append("cut-video", "Cut video!");
@@ -47,15 +48,16 @@ export default async function ezgifPreview(url: string, startTime: number, endTi
 	});
 	const gBodyRaw = await vtg.text();
 	const gBody = cheerio.load(gBodyRaw);
-	const token2 = gBody("input[type=hidden][name=token]").attr("value");
+	// const token2 = gBody("input[type=hidden][name=token]").attr("value");
 	const vidLocation2 = gBody("form").attr("action");
 	const getVTGEnd = process.hrtime.bigint();
+	// if (!token2) throw new Error("Failed to get token2");
 
 	// convert
 	const convertStart = process.hrtime.bigint();
 	const fdG = new FormData();
 	fdG.append("file", vidLocation2!.split("/").slice(-1)[0]);
-	fdG.append("token", token2);
+	// fdG.append("token", token2);
 	fdG.append("start", 0);
 	fdG.append("end", len);
 	fdG.append("size", "original");

@@ -9,7 +9,8 @@ import {
 	publicDir,
 	secretKey,
 	e621Thumb,
-	userAgent
+	userAgent,
+	services
 } from "@config";
 import diskSpaceCheck from "@util/diskSpaceCheck";
 import userAgentCheck from "@util/userAgentCheck";
@@ -32,8 +33,10 @@ import ffprobe from "ffprobe-static";
 import thumb from "simple-thumbnail";
 import type { ThenArg } from "@uwu-codes/types";
 import fetch from "node-fetch";
+import AWS, { Credentials } from "aws-sdk";
 import { resolve as rp } from "path";
 import {
+	createReadStream,
 	createWriteStream,
 	existsSync,
 	lstatSync,
@@ -45,6 +48,15 @@ import { randomBytes } from "crypto";
 import { tmpdir } from "os";
 import { spawnSync } from "child_process";
 const app = Router();
+const awsClient = new AWS.S3({
+	endpoint:    "eu2.contabostorage.com",
+	region:      "eu2",
+	credentials: new Credentials({
+		accessKeyId:     services.s3.accessKey,
+		secretAccessKey: services.s3.secretKey
+	}),
+	s3ForcePathStyle: true
+});
 
 app
 	.get("/robots.txt", async(req, res) => res.header("Content-Type", "text/plain").status(200).end("User-Agent: *\nDisallow: /"))
@@ -55,16 +67,15 @@ app
 		diskSpaceCheck,
 		userAgentCheck,
 		async(req, res, next) => {
+			if (req.headers.authorization === secretKey) return next();
+			if (req.originalUrl.startsWith("/e621-thumb") && req.method === "POST") {
+				if (req.headers.authorization !== e621Thumb) return res.status(401).end("Not Authorized.");
+				else return next();
+			}
 			if (!req.headers.authorization) {
 				const r = await RateLimiter.process(req, res, DEFAULT_WINDOW_LONG, DEFAULT_LIMIT_LONG, DEFAULT_WINDOW_SHORT, DEFAULT_LIMIT_SHORT);
 				if (!r) return;
-				else return next();
 			} else {
-				if (req.headers.authorization === secretKey) return next();
-				if (req.originalUrl.startsWith("/e621-thumb") && req.method === "POST") {
-					if (req.headers.authorization !== e621Thumb) return res.status(401).end("Not Authorized.");
-					else return next();
-				}
 				const key = await APIKey.get(req.headers.authorization);
 				if (!key) return res.status(401).json({
 					success: false,
@@ -87,8 +98,9 @@ app
 
 				const r = await RateLimiter.process(req, res, key.windowLong, key.limitLong, key.windowShort, key.limitShort);
 				if (!r) return;
-				else return next();
 			}
+
+			return next();
 		}
 	)
 	.get("/online", async (req, res) => res.status(200).json({ success: true, uptime: process.uptime() }))
@@ -292,9 +304,9 @@ app
 			})
 				.then((r) =>{
 					const id = randomBytes(32).toString("hex");
-					r.body.pipe(createWriteStream(`${tmpdir()}/${id}`));
+					r.body.pipe(createWriteStream(`${tmpdir()}/${id}-${d}`));
 					r.body.on("end", () => {
-						const [,hour, minute, second] = spawnSync("ffprobe", [`${tmpdir()}/${d}`])
+						const [,hour, minute, second] = spawnSync("ffprobe", [`${tmpdir()}/${id}-${d}`])
 							.stderr.toString().match(/Duration: (\d\d):(\d\d):(\d\d\.\d\d)/) || ["0", "0", "0", "0"];
 						len += Number(hour)   * 3600;
 						len += Number(minute) * 60;
@@ -306,39 +318,41 @@ app
 		let v = Math.floor((Math.random() * (len / 3)) + (len / 3));
 		if (v > len) v = 0;
 		const id = Buffer.from(req.body.url, "ascii").toString("base64").replace(/=/g, "");
-		if (req.body.type === "image" && existsSync(`/data/e621-thumb/${id}.png`)) {
-			if (req.body.responseType === "image") return res.status(200).sendFile(`/data/e621-thumb/${id}.png`);
-			else return res.status(200).json({
-				success: true,
-				data:    {
-					url:        `https://v2.yiff.rest/e621-thumb/get/${id}.png?nc=${d}`,
-					startTime:  null,
-					endTime:    null,
-					createTime: null,
-					temp:       null
-				}
-			});
-		} else if (req.body.type !== "image" && existsSync(`/data/e621-thumb/${id}.gif`)) {
-			if (req.body.responseType === "image") return res.status(200).sendFile(`/data/e621-thumb/${id}.gif`);
-			else return res.status(200).json({
-				success: true,
-				data:    {
-					url:        `https://v2.yiff.rest/e621-thumb/get/${id}.gif?nc=${d}`,
-					startTime:  null,
-					endTime:    null,
-					createTime: null,
-					temp:       null
-				}
-			});
+		const type: "gif" | "image" = req.body.type === "gif" ? "gif" : "image";
+		const ext = type === "gif" ? "gif" : "png";
+		const responseType = req.body.responseType as "image" | "json" | undefined;
+		const prev = await awsClient.getObject({
+			Bucket: services.e621thumb.bucket,
+			Key:    `${id}.${ext}`
+		}).promise().catch(() => null);
+		if (prev !== null) {
+			if (responseType === "image") {
+				const img = await fetch(`${services.e621thumb.bucketURL}/${id}.${ext}`);
+				return res.status(200).end(await img.buffer());
+			} else {
+				return res.status(200).json({
+					success: true,
+					data:    {
+						url:        `${services.e621thumb.bucketURL}/${id}.${ext}`,
+						startTime:  prev.Metadata?.starttime || null,
+						endTime:    prev.Metadata?.endtime || null,
+						createTime: prev.Metadata?.createtime || null,
+						temp:       prev.Metadata?.temp || null
+					}
+				});
+			}
 		}
+
 		const l = Number(req.body.length) || 2.5;
 		const start = `00:${Math.floor(v / 60).toString().padStart(2, "0")}:${(v % 60).toString().padStart(2, "0")}`;
 		const end = `00:${Math.floor((v + l) / 60).toString().padStart(2, "0")}:${((v + l) % 60).toString().padStart(2, "0")}`;
 
-		if ((req.body as { type: string; }).type === "image") {
+		if (type === "image") {
 			if (existsSync(`/data/e621-thumb/${id}.png`)) unlinkSync(`/data/e621-thumb/${id}.png`);
+			// eslint-disable-next-line no-async-promise-executor
+			await new Promise(async(resolve) => (await fetch(req.body.url)).body.pipe(createWriteStream(`/data/e621-thumb/${id}.download.webm`).on("finish", resolve)));
 			await new Promise<void>((a,b) => {
-				ffmpeg(req.body.url)
+				ffmpeg(`/data/e621-thumb/${id}.download.webm`)
 					.setFfmpegPath(p)
 					.setFfprobePath(ffprobe.path)
 					.output(`/data/e621-thumb/${id}.webm`)
@@ -355,17 +369,33 @@ app
 			});
 			await thumb(`/data/e621-thumb/${id}.webm`, `/data/e621-thumb/${id}.png`, "100%");
 			unlinkSync(`/data/e621-thumb/${id}.webm`);
-			if (req.body.responseType === "image") return res.status(200).sendFile(`/data/e621-thumb/${id}.png`);
-			else return res.status(200).json({
-				success: true,
-				data:    {
-					url:        `https://v2.yiff.rest/e621-thumb/get/${id}.png?nc=${d}`,
-					startTime:  start,
-					endTime:    end,
-					createTime: null,
-					temp:       null
+			unlinkSync(`/data/e621-thumb/${id}.download.webm`);
+			await awsClient.upload({
+				Bucket:      services.e621thumb.bucket,
+				Key:         `${id}.png`,
+				Body:        createReadStream(`/data/e621-thumb/${id}.png`),
+				ContentType: "image/png",
+				Metadata:    {
+					starttime: start,
+					endtime:   end
 				}
-			});
+			}).promise();
+			unlinkSync(`/data/e621-thumb/${id}.png`);
+			if (responseType === "image") {
+				const img = await fetch(`${services.e621thumb.bucketURL}/${id}.png`);
+				return res.status(200).end(await img.buffer());
+			} else {
+				return res.status(200).json({
+					success: true,
+					data:    {
+						url:        `${services.e621thumb.bucketURL}/${id}.png`,
+						startTime:  start,
+						endTime:    end,
+						createTime: null,
+						temp:       null
+					}
+				});
+			}
 		} else {
 			let r: ThenArg<ReturnType<typeof ezgifPreview>>;
 			try {
@@ -382,17 +412,32 @@ app
 				});
 			}
 			writeFileSync(`/data/e621-thumb/${id}.gif`, r.out);
-			if (req.body.responseType === "image") return res.status(200).sendFile(`/data/e621-thumb/${id}.gif`);
-			else return res.status(200).json({
-				success: true,
-				data:    {
-					url:        `https://v2.yiff.rest/e621-thumb/get/${id}.gif?nc=${d}`,
-					startTime:  start,
-					endTime:    end,
-					createTime: r.time,
-					temp:       r.tempURL
+			await awsClient.upload({
+				Bucket:      services.e621thumb.bucket,
+				Key:         `${id}.gif`,
+				Body:        createReadStream(`/data/e621-thumb/${id}.gif`),
+				ContentType: "image/gif",
+				Metadata:    {
+					starttime: start,
+					endtime:   end
 				}
-			});
+			}).promise();
+			unlinkSync(`/data/e621-thumb/${id}.gif`);
+			if (responseType === "image") {
+				const img = await fetch(`${services.e621thumb.bucketURL}/${id}.gif`);
+				return res.status(200).end(await img.buffer());
+			} else {
+				return res.status(200).json({
+					success: true,
+					data:    {
+						url:        `${services.e621thumb.bucketURL}/${id}.gif`,
+						startTime:  start,
+						endTime:    end,
+						createTime: r.time,
+						temp:       r.tempURL
+					}
+				});
+			}
 		}
 	})
 	.use(async (req, res) => res.status(404).json({

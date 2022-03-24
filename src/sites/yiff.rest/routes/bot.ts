@@ -15,8 +15,8 @@ import type {
 	APIMessageComponentInteractionData,
 	APIChatInputApplicationCommandInteractionData,
 	APIInteractionResponseChannelMessageWithSource
-} from "discord-api-types";
-import { MessageFlags, InteractionType, InteractionResponseType, ComponentType } from "discord-api-types";
+} from "discord-api-types/v10";
+import { MessageFlags, InteractionType, InteractionResponseType, ComponentType } from "discord-api-types/v10";
 import { randomBytes } from "crypto";
 
 const app = express.Router();
@@ -153,7 +153,7 @@ app
 									data: {
 										flags:  MessageFlags.Ephemeral,
 										embeds: [
-											// @ts-expect-error -- suck it up djs
+											// @ts-expect-error suck it djs
 											new EmbedBuilder()
 												.setTitle("APIKey Deletion")
 												.setDescription("Please select a key from below to delete.")

@@ -6,14 +6,6 @@ services:
     container_name: websites_build
     command: [ "echo", "it's in the gay" ]
     build: .
-    profiles:
-      - "all"
-      - "butts-are.cool"
-      - "furry.cool"
-      - "maid.gay"
-      - "yiff.media"
-      - "yiff.rest"
-      - "yiff.rocks"
     volumes:
       - build:/app/build
       - modules:/app/node_modules
@@ -36,9 +28,6 @@ services:
       interval: 10s
       timeout: 2s
       test: lsof -i :443 || exit 1
-    profiles:
-      - "all"
-      - "butts-are.cool"
     depends_on:
       build_image:
         condition: service_completed_successfully
@@ -69,9 +58,6 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     hostname: furry-cool.websites.containers.local
-    profiles:
-      - "all"
-      - "furry.cool"
     depends_on:
       build_image:
         condition: service_completed_successfully
@@ -107,9 +93,6 @@ services:
       redis:
         condition: service_healthy
     hostname: maid-gay.websites.containers.local
-    profiles:
-      - "all"
-      - "maid.gay"
     networks:
       default:
         ipv4_address: 172.20.3.1
@@ -139,9 +122,6 @@ services:
       redis:
         condition: service_healthy
     hostname: yiff-media.websites.containers.local
-    profiles:
-      - "all"
-      - "yiff.media"
     networks:
       default:
         ipv4_address: 172.20.4.1
@@ -175,9 +155,6 @@ services:
       redis:
         condition: service_healthy
     hostname: yiff-rest.websites.containers.local
-    profiles:
-      - "all"
-      - "yiff.rest"
     networks:
       default:
         ipv4_address: 172.20.5.1
@@ -206,9 +183,6 @@ services:
       redis:
         condition: service_healthy
     hostname: yiff-rocks.websites.containers.local
-    profiles:
-      - "all"
-      - "yiff.rocks"
     networks:
       default:
         ipv4_address: 172.20.6.1
@@ -225,15 +199,6 @@ services:
       timeout: 2s
       test: mysqladmin --user=root --password=$$MYSQL_ROOT_PASSWORD ping
     hostname: mariadb.websites.containers.local
-    profiles:
-      - "all"
-      - "db"
-      - "butts-are.cool"
-      - "furry.cool"
-      - "maid.gay"
-      - "yiff.media"
-      - "yiff.rest"
-      - "yiff.rocks"
     networks:
       default:
         ipv4_address: 172.20.244.2
@@ -249,15 +214,6 @@ services:
       timeout: 5s
     restart: always
     hostname: redis.websites.containers.local
-    profiles:
-      - "all"
-      - "db"
-      - "butts-are.cool"
-      - "furry.cool"
-      - "maid.gay"
-      - "yiff.media"
-      - "yiff.rest"
-      - "yiff.rocks"
     networks:
       default:
         ipv4_address: 172.20.244.3

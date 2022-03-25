@@ -12,13 +12,13 @@
     "dev": "npm run down && npm run up:dev",
     "update": "npm run down && git pull && git submodule update --init --recursive && npm run up:d",
     "net": "sudo docker network connect general butts-are.cool && sudo docker network connect general furry.cool && sudo docker network connect general maid.gay && sudo docker network connect general yiff.media && sudo docker network connect general yiff.rest && sudo docker network connect general yiff.rocks",
-    "test:all": "npm run down && sudo docker-compose --profile all up",
-    "test:butts-are.cool": "npm run down && sudo docker-compose --profile butts-are.cool up",
-    "test:furry.cool": "npm run down && sudo docker-compose --profile furry.cool up",
-    "test:maid.gay": "npm run down && sudo docker-compose --profile maid.gay up",
-    "test:yiff.media": "npm run down && sudo docker-compose --profile yiff.media up",
-    "test:yiff.rest": "npm run down && sudo docker-compose --profile yiff.rest up",
-    "test:yiff.rocks": "npm run down && sudo docker-compose --profile yiff.rocks up"
+    "test:all": "npm run down && sudo docker-compose up",
+    "test:butts-are.cool": "npm run down && sudo docker-compose up butts-are.cool",
+    "test:furry.cool": "npm run down && sudo docker-compose up furry.cool",
+    "test:maid.gay": "npm run down && sudo docker-compose up maid.gay",
+    "test:yiff.media": "npm run down && sudo docker-compose up yiff.media",
+    "test:yiff.rest": "npm run down && sudo docker-compose up yiff.rest",
+    "test:yiff.rocks": "npm run down && sudo docker-compose up yiff.rocks"
   },
   "repository": {
     "type": "git",

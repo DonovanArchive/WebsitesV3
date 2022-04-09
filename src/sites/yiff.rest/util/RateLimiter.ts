@@ -1,4 +1,5 @@
 import db from "../../../db";
+import { RedisTTLResponse } from "../../../util/Constants";
 import type { Request, Response } from "express";
 
 export default class RateLimiter {
@@ -23,11 +24,11 @@ export default class RateLimiter {
 	}
 
 	static async getGlobalTTL(name: string, ip: string) {
-		return db.r.pttl(this.globalKey(name, ip)).then(v => v === null ? null : Number(v));
+		return db.r.pttl(this.globalKey(name, ip)).then(v => v === null || v < 0 ? null : Number(v));
 	}
 
 	static async getRouteTTL(name: string, domain: string, path: string, ip: string) {
-		return db.r.pttl(this.routeKey(name, domain, path, ip)).then(v => v === null ? null : Number(v));
+		return db.r.pttl(this.routeKey(name, domain, path, ip)).then(v => v === null || v < 0 ? null : Number(v));
 	}
 
 	static async consumeGlobal(name: string, window: number, limit: number, ip: string) {
@@ -36,6 +37,8 @@ export default class RateLimiter {
 		// only set expiry on the first run
 		if (!e) await db.r.set(key, "0", "PX", window);
 		const val = await db.r.get(key);
+		const exp = await db.r.pttl(key);
+		await this.fixInfiniteExpiry(this.globalKey(name, ip), exp, window);
 		// don't increase if the request will be rejected
 		return Number(val) >= limit ? limit + 1 : db.r.incr(key);
 	}
@@ -45,6 +48,8 @@ export default class RateLimiter {
 		const e = await db.r.exists(key);
 		if (!e) await db.r.set(key, "0", "PX", window);
 		const val = await db.r.get(key);
+		const exp = await db.r.pttl(key);
+		await this.fixInfiniteExpiry(this.routeKey(name, domain, path, ip), exp, window);
 		return Number(val) >= limit ? limit + 1 : db.r.incr(key);
 	}
 
@@ -54,8 +59,8 @@ export default class RateLimiter {
 		const path = req.originalUrl.split("?")[0];
 
 		// per-route
-		const rRoute = await RateLimiter.consumeRoute("yiff.rest", domain, path, routeWindow, routeLimit, ip);
-		const expRoute = await RateLimiter.getRouteTTL("yiff.rest", domain, path, ip);
+		const rRoute = await this.consumeRoute("yiff.rest", domain, path, routeWindow, routeLimit, ip);
+		const expRoute = await this.getRouteTTL("yiff.rest", domain, path, ip);
 		res.header({
 			"X-RateLimit-Limit":       routeLimit,
 			"X-RateLimit-Remaining":   (routeLimit - rRoute) < 0 ? 0 : (routeLimit - rRoute),
@@ -66,8 +71,9 @@ export default class RateLimiter {
 		});
 		if ((rRoute - 1) >= routeLimit) {
 			// we still need to fetch the global headers so they're present when we exit early
-			const rGlobal = await RateLimiter.getGlobal("yiff.rest", ip).then(v => v || 0);
-			const expGlobal = await RateLimiter.getGlobalTTL("yiff.rest", ip);
+			const rGlobal = await this.getGlobal("yiff.rest", ip).then(v => v || 0);
+			const expGlobal = await this.getGlobalTTL("yiff.rest", ip);
+			await this.fixInfiniteExpiry(this.globalKey("yiff.rest", ip), expGlobal, globalWindow);
 			res.header({
 				"X-RateLimit-Global-Limit":       globalLimit,
 				"X-RateLimit-Global-Remaining":   (globalLimit - rGlobal) < 0 ? 0 : (globalLimit - rGlobal),
@@ -93,8 +99,9 @@ export default class RateLimiter {
 		}
 
 		// global
-		const rGlobal = await RateLimiter.consumeGlobal("yiff.rest", globalWindow, globalLimit, ip);
-		const expGlobal = await RateLimiter.getGlobalTTL("yiff.rest", ip);
+		const rGlobal = await this.consumeGlobal("yiff.rest", globalWindow, globalLimit, ip);
+		const expGlobal = await this.getGlobalTTL("yiff.rest", ip);
+		await this.fixInfiniteExpiry(this.globalKey("yiff.rest", ip), expGlobal, globalWindow);
 		res.header({
 			"X-RateLimit-Global-Limit":       globalLimit,
 			"X-RateLimit-Global-Remaining":   (globalLimit - rGlobal) < 0 ? 0 : (globalLimit - rGlobal),
@@ -124,5 +131,12 @@ export default class RateLimiter {
 		}
 
 		return true;
+	}
+
+	static async fixInfiniteExpiry(key: string, val: number | null, expiry: number): Promise<[exp: number, diff: number]> {
+		if (val === RedisTTLResponse.NO_EXPIRY) {
+			await db.r.pexpire(key, expiry);
+			return [expiry, 0];
+		} else return [val!, expiry - val!];
 	}
 }

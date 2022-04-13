@@ -49,13 +49,12 @@ import { tmpdir } from "os";
 import { spawnSync } from "child_process";
 const app = Router();
 const awsClient = new AWS.S3({
-	endpoint:    "eu2.contabostorage.com",
-	region:      "eu2",
+	endpoint:    "s3.us-central-1.wasabisys.com",
+	region:      "us-central-1",
 	credentials: new Credentials({
 		accessKeyId:     services.s3.accessKey,
 		secretAccessKey: services.s3.secretKey
-	}),
-	s3ForcePathStyle: true
+	})
 });
 
 app
@@ -322,18 +321,18 @@ app
 		const ext = type === "gif" ? "gif" : "png";
 		const responseType = req.body.responseType as "image" | "json" | undefined;
 		const prev = await awsClient.getObject({
-			Bucket: services.e621thumb.bucket,
+			Bucket: services.s3.bucket,
 			Key:    `${id}.${ext}`
 		}).promise().catch(() => null);
 		if (prev !== null) {
 			if (responseType === "image") {
-				const img = await fetch(`${services.e621thumb.bucketURL}/${id}.${ext}`);
+				const img = await fetch(`${services.s3.bucketURL}/${id}.${ext}`);
 				return res.status(200).end(await img.buffer());
 			} else {
 				return res.status(200).json({
 					success: true,
 					data:    {
-						url:        `${services.e621thumb.bucketURL}/${id}.${ext}`,
+						url:        `${services.s3.bucketURL}/${id}.${ext}`,
 						startTime:  prev.Metadata?.starttime || null,
 						endTime:    prev.Metadata?.endtime || null,
 						createTime: prev.Metadata?.createtime || null,
@@ -371,7 +370,7 @@ app
 			unlinkSync(`/data/e621-thumb/${id}.webm`);
 			unlinkSync(`/data/e621-thumb/${id}.download.webm`);
 			await awsClient.upload({
-				Bucket:      services.e621thumb.bucket,
+				Bucket:      services.s3.bucket,
 				Key:         `${id}.png`,
 				Body:        createReadStream(`/data/e621-thumb/${id}.png`),
 				ContentType: "image/png",
@@ -382,13 +381,13 @@ app
 			}).promise();
 			unlinkSync(`/data/e621-thumb/${id}.png`);
 			if (responseType === "image") {
-				const img = await fetch(`${services.e621thumb.bucketURL}/${id}.png`);
+				const img = await fetch(`${services.s3.bucketURL}/${id}.png`);
 				return res.status(200).end(await img.buffer());
 			} else {
 				return res.status(200).json({
 					success: true,
 					data:    {
-						url:        `${services.e621thumb.bucketURL}/${id}.png`,
+						url:        `${services.s3.bucketURL}/${id}.png`,
 						startTime:  start,
 						endTime:    end,
 						createTime: null,
@@ -413,7 +412,7 @@ app
 			}
 			writeFileSync(`/data/e621-thumb/${id}.gif`, r.out);
 			await awsClient.upload({
-				Bucket:      services.e621thumb.bucket,
+				Bucket:      services.s3.bucket,
 				Key:         `${id}.gif`,
 				Body:        createReadStream(`/data/e621-thumb/${id}.gif`),
 				ContentType: "image/gif",
@@ -424,13 +423,13 @@ app
 			}).promise();
 			unlinkSync(`/data/e621-thumb/${id}.gif`);
 			if (responseType === "image") {
-				const img = await fetch(`${services.e621thumb.bucketURL}/${id}.gif`);
+				const img = await fetch(`${services.s3.bucketURL}/${id}.gif`);
 				return res.status(200).end(await img.buffer());
 			} else {
 				return res.status(200).json({
 					success: true,
 					data:    {
-						url:        `${services.e621thumb.bucketURL}/${id}.gif`,
+						url:        `${services.s3.bucketURL}/${id}.gif`,
 						startTime:  start,
 						endTime:    end,
 						createTime: r.time,

@@ -76,7 +76,7 @@
     "express-subdomain": "^1.0.5",
     "ffmpeg-static": "^5.0.0",
     "ffprobe-static": "^3.0.0",
-    "file-type": "^17.1.1",
+    "file-type": "^16.5.3",
     "fluent-ffmpeg": "^2.1.2",
     "form-data": "^4.0.0",
     "fs-extra": "^10.0.1",

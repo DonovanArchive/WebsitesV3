@@ -49,12 +49,13 @@ import { tmpdir } from "os";
 import { spawnSync } from "child_process";
 const app = Router();
 const awsClient = new AWS.S3({
-	endpoint:    "s3.us-central-1.wasabisys.com",
+	endpoint:    "thumbs.yiff.media",
 	region:      "us-central-1",
 	credentials: new Credentials({
 		accessKeyId:     services.s3.accessKey,
 		secretAccessKey: services.s3.secretKey
-	})
+	}),
+	s3BucketEndpoint: true
 });
 
 app

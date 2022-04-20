@@ -19,7 +19,7 @@ app
 
 		return res.status(204).end();
 	})
-	.get("/", async (req, res) => res.redirect("https://yiff.rest/help/yiff-rocks"))
+	.get("/", async (req, res) => res.status(200).end("We're currently rebuilding a better looking site to display here. For now, the current purpose for this domain still works: https://npm.im/yiff-rocks"))
 	.use(async (req, res, next) => {
 		let format: "json" | "redirect" = (req.query.format?.toString()?.toLowerCase() || req.originalUrl.split("?")[0].split(".").slice(-1)[0]?.toLowerCase()) as "json" | "redirect";
 		if (!["json"].includes(format)) format = "json";

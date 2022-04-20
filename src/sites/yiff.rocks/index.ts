@@ -3,7 +3,7 @@ import Website from "@lib/Website";
 
 export default class YiffRocks extends Website {
 	constructor() {
-		super("yiff.rocks", "172.20.6.1", __dirname);
+		super("yiff.rocks", "172.19.3.7", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

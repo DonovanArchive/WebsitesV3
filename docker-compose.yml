@@ -38,7 +38,7 @@ services:
     hostname: butts-are-cool.websites.containers.local
     networks:
       default:
-        ipv4_address: 172.20.1.1
+        ipv4_address: 172.19.3.2
   furry.cool:
     image: websites
     container_name: furry.cool
@@ -67,7 +67,7 @@ services:
         condition: service_healthy
     networks:
       default:
-        ipv4_address: 172.20.2.1
+        ipv4_address: 172.19.3.3
   maid.gay:
     image: websites
     container_name: maid.gay
@@ -95,7 +95,7 @@ services:
     hostname: maid-gay.websites.containers.local
     networks:
       default:
-        ipv4_address: 172.20.3.1
+        ipv4_address: 172.19.3.4
   yiff.media:
     image: websites
     container_name: yiff.media
@@ -124,7 +124,7 @@ services:
     hostname: yiff-media.websites.containers.local
     networks:
       default:
-        ipv4_address: 172.20.4.1
+        ipv4_address: 172.19.3.5
   yiff.rest:
     image: websites
     container_name: yiff.rest
@@ -157,7 +157,7 @@ services:
     hostname: yiff-rest.websites.containers.local
     networks:
       default:
-        ipv4_address: 172.20.5.1
+        ipv4_address: 172.19.3.6
   yiff.rocks:
     image: websites
     container_name: yiff.rocks
@@ -185,7 +185,7 @@ services:
     hostname: yiff-rocks.websites.containers.local
     networks:
       default:
-        ipv4_address: 172.20.6.1
+        ipv4_address: 172.19.3.7
   mariadb:
     image: mariadb
     container_name: mariadb.websites
@@ -201,7 +201,7 @@ services:
     hostname: mariadb.websites.containers.local
     networks:
       default:
-        ipv4_address: 172.20.244.2
+        ipv4_address: 172.19.3.253
   redis:
     image: redis:alpine
     command: redis-server --disable-thp yes --supervised no --bind 0.0.0.0 --requirepass "$REDIS_PASSWORD"
@@ -216,7 +216,7 @@ services:
     hostname: redis.websites.containers.local
     networks:
       default:
-        ipv4_address: 172.20.244.3
+        ipv4_address: 172.19.3.254
 networks:
   default:
     name: websites
@@ -224,8 +224,8 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.20.0.0/16
-          gateway: 172.20.0.1
+        - subnet: 172.19.3.0/24
+          gateway: 172.19.3.1
 
 volumes:
   build: null

@@ -3,7 +3,7 @@ import express from "express";
 
 export default class FurryCool extends Website {
 	constructor() {
-		super("furry.cool", "172.20.2.1", __dirname);
+		super("furry.cool", "172.19.3.3", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

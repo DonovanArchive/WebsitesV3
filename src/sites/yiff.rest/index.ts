@@ -30,7 +30,7 @@ Handlebars.registerHelper("when", (operand_1, operator, operand_2, options) => {
 
 export default class YiffRest extends Website {
 	constructor() {
-		super("yiff.rest", "172.20.5.1", __dirname);
+		super("yiff.rest", "172.19.3.6", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

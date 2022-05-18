@@ -5,7 +5,7 @@ import express from "express";
 // likely be undone in the future
 export default class MaidGay extends Website {
 	constructor() {
-		super("maid.gay", "172.19.3.4", __dirname);
+		super("maid.gay", "172.19.2.4", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

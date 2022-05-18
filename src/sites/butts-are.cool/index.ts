@@ -3,7 +3,7 @@ import express from "express";
 
 export default class ButtsAreCool extends Website {
 	constructor() {
-		super("butts-are.cool", "172.19.3.2", __dirname);
+		super("butts-are.cool", "172.19.2.2", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

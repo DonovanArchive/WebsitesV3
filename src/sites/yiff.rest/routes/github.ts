@@ -49,6 +49,9 @@ hook.on("push", async({ payload: data }) => {
 			ref:   data.ref
 		});
 		assert(!Array.isArray(contents.data));
+		let sha = contents.data.sha;
+		const change = data.commits.find(c => c.modified.includes("package.json"));
+		if (change) sha = change.id;
 		const newContents = Buffer.from((contents.data as { content: string; }).content, "base64").toString("ascii").replace(/"version":\s?"(\d+)\.(\d+)\.(\d+).*"/, (str, v1: string, v2: string, v3: string) => `"version": "${v1}.${v2}.${v3}-${data.ref.split("/").slice(-1)[0]}.${data.head_commit!.id.slice(0, 7)}"`);
 		await octo.request("PUT /repos/{owner}/{repo}/contents/{path}", {
 			owner:   "DonovanDMC",
@@ -57,7 +60,7 @@ hook.on("push", async({ payload: data }) => {
 			ref:     data.ref,
 			message: "Update Version",
 			content: Buffer.from(newContents).toString("base64"),
-			sha:     contents.data.sha
+			sha
 		});
 	}
 });

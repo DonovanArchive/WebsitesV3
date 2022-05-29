@@ -50,7 +50,15 @@ hook.on("push", async({ payload: data }) => {
 		});
 		assert(!Array.isArray(contents.data));
 		const newContents = Buffer.from((contents.data as { content: string; }).content, "base64").toString("ascii").replace(/"version":\s?"(\d+)\.(\d+)\.(\d+).*"/, (str, v1: string, v2: string, v3: string) => `"version": "${v1}.${v2}.${v3}-${data.ref.split("/").slice(-1)[0]}.${data.head_commit!.id.slice(0, 7)}"`);
-		console.log(data.head_commit!.id, contents, newContents);
+		await octo.request("PUT /repos/{owner}/{repo}/contents/{path}", {
+			owner:   "DonovanDMC",
+			repo:    "eris",
+			path:    "package.json",
+			ref:     data.ref,
+			message: "Update Version",
+			content: Buffer.from(newContents).toString("base64"),
+			sha:     contents.data.sha
+		});
 	}
 });
 

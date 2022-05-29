@@ -60,6 +60,12 @@ hook.on("push", async({ payload: data }) => {
 		execSync(`git config --local credential.helper '!f() { sleep 1; echo "username=ErisPRUpdateBot"; echo "password=${services.octo.auth}"; }; f'`, {
 			cwd: workingDir
 		});
+		execSync("git config user.name \"ErisPRUpdateBot\"", {
+			cwd: workingDir
+		});
+		execSync(`git config user.email ${Buffer.from("ZXJpc0B5aWZmLnJvY2tz", "base64").toString("ascii")}`, {
+			cwd: workingDir
+		});
 		await writeFile(`${workingDir}/package.json`, (await readFile(`${workingDir}/package.json`)).toString().replace(/"version":\s?"(\d+)\.(\d+)\.(\d+).*"/, (str, v1: string, v2: string, v3: string) => `"version": "${v1}.${v2}.${v3}-${data.ref.split("/").slice(-1)[0]}.${data.head_commit!.id.slice(0, 7)}"`));
 		await git.add("package.json");
 		await git.commit("update version");

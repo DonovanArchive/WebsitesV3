@@ -85,8 +85,8 @@ export default class APIImage {
 
 	get json() {
 		return {
-			artists:      this.artists,
-			sources:      this.sources,
+			artists:      this.artists.filter(Boolean),
+			sources:      this.sources.filter(Boolean),
 			width:        this.width,
 			height:       this.height,
 			url:          this.cdnURL,

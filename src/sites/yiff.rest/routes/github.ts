@@ -2,7 +2,11 @@ import { services } from "@config";
 import { Webhooks } from "@octokit/webhooks";
 import { Octokit } from "@octokit/rest";
 import { assert } from "tsafe";
+import simpleGit from "simple-git";
 import { createHash } from "crypto";
+import { tmpdir } from "os";
+import { mkdir, readFile, rm, writeFile } from "fs/promises";
+import { execSync } from "child_process";
 
 const octo = new Octokit({ auth: services.octo.auth });
 const hook = new Webhooks({
@@ -43,24 +47,22 @@ hook.on("issue_comment.created", async({ payload: data }) => {
 });
 hook.on("push", async({ payload: data }) => {
 	if (data.pusher.name.toLowerCase() !== "erisprupdatebot" && ["refs/heads/everything", "refs/heads/everything-v10"].includes(data.ref)) {
-		const contents = await octo.request("GET /repos/{owner}/{repo}/contents/{path}", {
-			owner: "DonovanDMC",
-			repo:  "eris",
-			path:  "package.json",
-			ref:   data.ref
+		const workingDir = `${tmpdir()}/${data.after}`;
+		await rm(workingDir, { force: true, recursive: true });
+		await mkdir(workingDir, { recursive: true });
+		const git = simpleGit(workingDir);
+		await git
+			.init()
+			.addRemote("origin", "https://github.com/DonovanDMC/eris")
+			.fetch("origin", data.ref);
+		execSync(`git config --local credential.helper '!f() { sleep 1; echo "username=ErisPRUpdateBot"; echo "password=${services.octo.auth}"; }; f'`, {
+			cwd: workingDir
 		});
-		assert(!Array.isArray(contents.data));
-		const sha = createHash("sha1").update(`blob ${contents.data.size}\0${(contents.data as { content: string; }).content}`).digest("hex");
-		const newContents = Buffer.from((contents.data as { content: string; }).content, "base64").toString("ascii").replace(/"version":\s?"(\d+)\.(\d+)\.(\d+).*"/, (str, v1: string, v2: string, v3: string) => `"version": "${v1}.${v2}.${v3}-${data.ref.split("/").slice(-1)[0]}.${data.head_commit!.id.slice(0, 7)}"`);
-		await octo.request("PUT /repos/{owner}/{repo}/contents/{path}", {
-			owner:   "DonovanDMC",
-			repo:    "eris",
-			path:    "package.json",
-			ref:     data.ref,
-			message: "Update Version",
-			content: Buffer.from(newContents).toString("base64"),
-			sha
-		});
+		await writeFile(`${workingDir}/package.json`, (await readFile(`${workingDir}/package.json`)).toString().replace(/"version":\s?"(\d+)\.(\d+)\.(\d+).*"/, (str, v1: string, v2: string, v3: string) => `"version": "${v1}.${v2}.${v3}-${data.ref.split("/").slice(-1)[0]}.${data.head_commit!.id.slice(0, 7)}"`));
+		await git.add("package.json");
+		await git.commit("update version");
+		await git.push("origin", data.ref);
+		await rm(workingDir, { force: true, recursive: true });
 	}
 });
 

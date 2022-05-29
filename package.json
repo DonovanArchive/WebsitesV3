@@ -91,6 +91,7 @@
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.6",
     "rotating-file-stream": "^3.0.3",
+    "simple-git": "^3.7.1",
     "simple-thumbnail": "^1.6.5",
     "source-map-support": "^0.5.21",
     "tslog": "^3.3.3",

@@ -41,6 +41,7 @@ hook.on("issue_comment.created", async({ payload: data }) => {
 	}
 });
 hook.on("push", async({ payload: data }) => {
+	console.log(data);
 	if (data.pusher.name.toLowerCase() !== "erisprupdatebot" && ["everything", "everything-v10"].includes(data.ref)) {
 		const contents = await octo.request("GET /repos/{owner}/{repo}/contents/{path}", {
 			owner: "DonovanDMC",

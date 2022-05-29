@@ -50,7 +50,7 @@ hook.on("push", async({ payload: data }) => {
 			ref:   data.ref
 		});
 		assert(!Array.isArray(contents.data));
-		const sha = createHash("sha1").update(`blob ${contents.headers["content-length"]!}\0${(contents.data as { content: string; }).content}`).digest("hex");
+		const sha = createHash("sha1").update(`blob ${contents.data.size}\0${(contents.data as { content: string; }).content}`).digest("hex");
 		const newContents = Buffer.from((contents.data as { content: string; }).content, "base64").toString("ascii").replace(/"version":\s?"(\d+)\.(\d+)\.(\d+).*"/, (str, v1: string, v2: string, v3: string) => `"version": "${v1}.${v2}.${v3}-${data.ref.split("/").slice(-1)[0]}.${data.head_commit!.id.slice(0, 7)}"`);
 		await octo.request("PUT /repos/{owner}/{repo}/contents/{path}", {
 			owner:   "DonovanDMC",

@@ -1,6 +1,7 @@
 import { services } from "@config";
 import { Webhooks } from "@octokit/webhooks";
 import { Octokit } from "@octokit/rest";
+import { assert } from "tsafe";
 
 const octo = new Octokit({ auth: services.octo.auth });
 const hook = new Webhooks({
@@ -37,6 +38,19 @@ hook.on("issue_comment.created", async({ payload: data }) => {
 			issue_number: data.issue.number,
 			body:         `Error Merging:\n> ${(e as Error).stack ?? "No Stack"}`
 		});
+	}
+});
+hook.on("push", async({ payload: data }) => {
+	if (data.pusher.name.toLowerCase() !== "erisprupdatebot" && ["everything", "everything-v10"].includes(data.ref)) {
+		const contents = await octo.request("GET /repos/{owner}/{repo}/contents/{path}", {
+			owner: "DonovanDMC",
+			repo:  "eris",
+			path:  "package.json",
+			ref:   data.ref
+		});
+		assert(!Array.isArray(contents.data));
+		const newContents = Buffer.from((contents.data as { content: string; }).content, "base64").toString("ascii").replace(/"version":\s?"(\d+)\.(\d+)\.(\d+).*"/, (str, v1: string, v2: string, v3: string) => `"version": "${v1}.${v2}.${v3}-${data.ref.split("/").slice(-1)[0]}.${data.head_commit!.id.slice(0, 7)}"`);
+		console.log(data.head_commit!.id, contents, newContents);
 	}
 });
 

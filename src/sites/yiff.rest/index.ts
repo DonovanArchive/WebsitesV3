@@ -1,5 +1,5 @@
 import v2Route from "./routes/api_v2";
-import erisPRRoute from "./routes/eris-pr-merge";
+import erisPRRoute from "./routes/github";
 import discordRoute from "./routes/discord";
 import botRoute from "./routes/bot";
 import Website from "@lib/Website";

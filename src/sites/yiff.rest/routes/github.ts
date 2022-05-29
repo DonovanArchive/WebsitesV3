@@ -51,17 +51,19 @@ hook.on("push", async({ payload: data }) => {
 		await rm(workingDir, { force: true, recursive: true });
 		await mkdir(workingDir, { recursive: true });
 		const git = simpleGit(workingDir);
+		const branch = data.ref.split("/")[2];
 		await git
 			.init()
 			.addRemote("origin", "https://github.com/DonovanDMC/eris")
-			.fetch("origin", data.ref);
+			.fetch("origin", data.ref)
+			.checkout(branch);
 		execSync(`git config --local credential.helper '!f() { sleep 1; echo "username=ErisPRUpdateBot"; echo "password=${services.octo.auth}"; }; f'`, {
 			cwd: workingDir
 		});
 		await writeFile(`${workingDir}/package.json`, (await readFile(`${workingDir}/package.json`)).toString().replace(/"version":\s?"(\d+)\.(\d+)\.(\d+).*"/, (str, v1: string, v2: string, v3: string) => `"version": "${v1}.${v2}.${v3}-${data.ref.split("/").slice(-1)[0]}.${data.head_commit!.id.slice(0, 7)}"`));
 		await git.add("package.json");
 		await git.commit("update version");
-		await git.push("origin", data.ref);
+		await git.push("origin", branch);
 		await rm(workingDir, { force: true, recursive: true });
 	}
 });

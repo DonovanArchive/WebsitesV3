@@ -289,7 +289,8 @@ app
 									data: {
 										flags:      MessageFlags.Ephemeral,
 										content:    "That api key has been deleted.",
-										components: []
+										components: [],
+										embeds:     []
 									}
 								});
 							}

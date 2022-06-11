@@ -8,7 +8,6 @@ import { randomBytes } from "crypto";
 export interface RawAPIKey {
 	id: string;
 	unlimited: BooleanData;
-	flow_access: BooleanData;
 	active: BooleanData;
 	disabled: BooleanData;
 	disabled_reason: string | null;
@@ -46,7 +45,7 @@ export default class APIKey {
 	constructor(data: RawAPIKey) {
 		this.id = data.id;
 		this.unlimited = Boolean(data.unlimited);
-		this.flowAccess = Boolean(data.flow_access);
+		this.flowAccess = false;
 		this.active = Boolean(data.active);
 		this.disabled = Boolean(data.disabled);
 		this.disabledReason = data.disabled_reason;

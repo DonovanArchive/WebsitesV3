@@ -103,8 +103,7 @@ app
 									active:          true,
 									contact,
 									disabled:        false,
-									disabled_reason: null,
-									flow_access:     false
+									disabled_reason: null
 								});
 
 								void Webhooks.get("yiffyAPIKey").execute({

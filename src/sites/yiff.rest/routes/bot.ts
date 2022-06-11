@@ -115,7 +115,7 @@ app
 												// <:redTick:865401803256627221> <:greenTick:865401802920951819>
 												`Application: **${application}**`,
 												`Contact: ${contact || "**NONE**"}`,
-												"Active: <:greenTick:865401802920951819>}",
+												"Active: <:greenTick:865401802920951819>",
 												"Disabled: <:redTick:865401803256627221>",
 												"Unlimited: <:redTick:865401803256627221>",
 												"Flow Access: <:redTick:865401803256627221>"

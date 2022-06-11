@@ -1,13 +1,13 @@
-import { dev, services } from "@config";
+import { services } from "@config";
 import Logger from "@util/Logger";
 import { Timer, Timing } from "@uwu-codes/utils";
 import type { Pool } from "mariadb";
 import mariadb from "mariadb";
-import IORedis from "ioredis";
+import Redis from "ioredis";
 
 export default class db {
 	static pool: Pool;
-	static r: IORedis.Redis;
+	static r: Redis;
 	static async init(sql = true, redis = true) {
 		const start = Timing.start();
 		if (sql) await this.initMariaDb();
@@ -20,7 +20,6 @@ export default class db {
 		const uri = `mariadb://${services.mariadb.host}:${services.mariadb.port}`;
 		Logger.getLogger("Database[MariaDB]").debug(`Connecting to ${uri} (ssl: ${services.mariadb.ssl ? "Yes" : "No"})`);
 		const start = Timing.start();
-		if (dev === false) services.mariadb.host = services.mariadb.hostProd;
 		try {
 			this.pool = mariadb.createPool({
 				...services.mariadb
@@ -37,8 +36,7 @@ export default class db {
 		return new Promise<void>(resolve => {
 			const start = Timer.start();
 			Logger.getLogger("Database[Redis]").debug(`Connecting to redis://${services.redis.host}:${services.redis.port} using user "${services.redis.username ?? "default"}", and db ${services.redis.db}`);
-			if (dev === false) services.redis.host = services.redis.hostProd;
-			this.r = new IORedis(services.redis.port, services.redis.host, {
+			this.r = new Redis(services.redis.port, services.redis.host, {
 				username:         services.redis.username,
 				password:         services.redis.password,
 				db:               services.redis.db,

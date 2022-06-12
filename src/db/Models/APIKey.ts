@@ -76,7 +76,8 @@ export default class APIKey {
 	static async new(data: Omit<ConvertFromRaw<RawAPIKey>, "id" | "window_long" | "limit_long" | "window_short" | "limit_short"> & Partial<Record<"window_long" | "limit_long" | "window_short" | "limit_short", number>>) {
 		const id = randomBytes(20).toString("hex");
 		if ("id" in data) delete (data as {id?: string; }).id;
-		return db.query(`INSERT INTO ${APIKey.DB}.${APIKey.TABLE} (id, ${Object.keys(data).join(", ")}) VALUES (?, ${Object.values(data).map(() => "?").join(", ")})`, [id, ...Object.values(data)]).then((r: UpsertResult) => r.affectedRows === 1 ? id : null);
+		await db.query(`INSERT INTO ${APIKey.DB}.${APIKey.TABLE} (id, ${Object.keys(data).join(", ")}) VALUES (?, ${Object.values(data).map(() => "?").join(", ")})`, [id, ...Object.values(data)]).then((r: UpsertResult) => r.affectedRows === 1 ? id : null);
+		return id;
 	}
 
 	static async delete(id: string) {

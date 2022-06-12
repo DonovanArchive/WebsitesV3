@@ -17,7 +17,6 @@ import type {
 	APIInteractionResponseChannelMessageWithSource
 } from "discord-api-types/v10";
 import { MessageFlags, InteractionType, InteractionResponseType, ComponentType } from "discord-api-types/v10";
-import { randomBytes } from "crypto";
 
 const app = express.Router();
 
@@ -94,9 +93,7 @@ app
 									}
 								});
 
-								const id = randomBytes(20).toString("hex");
-
-								await APIKey.new({
+								const id = await APIKey.new({
 									unlimited:       false,
 									owner:           req.body.member.user.id,
 									application,

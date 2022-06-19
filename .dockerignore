@@ -1,2 +1,8 @@
+.git
 node_modules
 data
+test
+src/imgen
+src/sites/*/views
+src/sites/*/LICENSE
+src/sites/*/README

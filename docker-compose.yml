@@ -186,6 +186,25 @@ services:
     networks:
       default:
         ipv4_address: 172.19.2.7
+  imgen:
+    build: src/imgen
+    container_name: imgen.websites
+    volumes:
+      - ./src/imgen:/app
+    restart: always
+    healthcheck:
+      interval: 10s
+      timeout: 2s
+      test: lsof -i :3621 || exit 1
+    depends_on:
+      rethinkdb:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    hostname: imgen.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.251
   mariadb:
     image: mariadb
     container_name: mariadb.websites
@@ -199,6 +218,17 @@ services:
       timeout: 2s
       test: mysqladmin --user=root --password=$$MYSQL_ROOT_PASSWORD ping
     hostname: mariadb.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.252
+  rethinkdb:
+    image: rethinkdb
+    command: rethinkdb --bind all -n rdb
+    container_name: rethinkdb.websites
+    volumes:
+      - ./data/rethink:/data
+    restart: always
+    hostname: rethinkdb.websites.containers.local
     networks:
       default:
         ipv4_address: 172.19.2.253

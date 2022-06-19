@@ -5,20 +5,15 @@
   "main": "index.js",
   "scripts": {
     "build": "rm -rf build && tsc",
-    "up:d": "sudo docker-compose --profile all  up -d",
-    "up": "sudo docker-compose --profile all  up",
-    "down": "sudo docker-compose down --rmi 'all' --volumes --remove-orphans",
-    "up:dev": "sudo docker-compose --profile all  up --build",
+    "up:d": "npm run imgen-config && sudo docker-compose  up -d",
+    "up": "npm run imgen-config && sudo docker-compose up",
+    "down": "sudo docker-compose down --volumes --remove-orphans",
+    "up:dev": "npm run imgen-config && sudo docker-compose up",
+    "up:dev:build": "npm run imgen-config && sudo docker-compose up --build",
     "dev": "npm run down && npm run up:dev",
-    "update": "npm run down && git pull && git submodule update --init --recursive && npm run up:d",
-    "net": "sudo docker network connect general butts-are.cool && sudo docker network connect general furry.cool && sudo docker network connect general maid.gay && sudo docker network connect general yiff.media && sudo docker network connect general yiff.rest && sudo docker network connect general yiff.rocks",
-    "test:all": "npm run down && sudo docker-compose up",
-    "test:butts-are.cool": "npm run down && sudo docker-compose up butts-are.cool",
-    "test:furry.cool": "npm run down && sudo docker-compose up furry.cool",
-    "test:maid.gay": "npm run down && sudo docker-compose up maid.gay",
-    "test:yiff.media": "npm run down && sudo docker-compose up yiff.media",
-    "test:yiff.rest": "npm run down && sudo docker-compose up yiff.rest",
-    "test:yiff.rocks": "npm run down && sudo docker-compose up yiff.rocks"
+    "dev:build": "npm run down && npm run up:dev:build",
+    "update": "npm run down && git pull && git submodule update --init --recursive --remote && npm run up:d",
+    "imgen-config": "cp src/config/json/imgen.json src/imgen/config.json"
   },
   "repository": {
     "type": "git",

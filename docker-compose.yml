@@ -201,6 +201,8 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+      yiff.rest:
+        condition: service_healthy
     hostname: imgen.containers.local
     networks:
       default:

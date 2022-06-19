@@ -203,7 +203,7 @@ services:
         condition: service_healthy
       yiff.rest:
         condition: service_healthy
-    hostname: imgen.containers.local
+    hostname: imgen.websites.containers.local
     networks:
       default:
         ipv4_address: 172.19.2.251

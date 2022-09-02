@@ -13,7 +13,7 @@ app
 	.get("/", async(req, res) => res.redirect("/dev"))
 	.use("/hook", createNodeMiddleware(githubRoute, { path: "/" }))
 	.use("/:name", async(req,res, next) => {
-		if (await access(`${baseDir}/${req.params.name}`).then(() => true, () => false)) serveStatic(`${baseDir}/${req.param.name}`)(req, res, next);
+		if (await access(`${baseDir}/${req.params.name}`).then(() => true, () => false)) serveStatic(`${baseDir}/${req.params.name}`)(req, res, next);
 		else return next();
 	})
 	.use(async(req, res, next) => {

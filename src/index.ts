@@ -25,3 +25,7 @@ void db.init().then(() => {
 process
 	.on("uncaughtException", (err, origin) => console.error("Uncaught Exception", origin, err))
 	.on("unhandledRejection", (reason, promise) => console.error("Unhandled Rejection", reason, promise));
+
+process.stdin.on("data", (d) => {
+	if (d.toString() === "exit\n") process.kill(process.pid, 9);
+});

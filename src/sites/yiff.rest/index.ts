@@ -1,12 +1,10 @@
 import v2Route from "./routes/api_v2";
-import erisPRRoute from "./routes/github";
 import discordRoute from "./routes/discord";
 import botRoute from "./routes/bot";
 import Website from "@lib/Website";
 import { APIImage } from "@models";
 import { categories } from "@config";
 import express from "express";
-import { createNodeMiddleware } from "@octokit/webhooks";
 import Handlebars from "handlebars";
 
 /* eslint-disable */
@@ -86,7 +84,6 @@ export default class YiffRest extends Website {
 			.addStatic("/app/public")
 			.addHandler(
 				express.Router()
-					.use("/gh", createNodeMiddleware(erisPRRoute, { path: "/" }))
 					.get("/", async(req, res) => res.render("index", { layout: false }))
 					.get("/support", async (req, res) => res.redirect("https://discord.gg/xDrFswTW4h"))
 					.use("/V1", async (req, res) => res.status(410).json({

@@ -186,6 +186,37 @@ services:
     networks:
       default:
         ipv4_address: 172.19.2.7
+  owo-whats-this.dev:
+    image: node:16
+    tty: true
+    command: /bin/sh
+    container_name: owo-whats-this.dev
+    volumes:
+      - build:/app
+      - ./node_modules:/app/node_modules
+      - ./src/config/ssl:/app/ssl
+      - ./src/sites/owo-whats-this.dev/views:/app/views
+      - /var/www/sites/owo-whats-this.dev:/app/public
+      - /etc/hostname:/data/hostname:ro
+      - /var/www/oceanic-docs:/data/docs
+    environment:
+      SITE: owo-whats-this.dev
+    restart: always
+    healthcheck:
+      interval: 10s
+      timeout: 2s
+      test: lsof -i :443 || exit 1
+    depends_on:
+      build_image:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    hostname: owo-whats-this-dev.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.8
   imgen:
     build: src/imgen
     container_name: imgen.websites

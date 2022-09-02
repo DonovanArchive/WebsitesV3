@@ -187,9 +187,7 @@ services:
       default:
         ipv4_address: 172.19.2.7
   owo-whats-this.dev:
-    image: node:16
-    tty: true
-    command: /bin/sh
+    image: websites
     container_name: owo-whats-this.dev
     volumes:
       - build:/app

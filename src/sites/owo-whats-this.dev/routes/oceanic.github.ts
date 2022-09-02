@@ -26,7 +26,6 @@ hook.on("push", async({ payload: data }) => {
 		await mkdir(tmp, { recursive: true });
 		const tag = data.ref.split("/")[2];
 		if (await exists(`${baseDir}/${tag}`)) await rm(`${baseDir}/${tag}`, { force: true, recursive: true });
-		if (await exists(`${baseDir}/${tag}`)) await rm(`${baseDir}/${tag}`, { force: true, recursive: true });
 		const git = simpleGit(tmp);
 		await git
 			.init()

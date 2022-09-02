@@ -15,6 +15,9 @@ export default class FurryCool extends Website {
 			.addSubdomain("oceanic",
 				express.Router().use(oceanicRoute)
 			)
-			.addHandler(Router().use(async(req, res) => res.redirect("https://furry.cool")));
+			.addHandler(Router().use(async(req, res, next) => {
+				if (!req.headers.host || req.headers.host === "owo-whats-this.dev") return res.redirect("https://furry.cool");
+				else return next();
+			}));
 	}
 }

@@ -10,6 +10,7 @@ const app = Router();
 const exists = async(path: PathLike) => access(path).then(() => true).catch(() => false);
 const baseDir = "/data/docs";
 app
+	.get("/", async(req, res) => res.redirect("/dev"))
 	.use("/hook", createNodeMiddleware(githubRoute, { path: "/" }))
 	.use("/dev", serveStatic(`${baseDir}/dev`))
 	.use(async(req, res, next) => {

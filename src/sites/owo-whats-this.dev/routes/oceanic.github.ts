@@ -11,9 +11,9 @@ import {
 	writeFile
 } from "fs/promises";
 import type { PathLike } from "fs";
-import { renameSync, mkdtempSync } from "fs";
+import { mkdtempSync } from "fs";
 import { execSync } from "child_process";
-import { hostname, tmpdir } from "os";
+import { tmpdir } from "os";
 
 const hook = new Webhooks({
 	secret: services.octo["oceanic-secret"]
@@ -22,9 +22,10 @@ const exists = async(path: PathLike) => access(path).then(() => true).catch(() =
 const baseDir = "/data/docs";
 hook.on("push", async({ payload: data }) => {
 	if (data.ref.startsWith("refs/tags/")) {
-		if (hostname() !== "DONOVAN-PC") return; // testing only
-		const tmp = mkdtempSync("oceanic");
+		const tmp = `${tmpdir()}/${mkdtempSync("oceanic.")}`;
+		await mkdir(tmp, { recursive: true });
 		const tag = data.ref.split("/")[2];
+		if (await exists(`${baseDir}/${tag}`)) await rm(`${baseDir}/${tag}`, { force: true, recursive: true });
 		if (await exists(`${baseDir}/${tag}`)) await rm(`${baseDir}/${tag}`, { force: true, recursive: true });
 		const git = simpleGit(tmp);
 		await git
@@ -32,11 +33,12 @@ hook.on("push", async({ payload: data }) => {
 			.addRemote("origin", "https://github.com/OceanicJS/Oceanic")
 			.fetch("origin", `${tag}:${tag}`)
 			.checkout(tag);
-		execSync("npm i && npx --yes typedoc", { cwd: tmp });
-		renameSync(`${tmp}/docs`, `${baseDir}/${tag}`);
-		const list = await createList(`${baseDir}/${tag}`, tag);
+		execSync("npm i --ignore-scripts && npx --yes typedoc", { cwd: tmp, stdio: "inherit" });
+		await cp(`${tmp}/docs`, `${baseDir}/${tag}`, { recursive: true });
+		await rm(tmp, { force: true, recursive: true });
+		/* const list = await createList(`${baseDir}/${tag}`, tag);
 		await replaceAll(`${baseDir}/${tag}`, list.replacements, list.localReplacements);
-		await writeFile(`${baseDir}/${tag}/conversions.json`, JSON.stringify(list, null, "\t"));
+		await writeFile(`${baseDir}/${tag}/conversions.json`, JSON.stringify(list, null, "\t")); */
 	} else if (data.ref === "refs/heads/dev") {
 		const tmp = `${tmpdir()}/${mkdtempSync("oceanic.")}`;
 		await mkdir(tmp, { recursive: true });

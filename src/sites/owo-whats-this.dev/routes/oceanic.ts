@@ -4,6 +4,7 @@ import { createNodeMiddleware } from "@octokit/webhooks";
 import { Router, static as serveStatic } from "express";
 import type { PathLike } from "fs";
 import { access, readFile } from "fs/promises";
+import { execSync } from "child_process";
 
 const app = Router();
 
@@ -12,6 +13,11 @@ const baseDir = "/data/docs";
 app
 	.get("/", async(req, res) => res.redirect("/dev"))
 	.use("/hook", createNodeMiddleware(githubRoute, { path: "/" }))
+	.get("/latest*", async(req, res) => {
+		const tags = execSync("git ls-remote --tags https://github.com/OceanicJS/Oceanic").toString().split("\n").filter(Boolean).map(line => line.split("\t").slice(-1)[0].replace("refs/tags/", ""));
+		const latest = tags.sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).slice(-1)[0];
+		return res.redirect(`/${latest}${req.path.replace("/latest", "")}`, 302);
+	})
 	.use("/:name", async(req,res, next) => {
 		if (await access(`${baseDir}/${req.params.name}`).then(() => true, () => false)) serveStatic(`${baseDir}/${req.params.name}`)(req, res, next);
 		else return next();

@@ -51,6 +51,7 @@ hook.on("push", async({ payload: data }) => {
 			.fetch("origin", `${branch}:${branch}`)
 			.checkout(branch);
 		await writeFiles(tmp);
+		// make sure to add to .github/workflows/docs.yml
 		execSync("npm i --ignore-scripts typedoc typedoc-plugin-extras typedoc-plugin-rename-defaults && npx --yes typedoc", { cwd: tmp, stdio: "inherit" });
 		await cp(`${tmp}/docs`, `${baseDir}/${branch}`, { recursive: true });
 		await rm(tmp, { force: true, recursive: true });

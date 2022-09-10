@@ -16,7 +16,7 @@ app
 	.get("/latest*", async(req, res) => {
 		const tags = execSync("git ls-remote --tags https://github.com/OceanicJS/Oceanic").toString().split("\n").filter(Boolean).map(line => line.split("\t").slice(-1)[0].replace("refs/tags/", ""));
 		const latest = tags.sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).slice(-1)[0];
-		return res.redirect(`/${latest}${req.path.replace("/latest", "")}`, 302);
+		return res.redirect(302, `/${latest}${req.path.replace("/latest", "")}`);
 	})
 	.use("/:name", async(req,res, next) => {
 		if (await access(`${baseDir}/${req.params.name}`).then(() => true, () => false)) serveStatic(`${baseDir}/${req.params.name}`)(req, res, next);

@@ -11,7 +11,10 @@ const app = Router();
 const exists = async(path: PathLike) => access(path).then(() => true).catch(() => false);
 const baseDir = "/data/docs";
 app
-	.get("/", async(req, res) => res.redirect("/dev"))
+	.get("/", async(req, res) => {
+		const versions = await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [];
+		return res.render("index", { year: new Date().getFullYear(), versions, layout: false });
+	})
 	.use("/hook", createNodeMiddleware(githubRoute, { path: "/" }))
 	.get("/latest*", async(req, res) => {
 		const tags = execSync("git ls-remote --tags https://github.com/OceanicJS/Oceanic").toString().split("\n").filter(Boolean).map(line => line.split("\t").slice(-1)[0].replace("refs/tags/", ""));

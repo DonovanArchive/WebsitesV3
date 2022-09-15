@@ -1,6 +1,7 @@
 import githubRoute from "./github";
 import { createNodeMiddleware } from "@octokit/webhooks";
 import { Router, static as serveStatic } from "express";
+import chunk = require("chunk");
 import type { PathLike } from "fs";
 import { access, readFile } from "fs/promises";
 import { execSync } from "child_process";
@@ -11,7 +12,7 @@ const exists = async(path: PathLike) => access(path).then(() => true).catch(() =
 const baseDir = "/data/docs";
 app
 	.get("/", async(req, res) => {
-		const versions = await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [];
+		const versions = chunk(await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [], 4);
 		return res.render("docs", { year: new Date().getFullYear(), versions, layout: false });
 	})
 	.use("/hook", createNodeMiddleware(githubRoute, { path: "/" }))

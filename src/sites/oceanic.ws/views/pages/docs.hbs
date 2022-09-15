@@ -77,7 +77,11 @@
   <body>
 	<div id="main">
 		{{#each versions}}
-			<h2><center><a href="/{{this}}">{{this}}</a></center></h2>
+			<h2><center>
+			{{#each this}}
+				<a href="/{{this}}">{{this}}</a>&emsp;
+			{{/each}}
+			</center></h2>
 		{{/each}}
 		</h2>
 	</div>

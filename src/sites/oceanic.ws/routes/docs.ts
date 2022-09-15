@@ -20,12 +20,12 @@ app
 		const latest = tags.sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).slice(-1)[0];
 		return res.redirect(302, `/${latest}${req.path.replace("/latest", "")}`);
 	})
-	.use(async(req, res) => res.status(404).end("Not Found"));
-/* .use("/:name", async(req,res, next) => {
+	.use("/:name", async(req,res, next) => {
 		if (await access(`${baseDir}/${req.params.name}`).then(() => true, () => false)) serveStatic(`${baseDir}/${req.params.name}`)(req, res, next);
 		else return next();
 	})
-	.use(async(req, res, next) => {
+	.use(async(req, res) => res.status(404).end("Not Found"));
+/* .use(async(req, res, next) => {
 		if (req.originalUrl.split("/")[2] === "assets") {
 			req.url = `/${req.url.split("/").slice(3).join("/")}`;
 			serveStatic(`${baseDir}/${req.originalUrl.split("/")[1]}/docs/assets`)(req, res, next);

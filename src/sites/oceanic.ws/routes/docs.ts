@@ -1,7 +1,6 @@
-import type { Parsed } from "./github";
 import githubRoute from "./github";
 import { createNodeMiddleware } from "@octokit/webhooks";
-import { Router, static as serveStatic } from "express";
+import { Router } from "express";
 import type { PathLike } from "fs";
 import { access, readFile } from "fs/promises";
 import { execSync } from "child_process";
@@ -21,7 +20,8 @@ app
 		const latest = tags.sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).slice(-1)[0];
 		return res.redirect(302, `/${latest}${req.path.replace("/latest", "")}`);
 	})
-	.use("/:name", async(req,res, next) => {
+	.use(async(req, res) => res.status(404).end("Not Found"));
+/* .use("/:name", async(req,res, next) => {
 		if (await access(`${baseDir}/${req.params.name}`).then(() => true, () => false)) serveStatic(`${baseDir}/${req.params.name}`)(req, res, next);
 		else return next();
 	})
@@ -79,5 +79,5 @@ app
 			}
 			res.status(200).sendFile(`${baseDir}/${version}/docs/${file}`);
 		}
-	});
+	}); */
 export default app;

@@ -1,6 +1,6 @@
 import githubRoute from "./github";
 import { createNodeMiddleware } from "@octokit/webhooks";
-import { Router } from "express";
+import { Router, static as serveStatic } from "express";
 import type { PathLike } from "fs";
 import { access, readFile } from "fs/promises";
 import { execSync } from "child_process";

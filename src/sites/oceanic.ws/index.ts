@@ -17,5 +17,6 @@ export default class FurryCool extends Website {
 			.addHandler(
 				express.Router()
 					.get("/", async(req, res) => res.render("index", { year: new Date().getFullYear(), layout: false }))
+			);
 	}
 }

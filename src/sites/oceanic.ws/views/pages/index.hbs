@@ -41,12 +41,25 @@
 	<meta property="og:image:height" content="600">
 	<meta property="og:image:alt" content="Oceanic Icon">
 	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+			width: 100%;
+		}
 		body {
 			background-color: #2C2F33;
+  			display: table;
 		}
 
-		h1, h3 {
+		h1, h2 {
 			color: #2A5099;
+		}
+
+		div#main {
+			text-align: center;
+			display: table-cell;
+			vertical-align: middle;
 		}
 
 		span.spacer {
@@ -60,15 +73,17 @@
 	</style>
   </head>
   <body>
-	<h1><center>Oceanic</center></h1>
-	<h3>
-		<center>
-			<a href="https://github.com/OceanicJS/Oceanic">Github</a>
-			<span class="spacer">|</span>
-			<a href="https://docs.oceanic.ws">Documentation</a>
-			<span class="spacer">|</span>
-			<a href="https://npm.im/oceanic.js">NPM</a>
-		</center>
-	</h3>
+	<div id="main">
+		<h1><center>Oceanic</center></h1>
+		<h2>
+			<center>
+				<a href="https://github.com/OceanicJS/Oceanic">Github</a>
+				<span class="spacer">|</span>
+				<a href="https://docs.oceanic.ws">Documentation</a>
+				<span class="spacer">|</span>
+				<a href="https://npm.im/oceanic.js">NPM</a>
+			</center>
+		</h2>
+	</div>
   </body>
   </html>

@@ -186,19 +186,19 @@ services:
     networks:
       default:
         ipv4_address: 172.19.2.7
-  owo-whats-this.dev:
+  oceanic.ws:
     image: websites
-    container_name: owo-whats-this.dev
+    container_name: oceanic.ws
     volumes:
       - build:/app
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
-      - ./src/sites/owo-whats-this.dev/views:/app/views
-      - /var/www/sites/owo-whats-this.dev:/app/public
+      - ./src/sites/oceanic.ws/views:/app/views
+      - /var/www/sites/oceanic.ws:/app/public
       - /etc/hostname:/data/hostname:ro
       - /var/www/oceanic-docs:/data/docs
     environment:
-      SITE: owo-whats-this.dev
+      SITE: oceanic.ws
     restart: always
     healthcheck:
       interval: 10s

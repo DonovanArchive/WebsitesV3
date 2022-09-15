@@ -1,5 +1,5 @@
-import type { Parsed } from "./oceanic.github";
-import githubRoute from "./oceanic.github";
+import type { Parsed } from "./github";
+import githubRoute from "./github";
 import { createNodeMiddleware } from "@octokit/webhooks";
 import { Router, static as serveStatic } from "express";
 import type { PathLike } from "fs";

@@ -12,7 +12,7 @@ const baseDir = "/data/docs";
 app
 	.get("/", async(req, res) => {
 		const versions = await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [];
-		return res.render("index", { year: new Date().getFullYear(), versions, layout: false });
+		return res.render("docs", { year: new Date().getFullYear(), versions, layout: false });
 	})
 	.use("/hook", createNodeMiddleware(githubRoute, { path: "/" }))
 	.get("/latest*", async(req, res) => {

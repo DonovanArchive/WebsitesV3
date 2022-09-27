@@ -67,8 +67,9 @@ app
 			error:   "Provided code is too long."
 		});
 
-		const forbidden = /[\\/?&#]/;
-		if (forbidden.test(code)) return res.status(422).json({
+		// eslint-disable-next-line no-control-regex
+		const whitelist = /[A-Za-z_-\d]/;
+		if (!whitelist.test(code)) return res.status(422).json({
 			success: false,
 			error:   "Invalid characters in code."
 		});

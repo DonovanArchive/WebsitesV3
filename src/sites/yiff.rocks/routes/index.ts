@@ -67,6 +67,12 @@ app
 			error:   "Provided code is too long."
 		});
 
+		const forbidden = /[\\/?&#]/;
+		if (forbidden.test(code)) return res.status(422).json({
+			success: false,
+			error:   "Invalid characters in code."
+		});
+
 		const override_v3 = req.body.credit === `YiffyAPI-${yiffRocksOverride}`;
 		if (override_v3) req.body.credit = "YiffyAPI";
 		const override = override_v3;

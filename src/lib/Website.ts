@@ -1,7 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../util/@types/express-subdomain.d.ts" />
 import { consoleLogger, fileLogger } from "./Logger";
+import AbuseIPDB from "./AbuseIPDB";
 import Usage from "../db/Models/Usage";
+import Logger from "../util/Logger";
 import { cookieSecret } from "@config";
 import type { Express } from "express";
 import express from "express";
@@ -126,6 +128,16 @@ export default class Website {
 				saveUninitialized: true
 			}))
 			.use(async(req, res, next) => {
+				const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
+				const check = await AbuseIPDB.check(ip);
+
+				if (check) {
+					Logger.getLogger("abuseipdb").info(`Blocked ${ip} from accessing ${req.protocol}://${req.hostname}${req.originalUrl} due to >50 abuse score.`);
+					return res.status(403).json({
+						success: false,
+						error:   "You have been blocked from accessing this website."
+					});
+				}
 				try {
 					void Usage.track(req);
 				} catch (err) {

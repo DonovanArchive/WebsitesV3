@@ -67,7 +67,6 @@ app
 			error:   "Provided code is too long."
 		});
 
-		// eslint-disable-next-line no-control-regex
 		const whitelist = /[A-Za-z_-\d]/;
 		if (!whitelist.test(code)) return res.status(422).json({
 			success: false,

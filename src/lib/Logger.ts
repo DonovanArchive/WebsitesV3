@@ -71,7 +71,7 @@ morgan
 	})
 	.token("ip", (req: express.Request) => {
 		if (!req) return "UNKNOWN";
-		const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+		const ip = req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 		if (!ip) return "UNKNOWN";
 		if (ip.includes("127.0.0.1") || ip.includes("::1")) return `${colors.blue(styles.bold("[LOCAL]"))} ${colors.cyan(String(ip))}`;
 		else return colors.cyan(String(ip));
@@ -82,7 +82,7 @@ morgan
 	.token("statusnc", (req: express.Request, res: ServerResponse) => res.statusCode.toString())
 	.token("ipnc", (req: express.Request) => {
 		if (!req) return "UNKNOWN";
-		let ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+		let ip = req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 		if (Array.isArray(ip)) ip = ip[0];
 		if (!ip) return "UNKNOWN";
 		if (ip.includes("127.0.0.1") || ip.includes("::1")) return `[LOCAL] ${ip}`;

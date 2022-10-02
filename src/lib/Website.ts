@@ -176,7 +176,7 @@ export default class Website {
 						"max-age=63072000"
 					].join(", "),
 					"Upgrade-Insecure-Requests": "1",
-					"Referrer-Policy":           "no-referrer-when-downgrade",
+					"Referrer-Policy":           "strict-origin-when-cross-origin",
 					"X-XSS-Protection":          [
 						"1",
 						"mode=block",

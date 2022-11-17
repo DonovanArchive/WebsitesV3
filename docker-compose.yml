@@ -21,6 +21,12 @@ services:
       - /var/www/sites/butts-are.cool:/app/public
       - /var/www/screenshots:/data/screenshots
       - /etc/hostname:/data/hostname:ro
+    deploy:
+        resources:
+            limits:
+              memory: 1024M
+            reservations:
+              memory: 256M
     environment:
       SITE: butts-are.cool
     restart: always
@@ -50,6 +56,12 @@ services:
       - /var/www/sites/furry.cool:/app/public
       - /var/www/screenshots:/data/screenshots
       - /etc/hostname:/data/hostname:ro
+    deploy:
+        resources:
+            limits:
+              memory: 1024M
+            reservations:
+              memory: 256M
     environment:
       SITE: furry.cool
     restart: always
@@ -78,6 +90,12 @@ services:
       - ./src/sites/maid.gay/views:/app/views
       - /var/www/sites/maid.gay:/app/public
       - /etc/hostname:/data/hostname:ro
+    deploy:
+        resources:
+            limits:
+              memory: 1024M
+            reservations:
+              memory: 256M
     environment:
       SITE: maid.gay
     restart: always
@@ -107,6 +125,12 @@ services:
       - /var/www/sites/yiff.media:/app/public
       - /opt/YiffyAPI/data/posts:/data/yiffyapi_v3
       - /etc/hostname:/data/hostname:ro
+    deploy:
+        resources:
+            limits:
+              memory: 1024M
+            reservations:
+              memory: 256M
     environment:
       SITE: yiff.media
     restart: always
@@ -137,6 +161,12 @@ services:
       - /var/www/sites/yiff.media/V2:/app/public/V2
       - /var/www/e621-thumb:/data/e621-thumb
       - /etc/hostname:/data/hostname:ro
+    deploy:
+        resources:
+            limits:
+              memory: 1024M
+            reservations:
+              memory: 256M
     environment:
       SITE: yiff.rest
       FFMPEG_PATH: /usr/bin/ffmpeg
@@ -168,6 +198,12 @@ services:
       - ./src/sites/yiff.rocks/views:/app/views
       - /var/www/sites/yiff.rocks:/app/public
       - /etc/hostname:/data/hostname:ro
+    deploy:
+        resources:
+            limits:
+              memory: 1024M
+            reservations:
+              memory: 256M
     environment:
       SITE: yiff.rocks
     restart: always
@@ -197,6 +233,12 @@ services:
       - /var/www/sites/oceanic.ws:/app/public
       - /etc/hostname:/data/hostname:ro
       - /var/www/oceanic-docs:/data/docs
+    deploy:
+        resources:
+            limits:
+              memory: 1024M
+            reservations:
+              memory: 256M
     environment:
       SITE: oceanic.ws
     restart: always
@@ -233,6 +275,12 @@ services:
       yiff.rest:
         condition: service_healthy
     hostname: imgen.websites.containers.local
+    deploy:
+        resources:
+            limits:
+              memory: 2048M
+            reservations:
+              memory: 512M
     networks:
       default:
         ipv4_address: 172.19.2.251
@@ -241,6 +289,12 @@ services:
     container_name: mariadb.websites
     volumes:
       - ./data/db:/var/lib/mysql
+    deploy:
+        resources:
+            limits:
+              memory: 2048M
+            reservations:
+              memory: 512M
     environment:
       MYSQL_ROOT_PASSWORD: "$MARIADB_ROOT_PASSWORD"
     restart: always
@@ -258,19 +312,31 @@ services:
     container_name: rethinkdb.websites
     volumes:
       - ./data/rethink:/data
+    deploy:
+        resources:
+            limits:
+              memory: 1024M
+            reservations:
+              memory: 128M
     restart: always
     hostname: rethinkdb.websites.containers.local
     networks:
       default:
         ipv4_address: 172.19.2.253
   redis:
-    image: redis:alpine
-    command: redis-server --disable-thp yes --supervised no --bind 0.0.0.0 --requirepass "$REDIS_PASSWORD"
+    image: eqalpha/keydb:alpine
+    command: keydb-server --disable-thp yes --supervised no --bind 0.0.0.0 --requirepass "$REDIS_PASSWORD"
     container_name: redis.websites
     volumes:
       - ./data/redis:/data
+    deploy:
+        resources:
+            limits:
+              memory: 2048M
+            reservations:
+              memory: 512M
     healthcheck:
-      test: redis-cli ping
+      test: keydb-cli ping
       interval: 10s
       timeout: 5s
     restart: always

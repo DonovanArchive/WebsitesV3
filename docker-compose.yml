@@ -331,8 +331,8 @@ services:
       default:
         ipv4_address: 172.19.2.253
   redis:
-    image: eqalpha/keydb:alpine
-    command: keydb-server --disable-thp yes --supervised no --bind 0.0.0.0 --requirepass "$REDIS_PASSWORD"
+    image: redis:alpine
+    command: redis-server --disable-thp yes --supervised no --bind 0.0.0.0 --requirepass "$REDIS_PASSWORD"
     container_name: redis.websites
     volumes:
       - ./data/redis:/data
@@ -343,7 +343,7 @@ services:
             reservations:
               memory: 512M
     healthcheck:
-      test: keydb-cli ping
+      test: redis-cli ping
       interval: 10s
       timeout: 5s
     restart: always

@@ -12,7 +12,7 @@
     "up:dev:build": "npm run imgen-config && sudo docker-compose up --build",
     "dev": "npm run down && npm run up:dev",
     "dev:build": "npm run down && npm run up:dev:build",
-    "update": "npm run down && docker image rm websites && git pull && git submodule update --init --recursive --remote && npm run up:d",
+    "update": "npm run down && docker image rm websites || null && git pull && git submodule update --init --recursive --remote && npm run up:d",
     "imgen-config": "cp src/config/json/imgen.json src/imgen/config.json",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix"

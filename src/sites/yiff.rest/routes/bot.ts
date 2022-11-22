@@ -267,3 +267,5 @@ client.on("interactionCreate", async(interaction) => {
 		}
 	}
 });
+
+void client.connect();

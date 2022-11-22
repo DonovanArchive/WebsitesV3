@@ -28,7 +28,7 @@ import type { Request } from "express";
 import { Router, static as serveStatic } from "express";
 import bytes from "bytes";
 import ffmpeg from "fluent-ffmpeg";
-import p from "ffmpeg-static";
+import ffmpegStatic from "ffmpeg-static";
 import ffprobe from "ffprobe-static";
 import thumb from "simple-thumbnail";
 import type { ThenArg } from "@uwu-codes/types";
@@ -47,6 +47,7 @@ import {
 import { randomBytes } from "crypto";
 import { tmpdir } from "os";
 import { spawnSync } from "child_process";
+import { access, readdir } from "fs/promises";
 const app = Router();
 const awsClient = new AWS.S3({
 	endpoint:    "thumbs.yiff.media",
@@ -106,7 +107,7 @@ app
 	.get("/online", async (req, res) => res.status(200).json({ success: true, uptime: process.uptime() }))
 	.get("/categories", async (req, res) => res.status(200).json({ success: true, data: categories }))
 	.get("/categories/:db", async (req, res) => {
-		const c = Object.keys(categories).map(k => categories[k as keyof typeof categories]).reduce((a, b) => a.concat(b), []);
+		const c = Object.keys(categories).map(k => categories[k as keyof typeof categories]).reduce((a, b) => a.concat(b as never), []);
 		if (c.map(t => t.db).includes(req.params.db)) {
 			const disabled = Object.values(categories.disabled).reduce((a, b) => a.concat(b), [] as Array<typeof categories["disabled"][number]>).map(t => t.db).includes(req.params.db);
 			const d = rp(`${publicDir}/V2/${req.params.db.replace(/\./g, "/")}`);
@@ -213,8 +214,8 @@ app
 					db:  category,
 					dir: {
 						location: rp(APIImage.categoryPath(category)),
-						exists:   existsSync(APIImage.categoryPath(category)),
-						files:    existsSync(APIImage.categoryPath(category)) ? readdirSync(APIImage.categoryPath(category), { withFileTypes: true }).filter(f => !f.isDirectory()).length : null
+						exists:   await access(APIImage.categoryPath(category)).then(() => true, () => false),
+						files:    await access(APIImage.categoryPath(category)).then(() => true, () => false) ? (await readdir(APIImage.categoryPath(category), { withFileTypes: true })).filter(f => !f.isDirectory()).length : null
 					}
 				}
 			}
@@ -353,7 +354,7 @@ app
 			await new Promise(async(resolve) => (await fetch(req.body.url)).body.pipe(createWriteStream(`/data/e621-thumb/${id}.download.webm`).on("finish", resolve)));
 			await new Promise<void>((a,b) => {
 				ffmpeg(`/data/e621-thumb/${id}.download.webm`)
-					.setFfmpegPath(p)
+					.setFfmpegPath(ffmpegStatic!)
 					.setFfprobePath(ffprobe.path)
 					.output(`/data/e621-thumb/${id}.webm`)
 					.setStartTime(v)

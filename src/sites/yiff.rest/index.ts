@@ -1,11 +1,11 @@
 import v2Route from "./routes/api_v2";
 import discordRoute from "./routes/discord";
-import botRoute from "./routes/bot";
 import Website from "@lib/Website";
 import { APIImage } from "@models";
 import { categories } from "@config";
 import express from "express";
 import Handlebars from "handlebars";
+import "./routes/bot"; // not an actual route
 
 /* eslint-disable */
 Handlebars.registerHelper("when", (operand_1, operator, operand_2, options) => {
@@ -48,7 +48,6 @@ export default class YiffRest extends Website {
 					.use(async(req, res) => res.redirect("https://discord.yiff.rest"))
 			)
 			.addSubdomain("discord", discordRoute)
-			.addSubdomain("bot", botRoute)
 			.addSubdomain("flow",
 				express.Router()
 					.use(async(req,res) => res.status(501).json({

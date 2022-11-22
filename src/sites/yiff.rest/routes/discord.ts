@@ -1,8 +1,8 @@
-import { discord, userAgent } from "@config";
+import { discord } from "@config";
 import { Router } from "express";
-import fetch from "node-fetch";
-import type { RESTGetAPICurrentUserGuildsResult, RESTGetAPICurrentUserResult, RESTPostOAuth2AccessTokenResult } from "discord-api-types/v10";
-
+import { Client, OAuthHelper, UserFlags } from "oceanic.js";
+import type { ExchangeCodeResponse } from "oceanic.js";
+const client = new Client();
 const app = Router();
 
 app
@@ -10,32 +10,32 @@ app
 	.get("/count-servers", async(req,res) => {
 		let token: string;
 		if (req.query.code) {
-			const r = await fetch("https://discord.com/api/oauth2/token", {
-				method:  "POST",
-				body:    `client_id=${discord["yiffy-discord"].id}&client_secret=${discord["yiffy-discord"].secret}&grant_type=authorization_code&code=${req.query.code as string}&redirect_uri=${discord["yiffy-discord"].redirect.count}`,
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-					"User-Agent":   userAgent
-				}
-			});
-			if (r.status !== 200) return res.status(r.status).end(await r.text());
-			const auth = await r.json() as RESTPostOAuth2AccessTokenResult;
-			if (!auth.scope.split(" ").includes("guilds")) return res.status(400).end("Authorized token does not have the guilds scope");
-			token = auth.access_token;
-		} else return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${discord["yiffy-discord"].id}&redirect_uri=${encodeURIComponent(discord["yiffy-discord"].redirect.count)}&response_type=code&scope=guilds&prompt=none`);
-
-		const g = await fetch("https://discord.com/api/users/@me/guilds", {
-			method:  "GET",
-			headers: {
-				"User-Agent":    userAgent,
-				"Authorization": `Bearer ${token}`
+			let r: ExchangeCodeResponse;
+			try {
+				r = await client.rest.oauth.exchangeCode({
+					clientID:     discord["yiffy-discord"].id,
+					clientSecret: discord["yiffy-discord"].secret,
+					code:         req.query.code as string,
+					redirectURI:  discord["yiffy-discord"].redirect.count
+				});
+			} catch (err) {
+				return res.status(500).end((err as Error).stack ?? (err as Error).message);
 			}
-		});
+			if (!r.scopes.includes("guilds")) return res.status(400).end("Authorized token does not have the guilds scope");
+			token = r.accessToken;
+		} else return res.redirect(OAuthHelper.constructURL({
+			clientID:     discord["yiffy-discord"].id,
+			redirectURI:  discord["yiffy-discord"].redirect.count,
+			responseType: "code",
+			scopes:       ["guilds"],
+			prompt:       "none"
+		}));
 
-		if (g.status !== 200) return res.status(g.status).end(await g.text());
-		const guilds = await g.json() as RESTGetAPICurrentUserGuildsResult;
+		const helper = client.rest.oauth.getHelper(`Bearer ${token}`);
+
+		const guilds = await helper.getCurrentGuilds();
 		const owner = guilds.filter(gg => gg.owner === true);
-		const admin = guilds.filter(gg => (BigInt(gg.permissions) & 8n) === 8n);
+		const admin = guilds.filter(gg => gg.permissions.has("ADMINISTRATOR"));
 
 		return res.status(200).render("discord/count-servers", {
 			total:      guilds.length,
@@ -47,58 +47,66 @@ app
 	.get("/flags", async(req,res) => {
 		let token;
 		if (req.query.code) {
-			const r = await fetch("https://discord.com/api/oauth2/token", {
-				method:  "POST",
-				body:    `client_id=${discord["yiffy-discord"].id}&client_secret=${discord["yiffy-discord"].secret}&grant_type=authorization_code&code=${req.query.code as string}&redirect_uri=${discord["yiffy-discord"].redirect.flags}`,
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-					"User-Agent":   userAgent
-				}
-			});
-			if (r.status !== 200) return res.status(r.status).end(await r.text());
-			const auth = await r.json() as RESTPostOAuth2AccessTokenResult;
-			if (!auth.scope.split(" ").includes("identify")) return res.status(400).end("Authorized token does not have the identify scope");
-			token = auth.access_token;
-		} else return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${discord["yiffy-discord"].id}&redirect_uri=${encodeURIComponent(discord["yiffy-discord"].redirect.flags)}&response_type=code&scope=identify&prompt=none`);
-
-		const s = await fetch("https://discord.com/api/users/@me", {
-			method:  "GET",
-			headers: {
-				"User-Agent":    userAgent,
-				"Authorization": `Bearer ${token}`
+			let r: ExchangeCodeResponse;
+			try {
+				r = await client.rest.oauth.exchangeCode({
+					clientID:     discord["yiffy-discord"].id,
+					clientSecret: discord["yiffy-discord"].secret,
+					code:         req.query.code as string,
+					redirectURI:  discord["yiffy-discord"].redirect.flags
+				});
+			} catch (err) {
+				return res.status(500).end((err as Error).stack ?? (err as Error).message);
 			}
-		});
+			if (!r.scopes.includes("identify")) return res.status(400).end("Authorized token does not have the identify scope");
+			token = r.accessToken;
+		}  else return res.redirect(OAuthHelper.constructURL({
+			clientID:     discord["yiffy-discord"].id,
+			redirectURI:  discord["yiffy-discord"].redirect.flags,
+			responseType: "code",
+			scopes:       ["guilds"],
+			prompt:       "none"
+		}));
 
-		if (s.status !== 200) return res.status(s.status).end(await s.text());
-		const self = await s.json() as RESTGetAPICurrentUserResult;
+		const helper = client.rest.oauth.getHelper(`Bearer ${token}`);
+		const user = await helper.getCurrentUser();
 
-		const flags = [];
-		if (self.public_flags === undefined) self.public_flags = 0;
-		if (self.public_flags & (1 << 0)) flags.push("Discord Employee");
-		if (self.public_flags & (1 << 1)) flags.push("Discord Partner");
-		if (self.public_flags & (1 << 2)) flags.push("Hypesquad Events");
-		if (self.public_flags & (1 << 3)) flags.push("Bug Hunter Level 1");
-		if (self.public_flags & (1 << 4)) flags.push("Unknown (4)");
-		if (self.public_flags & (1 << 5)) flags.push("Unknown(5)");
-		if (self.public_flags & (1 << 6)) flags.push("House of Bravery");
-		if (self.public_flags & (1 << 7)) flags.push("House of Brilliance");
-		if (self.public_flags & (1 << 8)) flags.push("House of Balance");
-		if (self.public_flags & (1 << 9)) flags.push("Early Supporter");
-		if (self.public_flags & (1 << 10)) flags.push("Team User");
-		if (self.public_flags & (1 << 11)) flags.push("Unknown (11)");
-		if (self.public_flags & (1 << 12)) flags.push("System");
-		if (self.public_flags & (1 << 13)) flags.push("Unknown(13)");
-		if (self.public_flags & (1 << 14)) flags.push("Bug Hunter Level 2");
-		if (self.public_flags & (1 << 15)) flags.push("Unknown (15)");
-		if (self.public_flags & (1 << 16)) flags.push("Verified Bot");
-		if (self.public_flags & (1 << 17)) flags.push("Early Verified Bot Developer");
-		if (self.public_flags & (1 << 18)) flags.push("Unknown (18)");
-		if (self.public_flags & (1 << 19)) flags.push("Unknown (19)");
-		if (self.public_flags & (1 << 20)) flags.push("Unknown (20)");
+		const publicFlags: Array<string> = [], allFlags: Array<string> = [];
+		const Names = {
+			[UserFlags.STAFF]:                 "Discord Employee",
+			[UserFlags.PARTNER]:               "Discord Partner",
+			[UserFlags.HYPESQUAD]:             "Hypesquad Events",
+			[UserFlags.BUGHUNTER_LEVEL_1]:     "Bug Hunter Level 1",
+			// 4 & 5
+			[UserFlags.HYPESQUAD_BRAVERY]:     "House of Bravery",
+			[UserFlags.HYPESQUAD_BRILLIANCE]:  "House of Brilliance",
+			[UserFlags.HYPESQUAD_BALANCE]:     "House of Balance",
+			[UserFlags.EARLY_SUPPORTER]:       "Early Supporter",
+			[UserFlags.PSEUDO_TEAM_USER]:      "Team User",
+			// 11
+			[UserFlags.SYSTEM]:                "System",
+			// 13
+			[UserFlags.BUG_HUNTER_LEVEL_2]:    "Bug Hunter Level 2",
+			// 15
+			[UserFlags.VERIFIED_BOT]:          "Verified Bot",
+			[UserFlags.VERIFIED_DEVELOPER]:    "Early Verified Bot Developer",
+			[UserFlags.CERTIFIED_MODERATOR]:   "Certified Moderator",
+			[UserFlags.BOT_HTTP_INTERACTIONS]: "Bot HTTP Interactions",
+			[UserFlags.SPAMMER]:               "Spammer",
+			// 21
+			[UserFlags.ACTIVE_DEVELOPER]:      "Active Developer"
+		};
+
+		for (let i = 1; i <= 25; i++) {
+			const flag = 1 << i;
+			if ((user.publicFlags & flag) === flag) publicFlags.push(Names[flag as 1] || `Unknown (${flag})`);
+		}
 
 		return res.status(200).render("discord/flags", {
-			number: self.public_flags,
-			flags
+			publicNumber: user.publicFlags,
+			publicFlags,
+			allNumber:    user.flags,
+			allFlags
 		});
 	});
 

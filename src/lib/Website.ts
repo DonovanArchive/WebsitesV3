@@ -94,7 +94,11 @@ export default class Website {
 	async listen() {
 		const address = await this.doLookup();
 		const backlog = () => console.log(`Listening on http${this.secure ? "s" : ""}://${address}${[80, 443].includes(this.port) ? "" : `:${this.port}`}`);
-		return this.server = (this.secure ? https : http).createServer(this.options, this.app).listen(this.port, address, backlog);
+		return this.server = (
+			this.secure ?
+				https.createServer(this.options, this.app) :
+				http.createServer(this.options, this.app)
+		).listen(this.port, address, backlog);
 	}
 
 	init() {

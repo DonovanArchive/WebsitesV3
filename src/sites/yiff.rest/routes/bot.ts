@@ -1,302 +1,269 @@
-import { discord } from "@config";
+import { cacheDir, discord } from "@config";
 import { APIKey } from "@models";
 import Webhooks from "@util/Webhooks";
-import EmbedBuilder from "@util/EmbedBuilder";
-import type { Request, Response } from "express";
-import express from "express";
-import nacl from "tweetnacl";
-import type {
-	APIPingInteraction,
-	APIApplicationCommandGuildInteraction,
-	APIMessageComponentGuildInteraction,
-	APIInteractionResponse,
-	APIApplicationCommandInteractionDataSubcommandOption,
-	APIApplicationCommandInteractionDataStringOption,
-	APIMessageComponentInteractionData,
-	APIChatInputApplicationCommandInteractionData,
-	APIInteractionResponseChannelMessageWithSource
-} from "discord-api-types/v10";
-import { MessageFlags, InteractionType, InteractionResponseType, ComponentType } from "discord-api-types/v10";
+import { ApplicationCommandBuilder, ButtonColors, ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
+import type { ModalActionRow, MessageActionRow, CreateApplicationCommandOptions } from "oceanic.js";
+import {
+	ApplicationCommandTypes,
+	ApplicationCommandOptionTypes,
+	TextInputStyles,
+	Client,
+	InteractionTypes,
+	MessageFlags
+} from "oceanic.js";
+import FuzzySearch from "fuzzy-search";
+import { createHash } from "crypto";
+import { access, readFile, writeFile } from "fs/promises";
 
-const app = express.Router();
+const client = new Client({
+	auth:    `Bot ${discord["yiffy-bot"].token}`,
+	gateway: {
+		intents: 0
+	}
+});
 
-const color = 0x665857;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const clientIcon = "https://assets.yiff.rest/main.jpg";
+client.once("ready", async() => {
+	const commands = [
+		new ApplicationCommandBuilder(ApplicationCommandTypes.CHAT_INPUT, "apikey")
+			.addOption("create", ApplicationCommandOptionTypes.SUB_COMMAND)
+			.addOption("delete", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
+				sub.addOption("key", ApplicationCommandOptionTypes.STRING, (option) => {
+					option.setAutocomplete();
+				});
+			})
+			.addOption("list", ApplicationCommandOptionTypes.SUB_COMMAND)
+			.toJSON()
+	];
+	let cache: Array<CreateApplicationCommandOptions> = [];
+	if (await access(`${cacheDir}/commands.json`).then(() => true, () => false)) {
+		cache = JSON.parse(await readFile(`${cacheDir}/commands.json`, "utf8")) as Array<CreateApplicationCommandOptions>;
+	}
 
-app
-	.get("/", async(req,res) => res.redirect("https://yiff.rest"))
-	.post("/", async(req: Request<never, APIInteractionResponse, APIPingInteraction | APIApplicationCommandGuildInteraction | APIMessageComponentGuildInteraction>, res) => {
-		if (!req.headers["x-signature-timestamp"] || !req.headers["x-signature-ed25519"]) return res.status(401).end();
-		const isVerified = nacl.sign.detached.verify(
-			// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-			Buffer.from(req.headers["x-signature-timestamp"] + JSON.stringify(req.body)),
-			Buffer.from(req.headers["x-signature-ed25519"] as string, "hex"),
-			Buffer.from(discord["yiffy-bot"].key, "hex")
-		);
-		if (isVerified === false) return res.status(401).end();
-		switch (req.body.type) {
-			case InteractionType.Ping: return res.status(200).json({
-				type: InteractionResponseType.Pong
+	if (JSON.stringify(cache) !== JSON.stringify(commands)) {
+		await client.application.bulkEditGuildCommands(discord["yiffy-bot"].guild, commands);
+		await writeFile(`${cacheDir}/commands.json`, JSON.stringify(commands));
+	}
+});
+
+client.on("interactionCreate", async(interaction) => {
+	switch (interaction.type) {
+		case InteractionTypes.APPLICATION_COMMAND: {
+			if (interaction.guildID === null) return interaction.createMessage({
+				content: "My commands cannot be used in Direct Messages.",
+				flags:   MessageFlags.EPHEMERAL
 			});
 
-			case InteractionType.ApplicationCommand: {
-				if (!("guild_id" in req.body)) return res.status(200).json({
-					type: InteractionResponseType.ChannelMessageWithSource,
-					data: {
-						flags:   64,
-						content: "My commands cannot be used in direct messages, sorry.."
-					}
-				});
-
-				switch (req.body.data.name) {
-					case "apikey": {
-						const sub = (req.body.data as APIChatInputApplicationCommandInteractionData).options![0] as APIApplicationCommandInteractionDataSubcommandOption;
-						switch (sub.name) {
-							case "create": {
-								const keyCount = await APIKey.getOwned(req.body.member.user.id);
-								if (keyCount.length >= 3)  return res.status(200).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:   MessageFlags.Ephemeral,
-										content: "You already have the maximum amount of api keys."
-									}
-								});
-								const application = (sub.options?.find(o => o.name === "application-name") as APIApplicationCommandInteractionDataStringOption)?.value;
-								const contact = (sub.options?.find(o => o.name === "contact") as APIApplicationCommandInteractionDataStringOption)?.value;
-								if (!application) return res.status(200).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:   MessageFlags.Ephemeral,
-										content: "An application name is required."
-									}
-								});
-								if (application.length > 100) return res.status(200).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:   64,
-										content: "Please provide a shorter application name."
-									}
-								});
-								if (!contact) return res.status(200).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:   64,
-										content: "Contact information is required."
-									}
-								});
-								if (contact.length > 100) return res.status(200).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:   64,
-										content: "Please provide a shorter contact."
-									}
-								});
-
-								const id = await APIKey.new({
-									unlimited:       false,
-									owner:           req.body.member.user.id,
-									application,
-									active:          true,
-									contact,
-									disabled:        false,
-									disabled_reason: null
-								});
-
-								void Webhooks.get("yiffyAPIKey").execute({
-									embeds: [
-										new EmbedBuilder()
-											.setTitle("API Key Created")
-											.setDescription([
-												`Key: \`${id}\``,
-												// <:redTick:865401803256627221> <:greenTick:865401802920951819>
-												`Application: **${application}**`,
-												`Contact: ${contact || "**NONE**"}`,
-												"Active: <:greenTick:865401802920951819>",
-												"Disabled: <:redTick:865401803256627221>",
-												"Unlimited: <:redTick:865401803256627221>",
-												"Flow Access: <:redTick:865401803256627221>"
-											])
-											.setColor(0x008000)
-											.setTimestamp(new Date().toISOString())
-											.setAuthor(`${req.body.member.user.username}#${req.body.member.user.discriminator}`, `https://cdn.discordapp.com/avatars/${req.body.member.user.id}/${req.body.member.user.avatar!}.png?size=256`)
-											.toJSON()
-									]
-								});
-
-								return res.status(200).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:   MessageFlags.Ephemeral,
-										content: `Your api key for the application **${application}** has been created.\nKey: ||${id}||\n\nIf needs be, you can delete this key using the \`delete\` subcommand.`
-									}
-								});
-								break;
-							}
-
-							case "delete": {
-								const keys = await APIKey.getOwned(req.body.member.user.id);
-								if (keys.length === 0) return res.status(200).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:   MessageFlags.Ephemeral,
-										content: "You do not have any api keys to delete."
-									}
-								});
-
-								return (res.status(200) as Response<APIInteractionResponseChannelMessageWithSource>).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:  MessageFlags.Ephemeral,
-										embeds: [
-											// @ts-expect-error suck it djs
-											new EmbedBuilder()
-												.setTitle("APIKey Deletion")
-												.setDescription("Please select a key from below to delete.")
-												.setTimestamp(new Date().toISOString())
-												.setColor(color)
-												.toJSON()
-										],
-										components: [
-											{
-												type:       ComponentType.ActionRow,
-												components: [
-													{
-														type:      ComponentType.SelectMenu,
-														custom_id: `delete-key.${req.body.member.user.id}`,
-														options:   keys.map(k => ({
-															label: k.application,
-															value: k.id
-														}))
-													}
-												]
-											}
-										]
-									}
-								});
-								break;
-							}
-
-							case "list": {
-								const keys = await APIKey.getOwned(req.body.member.user.id);
-								if (keys.length === 0) return res.status(200).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:   MessageFlags.Ephemeral,
-										content: "You do not have any api keys to list."
-									}
-								});
-
-								return res.status(200).json({
-									type: InteractionResponseType.ChannelMessageWithSource,
-									data: {
-										flags:   MessageFlags.Ephemeral,
-										content: `We found the following api keys:\n\n${keys.map((k, i) => [
-											`${i + 1}.)`,
-											`- Key: ||${k.id}||`,
-											`- Application: \`${k.application}\``,
-											`- Contact: \`${k.contact || "NONE"}\``,
-											`- Active: ${k.active ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`,
-											`- Disabled: ${k.disabled ? `<:greenTick:865401802920951819> (Reason: ${k.disabledReason ?? "NONE"})` : "<:redTick:865401803256627221>"}`,
-											`- Unlimited: ${k.unlimited ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`,
-											`- Flow Access: ${k.flowAccess ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`
-										].join("\n")).join("\n\n")}`
-									}
-								});
-								break;
-							}
+			switch (interaction.data.name) {
+				case "apikey": {
+					const [subcommand] = interaction.data.options.getSubCommand<["create" | "delete" | "list"]>(true);
+					switch (subcommand) {
+						case "create": {
+							const keyCount = await APIKey.getOwned(interaction.user.id);
+							if (keyCount.length >= 3) return interaction.createMessage({
+								flags:   MessageFlags.EPHEMERAL,
+								content: "You already have the maximum amount of api keys. Contact a developer if you believe you need an exception to be made."
+							});
+							return interaction.createModal({
+								customID: "apikey-create",
+								components:
+									new ComponentBuilder<ModalActionRow>()
+										.addTextInput({
+											customID:    "apikey-create.name",
+											placeholder: "My Awesome Application",
+											minLength:   3,
+											maxLength:   50,
+											label:       "Name",
+											style:       TextInputStyles.SHORT
+										})
+										.addTextInput({
+											customID:    "apikey-create.contact",
+											placeholder: "You can contact me at hewwo@yiff.rocks (please do not say Discord, we already keep track of who owns what key)",
+											minLength:   5,
+											maxLength:   400,
+											label:       "Contact",
+											style:       TextInputStyles.PARAGRAPH
+										})
+										.toJSON(),
+								title: "Create API Key"
+							});
 						}
-						break;
-					}
 
-					default: return res.status(200).json({
-						type: InteractionResponseType.ChannelMessageWithSource,
-						data: {
-							flags:   MessageFlags.Ephemeral,
-							content: "Unknown interaction command."
+						case "delete": {
+							const key = (await APIKey.getOwned(interaction.user.id)).find(k => createHash("md5").update(k.id).digest("hex") === interaction.data.options.getString("key", true));
+							if (!key || key.owner !== interaction.user.id) return interaction.createMessage({
+								content: "Invalid key specified.",
+								flags:   MessageFlags.EPHEMERAL
+							});
+
+							if (key.disabled) return interaction.createMessage({
+								content: `This key has been disabled by a developer. To have this key deleted or removed, concat a developer.\n\nDisable Reason: **${key.disabledReason ?? "(None)"}**`,
+								flags:   MessageFlags.EPHEMERAL
+							});
+
+							return interaction.createMessage({
+								content:    `Are you sure you want to delete the key **${key.application}**? This action cannot be undone.`,
+								flags:      MessageFlags.EPHEMERAL,
+								components: new ComponentBuilder<MessageActionRow>()
+									.addInteractionButton({
+										// it IS ephemeral, but we still hash the key just in case (the key itself is the only unique id we have)
+										customID: `apikey-delete-yes.${createHash("md5").update(key.id).digest("hex")}.${interaction.user.id}`,
+										label:    "Yes",
+										style:    ButtonColors.GREEN
+									})
+									.addInteractionButton({
+										customID: `apikey-delete-no.${interaction.user.id}`,
+										label:    "No",
+										style:    ButtonColors.RED
+									})
+									.toJSON()
+							});
+							break;
 						}
+
+						case "list": {
+							const keys = await APIKey.getOwned(interaction.user.id);
+
+							if (keys.length === 0) return interaction.createMessage({
+								content: "You do not have any API keys.",
+								flags:   MessageFlags.EPHEMERAL
+							});
+
+							return interaction.createMessage({
+								content: `We found the following api keys:\n\n${keys.map((k, i) => [
+									`${i + 1}.)`,
+									`- Key: ||${k.id}||`,
+									`- Application: \`${k.application}\``,
+									`- Contact: \`${k.contact || "NONE"}\``,
+									`- Active: ${k.active ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`,
+									`- Disabled: ${k.disabled ? `<:greenTick:865401802920951819> (Reason: ${k.disabledReason ?? "NONE"})` : "<:redTick:865401803256627221>"}`,
+									`- Unlimited: ${k.unlimited ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`
+								].join("\n")).join("\n\n")}`,
+								flags: MessageFlags.EPHEMERAL
+							});
+						}
+					}
+				}
+			}
+			break;
+		}
+
+		case InteractionTypes.MESSAGE_COMPONENT: {
+			const id = interaction.data.customID.split(".").slice(-1)[0];
+			if (interaction.user.id !== id) return interaction.createMessage({
+				content: "That is not yours to play with."
+			});
+			switch (interaction.data.customID.split(".")[0]) {
+				case "apikey-delete-yes": {
+					const key = (await APIKey.getOwned(interaction.user.id)).find(k => createHash("md5").update(k.id).digest("hex") === interaction.data.customID.split(".")[1]);
+					if (!key) return interaction.createMessage({
+						content: "Invalid key specified.",
+						flags:   MessageFlags.EPHEMERAL
+					});
+					await key.delete();
+					void Webhooks.get("yiffyAPIKey").execute({
+						embeds: [
+							new EmbedBuilder()
+								.setTitle("API Key Deleted")
+								.setDescription([
+									`Key: \`${key.id}\``,
+									`Application: **${key.application}**`,
+									`Contact: ${key.contact || "**NONE**"}`,
+									`Active: ${key.active ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`,
+									`Disabled: ${key.disabled ? `<:greenTick:865401802920951819> (Reason: ${key.disabledReason ?? "NONE"})` : "<:redTick:865401803256627221>"}`,
+									`Unlimited: ${key.unlimited ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`
+								])
+								.setColor(0xDC143C)
+								.setTimestamp(new Date().toISOString())
+								.setAuthor(interaction.user.tag, interaction.user.avatarURL())
+								.toJSONRaw()
+						]
+					});
+					return interaction.createMessage({
+						content: "Key deleted.",
+						flags:   MessageFlags.EPHEMERAL
+					});
+					break;
+				}
+
+				case "apikey-delete-no": {
+					return interaction.createMessage({
+						content: "Cancelled.",
+						flags:   MessageFlags.EPHEMERAL
+					});
+					break;
+				}
+			}
+			break;
+		}
+
+		case InteractionTypes.APPLICATION_COMMAND_AUTOCOMPLETE: {
+			switch (interaction.data.name) {
+				case "apikey": {
+					const [subcommand] = interaction.data.options.getSubCommand<["delete"]>(true);
+					switch (subcommand) {
+						case "delete": {
+							const keys = await APIKey.getOwned(interaction.user.id);
+							const search = new FuzzySearch(keys.map(k => ({
+								name:  k.application,
+								value: createHash("md5").update(k.id).digest("hex")
+							})), ["name"]);
+							return interaction.result(search.search(interaction.data.options.getString("key", true)));
+							break;
+						}
+					}
+					break;
+				}
+			}
+			break;
+		}
+
+		case InteractionTypes.MODAL_SUBMIT: {
+			switch (interaction.data.customID) {
+				case "apikey-create": {
+					const row = interaction.data.components[0].components;
+					const name = row.find(c => c.customID === "apikey-create.name")!.value!;
+					const contact = row.find(c => c.customID === "apikey-create.contact")!.value!;
+					if (name.length < 3 || name.length > 50) return interaction.createMessage({
+						content: "Name must be between 3 and 5 characters.",
+						flags:   MessageFlags.EPHEMERAL
+					});
+					if (contact.length < 5 || contact.length > 400) return interaction.createMessage({
+						content: "Contact must be between 5 and 400 characters.",
+						flags:   MessageFlags.EPHEMERAL
+					});
+
+					const key = await APIKey.new({
+						unlimited:       false,
+						owner:           interaction.user.id,
+						application:     name,
+						contact,
+						disabled:        false,
+						disabled_reason: null,
+						active:          true
+					});
+
+					void Webhooks.get("yiffyAPIKey").execute({
+						embeds: [
+							new EmbedBuilder()
+								.setTitle("API Key Created")
+								.setDescription([
+									`Key: \`${key}\``,
+									// <:redTick:865401803256627221> <:greenTick:865401802920951819>
+									`Application: **${name}**`,
+									`Contact: ${contact}`,
+									"Active: <:greenTick:865401802920951819>",
+									"Disabled: <:redTick:865401803256627221>",
+									"Unlimited: <:redTick:865401803256627221>"
+								])
+								.setColor(0x008000)
+								.setTimestamp(new Date().toISOString())
+								.setAuthor(interaction.user.tag, interaction.user.avatarURL())
+								.toJSONRaw()
+						]
 					});
 				}
-				break;
 			}
-
-			case InteractionType.MessageComponent: {
-				const d = req.body.data as APIMessageComponentInteractionData;
-				if (!d.custom_id.endsWith(req.body.member.user.id)) return res.status(200).json({
-					type: InteractionResponseType.ChannelMessageWithSource,
-					data: {
-						flags:   MessageFlags.Ephemeral,
-						content: "This button is not for you."
-					}
-				});
-
-				switch (d.component_type) {
-					case ComponentType.SelectMenu: {
-						if (d.custom_id.startsWith("delete-key")) {
-							const key = await APIKey.get(d.values[0]);
-							if (!key) return res.status(200).json({
-								type: InteractionResponseType.UpdateMessage,
-								data: {
-									flags:   MessageFlags.Ephemeral,
-									content: "We couldn't find that key."
-								}
-							});
-
-							if (key.owner !== req.body.member.user.id) return res.status(200).json({
-								type: InteractionResponseType.UpdateMessage,
-								data: {
-									flags:   MessageFlags.Ephemeral,
-									content: "You don't own that key."
-								}
-							});
-
-							const ok = await key.delete();
-
-							if (!ok) return res.status(200).json({
-								type: InteractionResponseType.UpdateMessage,
-								data: {
-									flags:   MessageFlags.Ephemeral,
-									content: "We failed to delete that key."
-								}
-							});
-							else {
-
-
-								void Webhooks.get("yiffyAPIKey").execute({
-									embeds: [
-										new EmbedBuilder()
-											.setTitle("API Key Deleted")
-											.setDescription([
-												`Key: \`${key.id}\``,
-												`Application: **${key.application}**`,
-												`Contact: ${key.contact || "**NONE**"}`,
-												`Active: ${key.active ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`,
-												`Disabled: ${key.disabled ? `<:greenTick:865401802920951819> (Reason: ${key.disabledReason ?? "NONE"})` : "<:redTick:865401803256627221>"}`,
-												`Unlimited: ${key.unlimited ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`,
-												`Flow Access: ${key.flowAccess ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`
-											])
-											.setColor(0xDC143C)
-											.setTimestamp(new Date().toISOString())
-											.setAuthor(`${req.body.member.user.username}#${req.body.member.user.discriminator}`, `https://cdn.discordapp.com/avatars/${req.body.member.user.id}/${req.body.member.user.avatar!}.png?size=256`)
-											.toJSON()
-									]
-								});
-								return res.status(200).json({
-									type: InteractionResponseType.UpdateMessage,
-									data: {
-										flags:      MessageFlags.Ephemeral,
-										content:    "That api key has been deleted.",
-										components: [],
-										embeds:     []
-									}
-								});
-							}
-						}
-					}
-				}
-				break;
-			}
+			break;
 		}
-	});
-
-export default app;
+	}
+});

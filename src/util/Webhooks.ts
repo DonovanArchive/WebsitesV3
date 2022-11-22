@@ -1,8 +1,9 @@
 import { webhooks } from "@config";
-import Eris from "eris";
-const client = new Eris.Client("", { intents: [] });
+import type { ExecuteWebhookOptions } from "oceanic.js";
+import { Client } from "oceanic.js";
+const client = new Client();
 
-class Webhook<C extends Eris.Client> {
+class Webhook<C extends Client> {
 	client: C;
 	id: string;
 	token: string;
@@ -21,30 +22,30 @@ class Webhook<C extends Eris.Client> {
 		this.username = data.username;
 	}
 
-	async fetch() { return this.client.getWebhook(this.id, this.token); }
-	async delete(reason?: string) { return this.client.deleteWebhook(this.id, this.token, reason); }
-	async execute(payload: Omit<Eris.WebhookPayload, "wait">) {
-		const data: Eris.WebhookPayload & { wait: false; } = {
+	async fetch() { return this.client.rest.webhooks.get(this.id, this.token); }
+	async delete() { return this.client.rest.webhooks.deleteToken(this.id, this.token); }
+	async execute(payload: Omit<ExecuteWebhookOptions, "wait">) {
+		const data: ExecuteWebhookOptions & { wait: false; } = {
 			...payload,
 			wait: false
 		};
 
 		if (!!this.avatar && !payload.avatarURL) data.avatarURL = this.avatar;
 		if (!!this.username && !payload.username) data.username = this.username;
-		return this.client.executeWebhook(this.id, this.token, data);
+		return this.client.rest.webhooks.execute(this.id, this.token, data);
 	}
 }
 
 class WebhookStore {
-	private webhooks: Map<string, Webhook<Eris.Client>>;
-	client: Eris.Client;
-	constructor(c: Eris.Client) {
+	private webhooks: Map<string, Webhook<Client>>;
+	client: Client;
+	constructor(c: Client) {
 		this.client = c;
 		this.webhooks = new Map();
 		Object.values(webhooks).map((w, i) =>
 			this.webhooks.set(
 				Object.keys(webhooks)[i],
-				new Webhook<Eris.Client>(this.client, w)
+				new Webhook<Client>(this.client, w)
 			)
 		);
 	}

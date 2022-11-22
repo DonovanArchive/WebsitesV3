@@ -1,7 +1,10 @@
 {
-	"upgrade": true,
-	"reject": [
-		"node-fetch",
-		"@types/node-fetch"
-	]
+  "upgrade": true,
+  "reject": [
+    "node-fetch",
+    "@types/node-fetch",
+    "tslog",
+    "@uwu-codes/eslint-config",
+    "@uwu-codes/tsconfig"
+  ]
 }

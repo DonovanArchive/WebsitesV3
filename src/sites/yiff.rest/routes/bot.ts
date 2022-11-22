@@ -23,6 +23,7 @@ const client = new Client({
 });
 
 client.once("ready", async() => {
+	console.log("Ready as", client.user.tag);
 	const commands = [
 		new ApplicationCommandBuilder(ApplicationCommandTypes.CHAT_INPUT, "apikey")
 			.addOption("create", ApplicationCommandOptionTypes.SUB_COMMAND)
@@ -77,7 +78,7 @@ client.on("interactionCreate", async(interaction) => {
 										})
 										.addTextInput({
 											customID:    "apikey-create.contact",
-											placeholder: "You can contact me at hewwo@yiff.rocks (please do not say Discord, we already keep track of who owns what key)",
+											placeholder: "You can contact me at my@amazing.email",
 											minLength:   5,
 											maxLength:   400,
 											label:       "Contact",

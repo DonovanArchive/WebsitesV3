@@ -70,7 +70,7 @@ client.on("interactionCreate", async(interaction) => {
 							const keyCount = await APIKey.getOwned(interaction.user.id);
 							if (keyCount.length >= 3) return interaction.createMessage({
 								flags:   MessageFlags.EPHEMERAL,
-								content: "You already have the maximum amount of api keys. Contact a developer if you believe you need an exception to be made."
+								content: "You already have the maximum amount of api keys. Contact a developer if you believe an exception should be made.."
 							});
 							return interaction.createModal({
 								customID: "apikey-create",

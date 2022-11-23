@@ -45,7 +45,7 @@ client.once("ready", async() => {
 		await writeFile(`${cacheDir}/commands.json`, JSON.stringify(commands));
 	}
 });
-
+client.on("debug", (info) => console.debug("OceanicBot Debug", info));
 client.on("interactionCreate", async(interaction) => {
 	switch (interaction.type) {
 		case InteractionTypes.APPLICATION_COMMAND: {

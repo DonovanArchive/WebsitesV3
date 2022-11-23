@@ -187,7 +187,7 @@ client.on("interactionCreate", async(interaction) => {
 								.toJSONRaw()
 						]
 					});
-					return interaction.createMessage({
+					return interaction.editParent({
 						content: "Key deleted.",
 						flags:   MessageFlags.EPHEMERAL
 					});

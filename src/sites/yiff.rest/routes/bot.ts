@@ -269,6 +269,10 @@ client.on("interactionCreate", async(interaction) => {
 								.toJSONRaw()
 						]
 					});
+					return interaction.createMessage({
+						content: `Your API key: \`${key}\`. Provide this in the \`Authorization\` header. You must still provide a unique user agent. If you have any issues, contact a developer.`,
+						flags:   MessageFlags.EPHEMERAL
+					});
 				}
 			}
 			break;

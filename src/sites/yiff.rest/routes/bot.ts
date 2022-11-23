@@ -229,9 +229,8 @@ client.on("interactionCreate", async(interaction) => {
 		case InteractionTypes.MODAL_SUBMIT: {
 			switch (interaction.data.customID) {
 				case "apikey-create": {
-					const row = interaction.data.components[0].components;
-					const name = row.find(c => c.customID === "apikey-create.name")!.value!;
-					const contact = row.find(c => c.customID === "apikey-create.contact")!.value!;
+					const name = interaction.data.components.find(c => c.customID === "apikey-create.name")!.value!;
+					const contact = interaction.data.components.find(c => c.customID === "apikey-create.contact")!.value!;
 					if (name.length < 3 || name.length > 50) return interaction.createMessage({
 						content: "Name must be between 3 and 5 characters.",
 						flags:   MessageFlags.EPHEMERAL

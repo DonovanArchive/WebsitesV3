@@ -26,13 +26,20 @@ client.once("ready", async() => {
 	console.log("Ready as", client.user.tag);
 	const commands = [
 		new ApplicationCommandBuilder(ApplicationCommandTypes.CHAT_INPUT, "apikey")
-			.addOption("create", ApplicationCommandOptionTypes.SUB_COMMAND)
-			.addOption("delete", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
-				sub.addOption("key", ApplicationCommandOptionTypes.STRING, (option) => {
-					option.setAutocomplete();
-				});
+			.addOption("create", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
+				sub.setDescription("Create an API key");
 			})
-			.addOption("list", ApplicationCommandOptionTypes.SUB_COMMAND)
+			.addOption("delete", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
+				sub.setDescription("Delete an API key")
+					.addOption("key", ApplicationCommandOptionTypes.STRING, (option) => {
+						option
+							.setDescription("The API key to delete")
+							.setAutocomplete();
+					});
+			})
+			.addOption("list", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
+				sub.setDescription("List your API keys");
+			})
 			.toJSON()
 	];
 	let cache: Array<CreateApplicationCommandOptions> = [];

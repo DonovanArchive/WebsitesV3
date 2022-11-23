@@ -26,6 +26,7 @@ client.once("ready", async() => {
 	console.log("Ready as", client.user.tag);
 	const commands = [
 		new ApplicationCommandBuilder(ApplicationCommandTypes.CHAT_INPUT, "apikey")
+			.setDescription("Manage your API keys")
 			.addOption("create", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
 				sub.setDescription("Create an API key");
 			})

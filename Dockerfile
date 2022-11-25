@@ -7,4 +7,3 @@ RUN apk add --no-cache lsof ffmpeg git
 RUN echo -e "update-notifier=false\nloglevel=error" > ~/.npmrc
 RUN npm install --development
 RUN npm run build
-CMD ["node", "/app/src/index.js"]

@@ -9,6 +9,7 @@ services:
       - modules:/app/node_modules
   butts-are.cool:
     image: node:18-alpine
+    command: node /app/src/index.js
     container_name: butts-are.cool
     volumes:
       - build:/app
@@ -45,6 +46,7 @@ services:
         ipv4_address: 172.19.2.2
   furry.cool:
     image: node:18-alpine
+    command: node /app/src/index.js
     container_name: furry.cool
     volumes:
       - build:/app
@@ -81,6 +83,7 @@ services:
         ipv4_address: 172.19.2.3
   maid.gay:
     image: node:18-alpine
+    command: node /app/src/index.js
     container_name: maid.gay
     volumes:
       - build:/app
@@ -116,6 +119,7 @@ services:
         ipv4_address: 172.19.2.4
   yiff.media:
     image: node:18-alpine
+    command: node /app/src/index.js
     container_name: yiff.media
     volumes:
       - build:/app
@@ -152,6 +156,7 @@ services:
         ipv4_address: 172.19.2.5
   yiff.rest:
     image: node:18-alpine
+    command: node /app/src/index.js
     container_name: yiff.rest
     volumes:
       - build:/app
@@ -192,6 +197,7 @@ services:
         ipv4_address: 172.19.2.6
   yiff.rocks:
     image: node:18-alpine
+    command: node /app/src/index.js
     container_name: yiff.rocks
     volumes:
       - build:/app
@@ -227,6 +233,7 @@ services:
         ipv4_address: 172.19.2.7
   oceanic.ws:
     image: node:18-alpine
+    command: node /app/src/index.js
     container_name: oceanic.ws
     volumes:
       - build:/app

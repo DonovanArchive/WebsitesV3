@@ -1,4 +1,4 @@
-import "source-map-support/register";
+import "source-map-support/register-hook-require";
 import moduleAlias from "module-alias";
 import { resolve } from "path/posix";
 const d = resolve(`${__dirname}/../../`);

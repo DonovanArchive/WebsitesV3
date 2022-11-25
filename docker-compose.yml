@@ -1,10 +1,18 @@
 version: "3"
 
 services:
+  build:
+    container_name: websites.build
+    build: .
+    volumes:
+      - build:/app/build
+      - modules:/app/node_modules
   butts-are.cool:
-    image: websites
+    image: node:18-alpine
     container_name: butts-are.cool
     volumes:
+      - build:/app
+      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - ./src/sites/butts-are.cool/views:/app/views
       - ./data/cache/butts-are.cool:/data/cache
@@ -25,7 +33,7 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      build_image:
+      build:
         condition: service_completed_successfully
       mariadb:
         condition: service_healthy
@@ -36,9 +44,11 @@ services:
       default:
         ipv4_address: 172.19.2.2
   furry.cool:
-    image: websites
+    image: node:18-alpine
     container_name: furry.cool
     volumes:
+      - build:/app
+      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - ./src/sites/furry.cool/views:/app/views
       - ./data/cache/furry.cool:/data/cache
@@ -60,7 +70,7 @@ services:
       test: lsof -i :443 || exit 1
     hostname: furry-cool.websites.containers.local
     depends_on:
-      build_image:
+      build:
         condition: service_completed_successfully
       mariadb:
         condition: service_healthy
@@ -70,9 +80,11 @@ services:
       default:
         ipv4_address: 172.19.2.3
   maid.gay:
-    image: websites
+    image: node:18-alpine
     container_name: maid.gay
     volumes:
+      - build:/app
+      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - ./src/sites/maid.gay/views:/app/views
       - ./data/cache/maid.gay:/data/cache
@@ -92,7 +104,7 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      build_image:
+      build:
         condition: service_completed_successfully
       mariadb:
         condition: service_healthy
@@ -103,9 +115,11 @@ services:
       default:
         ipv4_address: 172.19.2.4
   yiff.media:
-    image: websites
+    image: node:18-alpine
     container_name: yiff.media
     volumes:
+      - build:/app
+      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - ./src/sites/yiff.media/views:/app/views
       - ./data/cache/yiff.media:/data/cache
@@ -126,7 +140,7 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      build_image:
+      build:
         condition: service_completed_successfully
       mariadb:
         condition: service_healthy
@@ -137,9 +151,11 @@ services:
       default:
         ipv4_address: 172.19.2.5
   yiff.rest:
-    image: websites
+    image: node:18-alpine
     container_name: yiff.rest
     volumes:
+      - build:/app
+      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - ./src/sites/yiff.rest/views:/app/views
       - ./data/cache/yiff.rest:/data/cache
@@ -164,7 +180,7 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      build_image:
+      build:
         condition: service_completed_successfully
       mariadb:
         condition: service_healthy
@@ -175,9 +191,11 @@ services:
       default:
         ipv4_address: 172.19.2.6
   yiff.rocks:
-    image: websites
+    image: node:18-alpine
     container_name: yiff.rocks
     volumes:
+      - build:/app
+      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - ./src/sites/yiff.rocks/views:/app/views
       - ./data/cache/yiff.rocks:/data/cache
@@ -197,7 +215,7 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      build_image:
+      build:
         condition: service_completed_successfully
       mariadb:
         condition: service_healthy
@@ -208,9 +226,11 @@ services:
       default:
         ipv4_address: 172.19.2.7
   oceanic.ws:
-    image: websites
+    image: node:18-alpine
     container_name: oceanic.ws
     volumes:
+      - build:/app
+      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - ./src/sites/oceanic.ws/views:/app/views
       - ./data/cache/oceanic.ws:/data/cache
@@ -231,7 +251,7 @@ services:
       timeout: 2s
       test: lsof -i :443 || exit 1
     depends_on:
-      build_image:
+      build:
         condition: service_completed_successfully
       mariadb:
         condition: service_healthy

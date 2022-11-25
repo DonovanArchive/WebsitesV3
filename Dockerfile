@@ -1,9 +1,11 @@
-FROM node:16-alpine
+FROM node:18-alpine
 
 ENV TZ=America/Chicago
-WORKDIR /app
+WORKDIR /tmp
 COPY . .
 RUN apk add --no-cache lsof ffmpeg git
-RUN npm --no-update-notifier install --development
+RUN npm config set update-notifier false
+RUN npm install --development
 RUN npm run build
+RUN mv /tmp/build /app
 CMD ["node", "/app/src/index.js"]

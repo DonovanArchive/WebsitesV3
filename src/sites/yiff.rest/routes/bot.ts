@@ -1,4 +1,4 @@
-import { cacheDir, discord } from "@config";
+import { cacheDir, dev, discord } from "@config";
 import { APIKey } from "@models";
 import Webhooks from "@util/Webhooks";
 import { ApplicationCommandBuilder, ButtonColors, ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
@@ -53,7 +53,7 @@ client.once("ready", async() => {
 		await writeFile(`${cacheDir}/commands.json`, JSON.stringify(commands));
 	}
 });
-client.on("debug", (info) => console.debug("OceanicBot Debug", info));
+client.on("debug", (info) => console.debug("YiffAPI Bot Debug", info));
 client.on("interactionCreate", async(interaction) => {
 	switch (interaction.type) {
 		case InteractionTypes.APPLICATION_COMMAND: {
@@ -280,4 +280,4 @@ client.on("interactionCreate", async(interaction) => {
 	}
 });
 
-void client.connect();
+if (!dev) void client.connect();

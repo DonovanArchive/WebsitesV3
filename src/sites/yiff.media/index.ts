@@ -14,8 +14,9 @@ export default class YiffMedia extends Website {
 			.addSubdomain("i", express.static("/app/public/images"))
 			.addSubdomain("v2", express.static("/app/public/V2"))
 			.addSubdomain("v3", express.static("/data/yiffyapi_v3"))
+			.addSubdomain("thumbs", express.static("/data/e621-thumbnails"))
 			.addStatic("/app/public")
-			.addSubdomain("report", express.Router().use(async(req,res) => res.end("Resources cannot be reported through this method. If you are using YiffyAPI V2, the content currently found there will not be removed. For YiffyAPI V3, find the post on our main site (https://yiff.rest), and report it there.")))
+			.addSubdomain("report", express.Router().use(async(req,res) => res.end("Resources cannot be reported through this method. Please contact a developer for removal of content.")))
 			.addHandler(
 				express.Router()
 					.get("/", async(req, res) => res.render("index", { year: new Date().getFullYear(), layout: false }))

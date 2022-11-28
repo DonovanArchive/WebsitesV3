@@ -69,6 +69,8 @@
     "cheerio": "^1.0.0-rc.12",
     "chunk": "^0.0.3",
     "debug": "^4.3.4",
+    "e621": "^2.2.6",
+    "e621-thumbnailer": "^1.0.6",
     "express": "^4.18.2",
     "express-handlebars": "^6.0.6",
     "express-session": "^1.17.3",

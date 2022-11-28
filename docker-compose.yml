@@ -130,6 +130,7 @@ services:
       - /var/www/sites/yiff.media:/app/public
       - /opt/YiffyAPI/data/posts:/data/yiffyapi_v3
       - /etc/hostname:/data/hostname:ro
+      - /var/www/e621-thumbnails:/data/e621-thumbnails
     deploy:
         resources:
             limits:
@@ -168,6 +169,7 @@ services:
       - /var/www/sites/yiff.media/V2:/app/public/V2
       - /var/www/e621-thumb:/data/e621-thumb
       - /etc/hostname:/data/hostname:ro
+      - /var/www/e621-thumbnails:/data/e621-thumbnails
     deploy:
         resources:
             limits:

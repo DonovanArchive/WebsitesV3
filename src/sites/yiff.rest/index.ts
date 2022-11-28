@@ -1,5 +1,6 @@
 import v2Route from "./routes/api_v2";
 import discordRoute from "./routes/discord";
+import thumbsRoute from "./routes/thumbs";
 import Website from "@lib/Website";
 import { APIImage } from "@models";
 import { categories } from "@config";
@@ -43,6 +44,7 @@ export default class YiffRest extends Website {
 					}))
 			)
 			.addSubdomain("v2", v2Route)
+			.addSubdomain("thumbs", thumbsRoute)
 			.addSubdomain("dsc",
 				express.Router()
 					.use(async(req, res) => res.redirect("https://discord.yiff.rest"))

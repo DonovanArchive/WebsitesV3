@@ -2,9 +2,9 @@ import v2Route from "./routes/api_v2";
 import discordRoute from "./routes/discord";
 import thumbsRoute from "./routes/thumbs";
 import Website from "@lib/Website";
-import { APIImage } from "@models";
+import { ANON_FLAGS, APIImage, APIKey, APIKeyFlags } from "@models";
 import { categories } from "@config";
-import express from "express";
+import express, { Router } from "express";
 import Handlebars from "handlebars";
 import "./routes/bot"; // not an actual route
 
@@ -36,6 +36,47 @@ export default class YiffRest extends Website {
 			.init();
 
 		this
+			.addHandler(Router().use("/status", async(req, res) => {
+				let key: APIKey | null = null;
+				if (req.headers.authorization) {
+					key = await APIKey.get(req.headers.authorization);
+					if (key === null) return res.status(401).json({ success: false, error: "Invalid API Key" });
+					return res.status(200).json({
+						success: true,
+						data:    {
+							active:         key.active,
+							disabled:       key.disabled,
+							disabledReason: key.disabledReason,
+							unlimited:      key.unlimited,
+							rateLimit:      {
+								long: {
+									window: key.windowLong,
+									limit:  key.limitLong
+								},
+								short: {
+									window: key.windowShort,
+									limit:  key.limitShort
+								}
+							},
+							flags:    key.flags,
+							services: {
+								images: key.imagesAccess,
+								thumbs: key.thumbsAccess
+							}
+						}
+					});
+				} else {
+					return res.status(200).json({
+						success: true,
+						data:    {
+							services: {
+								images: (ANON_FLAGS & APIKeyFlags.IMAGES) === APIKeyFlags.IMAGES,
+								thumbs: (ANON_FLAGS & APIKeyFlags.THUMBS) === APIKeyFlags.THUMBS
+							}
+						}
+					});
+				}
+			}))
 			.addSubdomain("v1",
 				express.Router()
 					.use(async(req,res) => res.status(410).json({

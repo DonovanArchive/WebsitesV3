@@ -1,5 +1,5 @@
 import { cacheDir, dev, discord } from "@config";
-import { APIKey } from "@models";
+import { APIKey, DEFAULT_FLAGS } from "@models";
 import Webhooks from "@util/Webhooks";
 import { ApplicationCommandBuilder, ButtonColors, ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
 import type { ModalActionRow, MessageActionRow, CreateApplicationCommandOptions } from "oceanic.js";
@@ -247,7 +247,8 @@ client.on("interactionCreate", async(interaction) => {
 						contact,
 						disabled:        false,
 						disabled_reason: null,
-						active:          true
+						active:          true,
+						flags:           DEFAULT_FLAGS
 					});
 
 					void Webhooks.get("yiffyAPIKey").execute({

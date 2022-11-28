@@ -18,14 +18,21 @@ export interface RawAPIKey {
 	limit_long: number;
 	window_short: number;
 	limit_short: number;
+	flags: number;
 }
 export type APIKeyKV = DataTypes<APIKey>;
 export { APIKey };
+export enum APIKeyFlags {
+	IMAGES = 1 << 0,
+	THUMBS = 1 << 1
+}
 
 export const DEFAULT_WINDOW_LONG  = 10000;
 export const DEFAULT_LIMIT_LONG   = 7;
 export const DEFAULT_WINDOW_SHORT = 2000;
 export const DEFAULT_LIMIT_SHORT  = 2;
+export const DEFAULT_FLAGS = APIKeyFlags.IMAGES | APIKeyFlags.THUMBS;
+export const ANON_FLAGS = APIKeyFlags.IMAGES;
 export default class APIKey {
 	static DB = "yiffyapi2";
 	static TABLE = "apikeys";
@@ -42,6 +49,7 @@ export default class APIKey {
 	limitLong: number;
 	windowShort: number;
 	limitShort: number;
+	flags: number;
 	constructor(data: RawAPIKey) {
 		this.id = data.id;
 		this.unlimited = Boolean(data.unlimited);
@@ -56,6 +64,7 @@ export default class APIKey {
 		this.limitLong = data.limit_long;
 		this.windowShort = data.window_short;
 		this.limitShort = data.limit_short;
+		this.flags = data.flags ?? DEFAULT_FLAGS;
 		if (data.unlimited) {
 			this.windowLong  = 1000;
 			this.limitLong   = 1000;
@@ -85,4 +94,7 @@ export default class APIKey {
 	}
 
 	async delete() { return APIKey.delete(this.id); }
+
+	get imagesAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.IMAGES) === APIKeyFlags.IMAGES; }
+	get thumbsAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.THUMBS) === APIKeyFlags.THUMBS; }
 }

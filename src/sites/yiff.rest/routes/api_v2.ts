@@ -97,6 +97,11 @@ app
 					}
 				});
 
+				if (!key.imagesAccess) return res.status(403).json({
+					success: false,
+					error:   "You do not have access to this service."
+				});
+
 				const r = await RateLimiter.process(req, res, key.windowLong, key.limitLong, key.windowShort, key.limitShort);
 				if (!r) return;
 			}

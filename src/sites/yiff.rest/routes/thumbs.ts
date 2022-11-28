@@ -11,7 +11,7 @@ const app = Router();
 const e6 = new E621({ userAgent: "E621Thumbnailer/1.0.0 (donovan_dmc)" });
 const exists = (path: PathLike) => access(path).then(() => true, () => false);
 app
-	.use(async(req, res) => {
+	.use(async(req, res, next) => {
 		if (!req.headers.authorization) return res.status(401).json({ success: false, error: "An API key is required to use this service." });
 		const key = await APIKey.get(req.headers.authorization);
 		if (!key) return res.status(401).json({
@@ -33,8 +33,15 @@ app
 			}
 		});
 
+		if (!key.thumbsAccess) return res.status(403).json({
+			success: false,
+			error:   "You do not have access to this service."
+		});
+
 		const r = await RateLimiter.process(req, res, key.windowLong, key.limitLong, key.windowShort, key.limitShort);
 		if (!r) return;
+
+		return next();
 	})
 	.get("/:id", async(req, res) => {
 		let md5: string;

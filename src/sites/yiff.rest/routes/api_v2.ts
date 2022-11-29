@@ -3,6 +3,7 @@
 import mimeTypes from "../../../util/mimeTypes.json";
 import RateLimiter from "../util/RateLimiter";
 import checkForBlock from "../../../config/checkForBlock";
+import { YiffyErrorCodes } from "../../../util/Constants";
 import {
 	yiffyNotes,
 	categories,
@@ -80,17 +81,20 @@ app
 				const key = await APIKey.get(req.headers.authorization);
 				if (!key) return res.status(401).json({
 					success: false,
-					error:   "Invalid api key."
+					error:   "Invalid api key.",
+					code:    YiffyErrorCodes.INVALID_API_KEY
 				});
 
 				if (key.active === false) return res.status(401).json({
 					success: false,
-					error:   "Api key is inactive."
+					error:   "Api key is inactive.",
+					code:    YiffyErrorCodes.INACTIVE_API_KEY
 				});
 
 				if (key.disabled === true) return res.status(403).json({
 					success: false,
 					error:   "Your api key has been disabled by an administrator. See \"extra.reason\" for the reasoning.",
+					code:    YiffyErrorCodes.DISABLED_API_KEY,
 					extra:   {
 						reason:  key.disabledReason,
 						support: "https://yiff.rest/support"
@@ -99,7 +103,8 @@ app
 
 				if (!key.imagesAccess) return res.status(403).json({
 					success: false,
-					error:   "You do not have access to this service."
+					error:   "You do not have access to this service.",
+					code:    YiffyErrorCodes.SERVICE_NO_ACCESS
 				});
 
 				const r = await RateLimiter.process(req, res, key.windowLong, key.limitLong, key.windowShort, key.limitShort);
@@ -161,7 +166,8 @@ app
 			success: false,
 			error:   {
 				message: "Category not found in list."
-			}
+			},
+			code: YiffyErrorCodes.CATEGORY_NOT_FOUND
 		});
 	})
 	.get("/images/:id", async(req, res) => {
@@ -172,7 +178,8 @@ app
 		if (!img) {
 			if (format === 0) return res.status(404).json({
 				success: false,
-				error:   "No image was found with that id."
+				error:   "No image was found with that id.",
+				code:    YiffyErrorCodes.IMAGE_NOT_FOUND
 			});
 			else if (format === 1) return res.status(404).end();
 		} else {
@@ -196,9 +203,21 @@ app
 		const parts = req.originalUrl.split("?")[0].split("/").filter(r => !["", "V2"].includes(r.toUpperCase())).map(r => r.toLowerCase());
 		const responseType: "json" | "image" = parts[parts.length - 1] === "image" ? (parts.splice(parts.length - 1), "image") : "json";
 		const limit = req.query.amount ? Number(req.query.amount) : 1;
-		if (responseType === "image" && limit > 1) return res.status(400).json({ success: false, error: "Amount cannot be greater than one when requesting an image." });
-		if (limit < 1) return res.status(400).json({ success: false, error: "Amount must be 1 or more." });
-		if (limit > 5) return res.status(400).json({ success: false, error: "Amount must be 5 or less." });
+		if (responseType === "image" && limit > 1) return res.status(400).json({
+			success: false,
+			error:   "Amount cannot be greater than one when requesting an image.",
+			code:    YiffyErrorCodes.AMOUNT_GT_ONE_IMAGE
+		});
+		if (limit < 1) return res.status(400).json({
+			success: false,
+			error:   "Amount must be 1 or more.",
+			code:    YiffyErrorCodes.AMOUNT_LT_ONE
+		});
+		if (limit > 5) return res.status(400).json({
+			success: false,
+			error:   "Amount must be 5 or less.",
+			code:    YiffyErrorCodes.AMOUNT_GT_FIVE
+		});
 
 		const valid = [
 			"chris",
@@ -223,7 +242,8 @@ app
 						files:    await access(APIImage.categoryPath(category)).then(() => true, () => false) ? (await readdir(APIImage.categoryPath(category), { withFileTypes: true })).filter(f => !f.isDirectory()).length : null
 					}
 				}
-			}
+			},
+			code: YiffyErrorCodes.EMPTY_CATEGORY
 		});
 
 		try {
@@ -234,7 +254,7 @@ app
 				else if (req.headers.host !== "v2.yiff.rest") notes.push(yiffyNotes[2]);
 				if (!req.headers.authorization) notes.push(yiffyNotes[3]);
 				if (sizeLimit === -1) notes.push(yiffyNotes[5]);
-				notes.push(yiffyNotes[6]);
+				notes.push(yiffyNotes[6], yiffyNotes[7], yiffyNotes[8]);
 			}
 
 			void Webhooks.get("yiffy").execute({
@@ -279,7 +299,8 @@ app
 						error:   {
 							message: "invalid response type",
 							type:    "client"
-						}
+						},
+						code: YiffyErrorCodes.INVALID_RESPONSE_TYPE
 					});
 				}
 			}
@@ -287,7 +308,8 @@ app
 			console.error(err);
 			return res.status(500).json({
 				success: false,
-				error:   "There was an internal error while attempting to perform that action."
+				error:   "There was an internal error while attempting to perform that action.",
+				code:    YiffyErrorCodes.INTERNAL_ERROR
 			});
 		}
 	})
@@ -448,7 +470,8 @@ app
 	})
 	.use(async (req, res) => res.status(404).json({
 		success: false,
-		error:   "Unknown api route."
+		error:   "Unknown api route.",
+		code:    YiffyErrorCodes.UNKNOWN_ROUTE
 	}));
 
 export default app;

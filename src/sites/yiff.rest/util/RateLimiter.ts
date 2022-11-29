@@ -1,5 +1,5 @@
 import db from "../../../db";
-import { RedisTTLResponse } from "../../../util/Constants";
+import { RedisTTLResponse, YiffyErrorCodes } from "../../../util/Constants";
 import type { Request, Response } from "express";
 
 export default class RateLimiter {
@@ -84,6 +84,7 @@ export default class RateLimiter {
 			res.header("Retry-After", Math.ceil(expRoute === null ? routeWindow / 1000 : expRoute / 1000).toString()).status(429).json({
 				success: false,
 				error:   "Request Limit Exceeded",
+				code:    YiffyErrorCodes.RATELIMIT_ROUTE,
 				info:    {
 					limit:      routeLimit,
 					remaining:  (routeLimit - rRoute) < 0 ? 0 : (routeLimit - rRoute),
@@ -116,6 +117,7 @@ export default class RateLimiter {
 			res.header("Retry-After", Math.ceil(expGlobal === null ? routeWindow / 1000 : expGlobal / 1000).toString()).status(429).json({
 				success: false,
 				error:   "Request Limit Exceeded",
+				code:    YiffyErrorCodes.RATELIMIT_GLOBAL,
 				info:    {
 					limit:      globalLimit,
 					remaining:  (globalLimit - rGlobal) < 0 ? 0 : (globalLimit - rGlobal),

@@ -49,6 +49,7 @@ app
 		handleRateLimit,
 		async(req, res, next) => {
 			void APIUsage.track(req, "shortener");
+			if (req.headers.authorization === yiffRocksOverride) return next();
 			if (req.method === "GET" && !req.path.endsWith(".json")) return next();
 			else return validateAPIKey(true, APIKeyFlags.SHORTENER)(req, res, next);
 		}
@@ -69,9 +70,7 @@ app
 			code:    YiffyErrorCodes.SHORTENER_INVALID_CODE
 		});
 
-		const override_v3 = req.body.credit === `YiffyAPI-${yiffRocksOverride}`;
-		if (override_v3) req.body.credit = "YiffyAPI";
-		const override = override_v3;
+		const override = req.headers.authorization === yiffRocksOverride;
 
 		const inUse = await ShortURL.get(code);
 		if (inUse !== null && inUse.url !== req.body.url) {

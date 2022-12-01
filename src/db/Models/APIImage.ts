@@ -1,7 +1,7 @@
 import db from "@db";
-import { publicDir, userAgent, yiffRocksOverride } from "@config";
+import { publicDir, yiffRocksOverride } from "@config";
 import type { DataTypes } from "@uwu-codes/types";
-import YiffRocks from "yiff-rocks";
+import { fetch } from "undici";
 export interface RawAPIImage {
 	id: string;
 	artists: string;
@@ -18,7 +18,6 @@ export interface RawAPIImage {
 	cf_id: string | null;
 }
 
-YiffRocks.setUserAgent(userAgent);
 export type APIImageKV = DataTypes<APIImage>;
 export { APIImage };
 export default class APIImage {
@@ -132,6 +131,17 @@ export default class APIImage {
 	}
 
 	async getShortURL() {
-		return YiffRocks.create(this.cdnURL, `YiffyAPI-${yiffRocksOverride}`, this.id, false).then(v => v.fullURL);
+		const res = await fetch(`https://yiff-rocks.websites.containers.local/${this.id}`, {
+			method:  "POST",
+			headers: {
+				"Authorization": yiffRocksOverride,
+				"Content-Type":  "application/json"
+			},
+			body: JSON.stringify({
+				url:    this.cdnURL,
+				credit: "YiffyAPI"
+			})
+		});
+		return (await res.json() as { data: { url: string; }; }).data.url;
 	}
 }

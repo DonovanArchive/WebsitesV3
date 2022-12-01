@@ -12,7 +12,6 @@ import type { ExpressHandlebars } from "express-handlebars";
 import { create } from "express-handlebars";
 import subdomain from "express-subdomain";
 import type { ModuleImport } from "@uwu-codes/types";
-import { Strings } from "@uwu-codes/utils";
 import Handlebars from "handlebars";
 import dns from "dns";
 import * as http from "http";
@@ -78,8 +77,8 @@ export default class Website {
 		this.hbs = create({
 			extname:       "hbs",
 			defaultLayout: "default",
-			layoutsDir:    Strings.esm(this.dir, "views", "layouts"),
-			partialsDir:   Strings.esm(this.dir, "views", "partials")
+			layoutsDir:    "/app/views/layouts",
+			partialsDir:   "/app/views/partials"
 		});
 	}
 	setSecure(value: boolean) {

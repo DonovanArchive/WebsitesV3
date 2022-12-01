@@ -1,6 +1,12 @@
 import { YiffyErrorCodes } from "./Constants";
 import { dataDir, userAgents } from "../config";
-import { APIKey } from "../db/Models";
+import {
+	APIKey,
+	DEFAULT_LIMIT_LONG,
+	DEFAULT_LIMIT_SHORT,
+	DEFAULT_WINDOW_LONG,
+	DEFAULT_WINDOW_SHORT
+} from "../db/Models";
 import RateLimiter from "../sites/yiff.rest/util/RateLimiter";
 import checkDiskSpace from "check-disk-space";
 import type { NextFunction, Request, Response } from "express";
@@ -103,9 +109,9 @@ export function validateAPIKey(required = false, flag?: number) {
 }
 
 export default async function handleRateLimit(req: Request, res: Response, next: NextFunction) {
-	const key = await APIKey.getOrThrow(req.headers.authorization!);
+	const key = !req.headers.authorization ? null : await APIKey.get(req.headers.authorization);
 
-	const r = await RateLimiter.process(req, res, key.windowLong, key.limitLong, key.windowShort, key.limitShort);
+	const r = await RateLimiter.process(req, res, key?.windowLong ?? DEFAULT_WINDOW_LONG, key?.limitLong ?? DEFAULT_LIMIT_LONG, key?.windowShort ?? DEFAULT_WINDOW_SHORT, key?.limitShort ?? DEFAULT_LIMIT_SHORT);
 	if (!r) return;
 
 	return next();

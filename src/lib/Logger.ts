@@ -63,10 +63,10 @@ morgan
 	})
 	.token("status", (req: express.Request, res: ServerResponse) => {
 		if (!res) return "Unknown";
-		if (res.statusCode >= 500) return colors.red(String(res.statusCode));
-		else if (res.statusCode >= 400) return colors.yellow(String(res.statusCode));
-		else if (res.statusCode >= 300) return colors.cyan(String(res.statusCode));
-		else if (res.statusCode >= 200) return colors.green(String(res.statusCode));
+		if (res.statusCode >= 500) return colors.red(`${res.statusCode} ${res.statusMessage}`);
+		else if (res.statusCode >= 400) return colors.yellow(`${res.statusCode} ${res.statusMessage}`);
+		else if (res.statusCode >= 300) return colors.cyan(`${res.statusCode} ${res.statusMessage}`);
+		else if (res.statusCode >= 200) return colors.green(`${res.statusCode} ${res.statusMessage}`);
 		else return String(res.statusCode);
 	})
 	.token("ip", (req: express.Request) => {
@@ -89,9 +89,10 @@ morgan
 		else return ip;
 	})
 	.token("dt", () => new Date().toString().split(" ").slice(1, 5).join(" "))
-	.token("auth", (req: express.Request) => req.headers.authorization ? "[AUTH]" : "");
+	.token("auth", (req: express.Request) => req.headers.authorization ? "[AUTH]:" : ":")
+	.token("ua", (req: express.Request) => req.headers["user-agent"] || "NONE");
 
-export const fileLogger = morgan("[:dt]:auth: :hostnamenc - :ipnc || HTTP/:http-version :methodnc :urlnc :statusnc :response-time ms - :res[content-length] - :user-agent", {
+export const fileLogger = morgan("[:dt]:auth :hostnamenc - :ipnc || HTTP/:http-version :methodnc :urlnc :statusnc :response-time ms - :res[content-length] - :user-agent", {
 	stream
 });
-export const consoleLogger = morgan(`[:dt]:auth: :hostname - :ip || HTTP/:http-version :method :url :status :response-time ms - ${colors.blue(":res[content-length]")}`);
+export const consoleLogger = morgan(`[:dt]:auth :hostname - :ip || HTTP/:http-version :method :url :status :response-time ms - ${colors.blue(":res[content-length]")}`);

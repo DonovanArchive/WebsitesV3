@@ -37,7 +37,7 @@ services:
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
-      - ./data/shared:/data/shared
+      - ./data/shared:/data
       - ./src/sites/butts-are.cool/views:/app/views
       - ./data/cache/butts-are.cool:/data/cache
       - /var/www/sites/butts-are.cool:/app/public
@@ -56,7 +56,7 @@ services:
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
-      - ./data/shared:/data/shared
+      - ./data/shared:/data
       - ./src/sites/furry.cool/views:/app/views
       - ./data/cache/furry.cool:/data/cache
       - /var/www/sites/furry.cool:/app/public
@@ -75,7 +75,7 @@ services:
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
-      - ./data/shared:/data/shared
+      - ./data/shared:/data
       - ./src/sites/maid.gay/views:/app/views
       - ./data/cache/maid.gay:/data/cache
       - /var/www/sites/maid.gay:/app/public
@@ -93,7 +93,7 @@ services:
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
-      - ./data/shared:/data/shared
+      - ./data/shared:/data
       - ./src/sites/yiff.media/views:/app/views
       - ./data/cache/yiff.media:/data/cache
       - /var/www/sites/yiff.media:/app/public
@@ -112,7 +112,7 @@ services:
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
-      - ./data/shared:/data/shared
+      - ./data/shared:/data
       - ./src/sites/yiff.rest/views:/app/views
       - ./data/cache/yiff.rest:/data/cache
       - /var/www/sites/yiff.rest:/app/public
@@ -136,7 +136,7 @@ services:
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
-      - ./data/shared:/data/shared
+      - ./data/shared:/data
       - ./src/sites/yiff.rocks/views:/app/views
       - ./data/cache/yiff.rocks:/data/cache
       - /var/www/sites/yiff.rocks:/app/public
@@ -154,7 +154,7 @@ services:
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
-      - ./data/shared:/data/shared
+      - ./data/shared:/data
       - ./src/sites/oceanic.ws/views:/app/views
       - ./data/cache/oceanic.ws:/data/cache
       - /var/www/sites/oceanic.ws:/app/public

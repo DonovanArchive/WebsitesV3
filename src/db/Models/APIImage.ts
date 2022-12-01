@@ -131,7 +131,7 @@ export default class APIImage {
 	}
 
 	async getShortURL() {
-		const res = await fetch(`https://yiff-rocks.websites.containers.local/${this.id}`, {
+		const res = await fetch("https://yiff-rocks.websites.containers.local/create", {
 			method:  "POST",
 			headers: {
 				"Authorization": yiffRocksOverride,

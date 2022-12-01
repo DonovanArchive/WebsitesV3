@@ -13,6 +13,7 @@ import { create } from "express-handlebars";
 import subdomain from "express-subdomain";
 import type { ModuleImport } from "@uwu-codes/types";
 import { Strings } from "@uwu-codes/utils";
+import Handlebars from "handlebars";
 import dns from "dns";
 import * as http from "http";
 import * as https from "https";

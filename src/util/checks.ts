@@ -18,7 +18,7 @@ export async function checkForBlock(req: Request, res: Response, next: NextFunct
 	const blocked = await access(`${dataDir}/shared/blocked.json`).then(async() => {
 		const list = (JSON.parse(await readFile(`${dataDir}/shared/blocked-ips.json`, "utf8"))) as Array<BlockEntry>;
 		return list.find(entry => entry.ip === ip) ?? null;
-	}, () => null);
+	}).catch(() => null);
 	if (blocked !== null) return res.status(403).json({
 		success: false,
 		error:   "You have been blocked from accessing this service.",

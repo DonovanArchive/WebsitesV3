@@ -2,10 +2,9 @@
 /// <reference path="../../../util/@types/simple-thumbnail.d.ts" />
 import mimeTypes from "../../../util/mimeTypes.json";
 import { YiffyErrorCodes } from "../../../util/Constants";
-import checkForBlock from "../../../util/checkForBlock";
 import categories from "../util/categories.json";
 import yiffyNotes from "../util/notes.json";
-import handleRateLimit, { validateAPIKey } from "../../../util/checks";
+import handleRateLimit, { checkForBlock, validateAPIKey } from "../../../util/checks";
 import db from "../../../db";
 import { publicDir } from "@config";
 import diskSpaceCheck from "@util/diskSpaceCheck";

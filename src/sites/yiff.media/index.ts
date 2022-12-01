@@ -19,7 +19,7 @@ export default class YiffMedia extends Website {
 			.addSubdomain("report", express.Router().use(async(req,res) => res.end("Resources cannot be reported through this method. Please contact a developer for removal of content.")))
 			.addHandler(
 				express.Router()
-					.get("/", async(req, res) => res.render("index", { year: new Date().getFullYear(), layout: false }))
+					.get("/", async(req, res) => res.render("index"))
 					.get("/support", async (req, res) => res.redirect("https://api.maid.gay/links/support?source=website"))
 					.get("/inv", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))
 					.get("/invite", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))

@@ -20,8 +20,8 @@ export default class MaidGay extends Website {
 			.addStatic("/app/public")
 			.addHandler(
 				express.Router()
-					.get("/", async(req, res) => res.render("index", { year: new Date().getFullYear(), layout: false }))
-					.get("/privacy", async(req, res) => res.render("privacy", { layout: false }))
+					.get("/", async(req, res) => res.render("index"))
+					.get("/privacy", async(req, res) => res.render("privacy"))
 					.get("/support", async (req, res) => res.redirect("https://api.maid.gay/links/support?source=website"))
 					.get("/inv", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))
 					.get("/invite", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))

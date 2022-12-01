@@ -96,10 +96,7 @@ export default class YiffRest extends Website {
 								.push({ name: c.name, db: c.db, count: i.length, hasImages: i.length > 0 });
 						}));
 
-						return res.render("state", {
-							images,
-							layout: false
-						});
+						return res.render("state", { images });
 					})
 			)
 			.addSubdomain("assets", express.static("/app/public/assets"))
@@ -108,7 +105,7 @@ export default class YiffRest extends Website {
 			.addStatic("/app/public")
 			.addHandler(
 				express.Router()
-					.get("/", async(req, res) => res.render("index", { layout: false }))
+					.get("/", async(req, res) => res.render("index"))
 					.get("/support", async (req, res) => res.redirect("https://discord.gg/xDrFswTW4h"))
 					.use("/V1", async (req, res) => res.status(410).json({
 						success: false,

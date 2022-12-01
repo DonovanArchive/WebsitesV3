@@ -16,7 +16,7 @@ export default class FurryCool extends Website {
 			.addSubdomain("i", express.static("/app/public/images"))
 			.addHandler(
 				express.Router()
-					.get("/", async(req, res) => res.render("index", { year: new Date().getFullYear(), layout: false }))
+					.get("/", async(req, res) => res.render("index"))
 			);
 	}
 }

@@ -1,8 +1,7 @@
 import E621Thumbnails, { filePath, url } from "../../../lib/E621Thumbnails";
 import { APIKeyFlags, APIUsage } from "../../../db/Models";
 import { YiffyErrorCodes } from "../../../util/Constants";
-import handleRateLimit, { userAgentCheck, validateAPIKey } from "../../../util/checks";
-import checkForBlock from "../../../util/checkForBlock";
+import handleRateLimit, { checkForBlock, userAgentCheck, validateAPIKey } from "../../../util/checks";
 import { Router } from "express";
 import E621 from "e621";
 import { access } from "fs/promises";

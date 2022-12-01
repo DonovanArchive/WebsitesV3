@@ -1,5 +1,4 @@
-import checkForBlock from "../../../util/checkForBlock";
-import handleRateLimit, { validateAPIKey } from "../../../util/checks";
+import handleRateLimit, { checkForBlock, validateAPIKey } from "../../../util/checks";
 import { YiffyErrorCodes } from "../../../util/Constants";
 import { yiffRocksOverride } from "@config";
 import userAgentCheck from "@util/userAgentCheck";
@@ -22,7 +21,7 @@ app
 
 		return res.status(204).end();
 	})
-	.get("/", async (req, res) => res.status(200).end("We're currently rebuilding a better looking site to display here. For now, the current purpose for this domain still works: https://npm.im/yiff-rocks"))
+	.get("/", async (req, res) => res.status(200).render("index"))
 	.use(async (req, res, next) => {
 		let format: "json" | "redirect" = (req.query.format?.toString()?.toLowerCase() || req.originalUrl.split("?")[0].split(".").slice(-1)[0]?.toLowerCase()) as "json" | "redirect";
 		if (!["json"].includes(format)) format = "json";
@@ -158,9 +157,8 @@ app
 		const short = await ShortURL.get(code);
 
 		if (preview && short !== null) return res.status(200).render("preview", {
-			year:   new Date().getFullYear(),
-			url:    short.url,
-			layout: false
+			year: new Date().getFullYear(),
+			url:  short.url
 		});
 
 		switch (format) {

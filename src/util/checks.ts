@@ -1,5 +1,5 @@
 import { YiffyErrorCodes } from "./Constants";
-import { dataDir, userAgents } from "../config";
+import { userAgents } from "../config";
 import {
 	APIKey,
 	DEFAULT_LIMIT_LONG,
@@ -21,8 +21,8 @@ export async function checkForBlock(req: Request, res: Response, next: NextFunct
 	const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
 
 	// we reread the file each time to avoid having to restart to update the list
-	const blocked = await access(`${dataDir}/shared/blocked.json`).then(async() => {
-		const list = (JSON.parse(await readFile(`${dataDir}/shared/blocked-ips.json`, "utf8"))) as Array<BlockEntry>;
+	const blocked = await access("/app/src/config/blocked-ips.json").then(async() => {
+		const list = (JSON.parse(await readFile("/app/src/config/blocked-ips.json", "utf8"))) as Array<BlockEntry>;
 		return list.find(entry => entry.ip === ip) ?? null;
 	}).catch(() => null);
 	if (blocked !== null) return res.status(403).json({

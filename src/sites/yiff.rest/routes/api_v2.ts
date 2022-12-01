@@ -2,8 +2,8 @@
 /// <reference path="../../../util/@types/simple-thumbnail.d.ts" />
 import mimeTypes from "../../../util/mimeTypes.json";
 import RateLimiter from "../util/RateLimiter";
-import checkForBlock from "../../../config/checkForBlock";
 import { YiffyErrorCodes } from "../../../util/Constants";
+import checkForBlock from "../../../util/checkForBlock";
 import {
 	yiffyNotes,
 	categories,

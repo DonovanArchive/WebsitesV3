@@ -1,5 +1,27 @@
 version: "3"
 
+x-shared: &shared  
+  image: node:18-alpine
+  command: node /app/src/index.js
+  deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 256M
+  restart: always
+  healthcheck:
+    interval: 10s
+    timeout: 2s
+    test: lsof -i :443 || exit 1
+  depends_on:
+    build:
+      condition: service_completed_successfully
+    mariadb:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
 services:
   build:
     container_name: websites.build
@@ -8,264 +30,137 @@ services:
       - build:/app/build
       - modules:/app/node_modules
   butts-are.cool:
-    image: node:18-alpine
-    command: node /app/src/index.js
+    <<: *shared
     container_name: butts-are.cool
     volumes:
       - build:/app
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
+      - /etc/hostname:/data/hostname:ro
+      - ./data/shared:/data/shared
       - ./src/sites/butts-are.cool/views:/app/views
       - ./data/cache/butts-are.cool:/data/cache
       - /var/www/sites/butts-are.cool:/app/public
       - /var/www/screenshots:/data/screenshots
-      - /etc/hostname:/data/hostname:ro
-    deploy:
-        resources:
-            limits:
-              memory: 1024M
-            reservations:
-              memory: 256M
     environment:
       SITE: butts-are.cool
-    restart: always
-    healthcheck:
-      interval: 10s
-      timeout: 2s
-      test: lsof -i :443 || exit 1
-    depends_on:
-      build:
-        condition: service_completed_successfully
-      mariadb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     hostname: butts-are-cool.websites.containers.local
     networks:
       default:
         ipv4_address: 172.19.2.2
   furry.cool:
-    image: node:18-alpine
-    command: node /app/src/index.js
+    <<: *shared
     container_name: furry.cool
     volumes:
       - build:/app
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
+      - /etc/hostname:/data/hostname:ro
+      - ./data/shared:/data/shared
       - ./src/sites/furry.cool/views:/app/views
       - ./data/cache/furry.cool:/data/cache
       - /var/www/sites/furry.cool:/app/public
       - /var/www/screenshots:/data/screenshots
-      - /etc/hostname:/data/hostname:ro
-    deploy:
-        resources:
-            limits:
-              memory: 1024M
-            reservations:
-              memory: 256M
     environment:
       SITE: furry.cool
-    restart: always
-    healthcheck:
-      interval: 10s
-      timeout: 2s
-      test: lsof -i :443 || exit 1
     hostname: furry-cool.websites.containers.local
-    depends_on:
-      build:
-        condition: service_completed_successfully
-      mariadb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
       default:
         ipv4_address: 172.19.2.3
   maid.gay:
-    image: node:18-alpine
-    command: node /app/src/index.js
+    <<: *shared
     container_name: maid.gay
     volumes:
       - build:/app
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
+      - /etc/hostname:/data/hostname:ro
+      - ./data/shared:/data/shared
       - ./src/sites/maid.gay/views:/app/views
       - ./data/cache/maid.gay:/data/cache
       - /var/www/sites/maid.gay:/app/public
-      - /etc/hostname:/data/hostname:ro
-    deploy:
-        resources:
-            limits:
-              memory: 1024M
-            reservations:
-              memory: 256M
     environment:
       SITE: maid.gay
-    restart: always
-    healthcheck:
-      interval: 10s
-      timeout: 2s
-      test: lsof -i :443 || exit 1
-    depends_on:
-      build:
-        condition: service_completed_successfully
-      mariadb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     hostname: maid-gay.websites.containers.local
     networks:
       default:
         ipv4_address: 172.19.2.4
   yiff.media:
-    image: node:18-alpine
-    command: node /app/src/index.js
+    <<: *shared
     container_name: yiff.media
     volumes:
       - build:/app
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
+      - /etc/hostname:/data/hostname:ro
+      - ./data/shared:/data/shared
       - ./src/sites/yiff.media/views:/app/views
       - ./data/cache/yiff.media:/data/cache
       - /var/www/sites/yiff.media:/app/public
-      - /opt/YiffyAPI/data/posts:/data/yiffyapi_v3
-      - /etc/hostname:/data/hostname:ro
       - /var/www/e621-thumbnails:/data/e621-thumbnails
-    deploy:
-        resources:
-            limits:
-              memory: 1024M
-            reservations:
-              memory: 256M
     environment:
       SITE: yiff.media
-    restart: always
-    healthcheck:
-      interval: 10s
-      timeout: 2s
-      test: lsof -i :443 || exit 1
-    depends_on:
-      build:
-        condition: service_completed_successfully
-      mariadb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     hostname: yiff-media.websites.containers.local
     networks:
       default:
         ipv4_address: 172.19.2.5
   yiff.rest:
-    image: node:18-alpine
-    command: node /app/src/index.js
+    <<: *shared
     container_name: yiff.rest
     volumes:
       - build:/app
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
+      - /etc/hostname:/data/hostname:ro
+      - ./data/shared:/data/shared
       - ./src/sites/yiff.rest/views:/app/views
       - ./data/cache/yiff.rest:/data/cache
       - /var/www/sites/yiff.rest:/app/public
       - /var/www/sites/yiff.media/V2:/app/public/V2
       - /var/www/e621-thumb:/data/e621-thumb
-      - /etc/hostname:/data/hostname:ro
       - /var/www/e621-thumbnails:/data/e621-thumbnails
-    deploy:
-        resources:
-            limits:
-              memory: 1024M
-            reservations:
-              memory: 256M
     environment:
       SITE: yiff.rest
       FFMPEG_PATH: /usr/bin/ffmpeg
       FFPROBE_PATH: /usr/bin/ffprobe
       NODE_TLS_REJECT_UNAUTHORIZED: 0
-    restart: always
-    healthcheck:
-      interval: 10s
-      timeout: 2s
-      test: lsof -i :443 || exit 1
-    depends_on:
-      build:
-        condition: service_completed_successfully
-      mariadb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     hostname: yiff-rest.websites.containers.local
     networks:
       default:
         ipv4_address: 172.19.2.6
   yiff.rocks:
-    image: node:18-alpine
-    command: node /app/src/index.js
+    <<: *shared
     container_name: yiff.rocks
     volumes:
       - build:/app
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
+      - /etc/hostname:/data/hostname:ro
+      - ./data/shared:/data/shared
       - ./src/sites/yiff.rocks/views:/app/views
       - ./data/cache/yiff.rocks:/data/cache
       - /var/www/sites/yiff.rocks:/app/public
-      - /etc/hostname:/data/hostname:ro
-    deploy:
-        resources:
-            limits:
-              memory: 1024M
-            reservations:
-              memory: 256M
     environment:
       SITE: yiff.rocks
-    restart: always
-    healthcheck:
-      interval: 10s
-      timeout: 2s
-      test: lsof -i :443 || exit 1
-    depends_on:
-      build:
-        condition: service_completed_successfully
-      mariadb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     hostname: yiff-rocks.websites.containers.local
     networks:
       default:
         ipv4_address: 172.19.2.7
   oceanic.ws:
-    image: node:18-alpine
-    command: node /app/src/index.js
+    <<: *shared
     container_name: oceanic.ws
     volumes:
       - build:/app
       - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
+      - /etc/hostname:/data/hostname:ro
+      - ./data/shared:/data/shared
       - ./src/sites/oceanic.ws/views:/app/views
       - ./data/cache/oceanic.ws:/data/cache
       - /var/www/sites/oceanic.ws:/app/public
-      - /etc/hostname:/data/hostname:ro
       - /var/www/oceanic-docs:/data/docs
-    deploy:
-        resources:
-            limits:
-              memory: 1024M
-            reservations:
-              memory: 256M
     environment:
       SITE: oceanic.ws
-    restart: always
-    healthcheck:
-      interval: 10s
-      timeout: 2s
-      test: lsof -i :443 || exit 1
-    depends_on:
-      build:
-        condition: service_completed_successfully
-      mariadb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     hostname: owo-whats-this-dev.websites.containers.local
     networks:
       default:

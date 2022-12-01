@@ -6,6 +6,7 @@ import categories from "../util/categories.json";
 import yiffyNotes from "../util/notes.json";
 import handleRateLimit, { checkForBlock, validateAPIKey } from "../../../util/checks";
 import db from "../../../db";
+import Logger from "../../../util/Logger";
 import { publicDir } from "@config";
 import diskSpaceCheck from "@util/diskSpaceCheck";
 import userAgentCheck from "@util/userAgentCheck";
@@ -177,25 +178,29 @@ app
 				notes.push(yiffyNotes[6], yiffyNotes[7], yiffyNotes[8]);
 			}
 
-			void Webhooks.get("yiffy").execute({
-				embeds: [
-					{
-						title:       "V2 API Request",
-						description: [
-							`Host: **${req.headers.host!}**`,
-							`Path: **${req.originalUrl}**`,
-							`Category: \`${category}\``,
-							`Auth: ${req.headers.authorization ? `**Yes** (\`${req.headers.authorization}\`)` : "**No**"}`,
-							`Response Type: **${responseType}**`,
-							`Size Limit: **${sizeLimit === -1 ? "None" : bytes(sizeLimit)}**`,
-							`User Agent: \`${req.headers["user-agent"]!}\``,
-							`IP: **${req.ip}**`
-						].join("\n"),
-						color:     category.startsWith("animals") ? 0xFFD700 : ["furry.bulge", "furry.butts"].includes(category) || category.startsWith("furry.yiff") ? 0xDC143C : 0x008000,
-						timestamp: new Date().toISOString()
-					}
-				]
-			});
+			try {
+				void Webhooks.get("yiffy").execute({
+					embeds: [
+						{
+							title:       "V2 API Request",
+							description: [
+								`Host: **${req.headers.host!}**`,
+								`Path: **${req.originalUrl}**`,
+								`Category: \`${category}\``,
+								`Auth: ${req.headers.authorization ? `**Yes** (\`${req.headers.authorization}\`)` : "**No**"}`,
+								`Response Type: **${responseType}**`,
+								`Size Limit: **${sizeLimit === -1 ? "None" : bytes(sizeLimit)}**`,
+								`User Agent: \`${req.headers["user-agent"]!}\``,
+								`IP: **${req.ip}**`
+							].join("\n"),
+							color:     category.startsWith("animals") ? 0xFFD700 : ["furry.bulge", "furry.butts"].includes(category) || category.startsWith("furry.yiff") ? 0xDC143C : 0x008000,
+							timestamp: new Date().toISOString()
+						}
+					]
+				});
+			} catch (err) {
+				Logger.getLogger(`${req.hostname}:${req.path}`).error("Failed To Send Webhook:", err);
+			}
 			switch (responseType) {
 				case "json": {
 					return res.status(200).json({

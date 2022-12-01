@@ -1,3 +1,4 @@
+import Logger from "../../util/Logger";
 import db from "@db";
 import { publicDir, yiffRocksOverride } from "@config";
 import type { DataTypes } from "@uwu-codes/types";
@@ -102,7 +103,10 @@ export default class APIImage {
 	async getJSON() {
 		return {
 			...this.json,
-			shortURL: await this.getShortURL()
+			shortURL: await this.getShortURL().catch((err) => {
+				Logger.getLogger("APIImage:getJSON").error("Failed to get short url for image %s:", this.id, err);
+				return null;
+			})
 		};
 	}
 
@@ -136,7 +140,8 @@ export default class APIImage {
 			headers: {
 				"Authorization": yiffRocksOverride,
 				"Content-Type":  "application/json",
-				"User-Agent":    "YiffyAPI/2.0.0 (https://yiff.rest)"
+				"User-Agent":    "YiffyAPI/2.0.0 (https://yiff.rest)",
+				"Host":          "yiff.rocks"
 			},
 			body: JSON.stringify({
 				url:    this.cdnURL,

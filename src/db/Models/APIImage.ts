@@ -104,7 +104,7 @@ export default class APIImage {
 		return {
 			...this.json,
 			shortURL: await this.getShortURL().catch((err) => {
-				Logger.getLogger("APIImage:getJSON").error("Failed to get short url for image %s:", this.id, err);
+				Logger.getLogger("APIImage:getJSON").error(`Failed to get short url for image "${this.id}":`, err);
 				return null;
 			})
 		};

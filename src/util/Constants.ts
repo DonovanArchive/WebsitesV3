@@ -4,10 +4,11 @@ export enum RedisTTLResponse {
 }
 
 export enum YiffyErrorCodes {
-	INTERNAL_ERROR   = 0,
-	RATELIMIT_ROUTE  = 1000,
-	RATELIMIT_GLOBAL = 1001,
+	INTERNAL_ERROR                  = 0,
+	RATELIMIT_ROUTE                 = 1000,
+	RATELIMIT_GLOBAL                = 1001,
 	SUSPECTED_BROWSER_IMPERSONATION = 1002,
+	DOWN_FOR_MAINTAINANCE           = 1003,
 
 	INVALID_API_KEY  = 1010,
 	INACTIVE_API_KEY = 1011,

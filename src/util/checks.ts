@@ -108,7 +108,7 @@ export function validateAPIKey(required = false, flag?: number) {
 	});
 }
 
-export default async function handleRateLimit(req: Request, res: Response, next: NextFunction) {
+export async function handleRateLimit(req: Request, res: Response, next: NextFunction) {
 	const key = !req.headers.authorization ? null : await APIKey.get(req.headers.authorization);
 
 	const r = await RateLimiter.process(req, res, key?.windowLong ?? DEFAULT_WINDOW_LONG, key?.limitLong ?? DEFAULT_LIMIT_LONG, key?.windowShort ?? DEFAULT_WINDOW_SHORT, key?.limitShort ?? DEFAULT_LIMIT_SHORT);

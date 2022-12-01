@@ -4,12 +4,16 @@ import mimeTypes from "../../../util/mimeTypes.json";
 import { YiffyErrorCodes } from "../../../util/Constants";
 import categories from "../util/categories.json";
 import yiffyNotes from "../util/notes.json";
-import handleRateLimit, { checkForBlock, validateAPIKey } from "../../../util/checks";
+import {
+	checkForBlock,
+	validateAPIKey,
+	handleRateLimit,
+	diskSpaceCheck,
+	userAgentCheck
+} from "../../../util/checks";
 import db from "../../../db";
 import Logger from "../../../util/Logger";
-import { dev, publicDir } from "@config";
-import diskSpaceCheck from "@util/diskSpaceCheck";
-import userAgentCheck from "@util/userAgentCheck";
+import { publicDir } from "@config";
 import { APIImage, APIUsage } from "@models";
 import { APIKeyFlags } from "@models/APIKey";
 import Webhooks from "@util/Webhooks";
@@ -25,10 +29,6 @@ app
 	.get("/state", async (req, res) => res.redirect("https://state.yiff.rest"))
 	.get("/online", async (req, res) => res.status(200).json({ success: true, uptime: process.uptime() }))
 	.use(
-		async(req, res, next) => {
-			if (dev) return next();
-			else return res.status(503).json({ success: false, error: "We are currently experiencing some internal issues, please stand by.", code: YiffyErrorCodes.DOWN_FOR_MAINTAINANCE });
-		},
 		checkForBlock,
 		diskSpaceCheck,
 		userAgentCheck,

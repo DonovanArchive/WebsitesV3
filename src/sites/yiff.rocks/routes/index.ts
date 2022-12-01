@@ -1,7 +1,6 @@
-import handleRateLimit, { checkForBlock, validateAPIKey } from "../../../util/checks";
+import { checkForBlock, userAgentCheck, validateAPIKey, handleRateLimit } from "../../../util/checks";
 import { YiffyErrorCodes } from "../../../util/Constants";
 import { yiffRocksOverride } from "@config";
-import userAgentCheck from "@util/userAgentCheck";
 import { APIKeyFlags, APIUsage, ShortURL } from "@db/Models";
 import Webhooks from "@util/Webhooks";
 import type { Request } from "express";

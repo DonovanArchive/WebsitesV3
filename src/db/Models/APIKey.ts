@@ -23,15 +23,16 @@ export interface RawAPIKey {
 export type APIKeyKV = DataTypes<APIKey>;
 export { APIKey };
 export enum APIKeyFlags {
-	IMAGES = 1 << 0,
-	THUMBS = 1 << 1
+	IMAGES    = 1 << 0,
+	THUMBS    = 1 << 1,
+	SHORTENER = 1 << 2,
 }
 
 export const DEFAULT_WINDOW_LONG  = 10000;
 export const DEFAULT_LIMIT_LONG   = 7;
 export const DEFAULT_WINDOW_SHORT = 2000;
 export const DEFAULT_LIMIT_SHORT  = 2;
-export const DEFAULT_FLAGS = APIKeyFlags.IMAGES | APIKeyFlags.THUMBS;
+export const DEFAULT_FLAGS = APIKeyFlags.IMAGES | APIKeyFlags.THUMBS | APIKeyFlags.SHORTENER;
 export const ANON_FLAGS = APIKeyFlags.IMAGES;
 export default class APIKey {
 	static DB = "yiffyapi2";
@@ -78,6 +79,12 @@ export default class APIKey {
 		return db.query(`SELECT * FROM ${APIKey.DB}.${APIKey.TABLE} WHERE id = ? LIMIT 1`, [id]).then((k: Array<RawAPIKey>) => k.length === 0 ? null : new APIKey(k[0]));
 	}
 
+	static async getOrThrow(id: string): Promise<APIKey> {
+		const key = await APIKey.get(id);
+		if (!key) throw new Error(`Invalid API Key: ${id}`);
+		return key;
+	}
+
 	static async getOwned(owner: string): Promise<Array<APIKey>> {
 		return db.query(`SELECT * FROM ${APIKey.DB}.${APIKey.TABLE} WHERE owner = ?`, [owner]).then((k: Array<RawAPIKey>) => k.map(d => new APIKey(d)));
 	}
@@ -97,4 +104,5 @@ export default class APIKey {
 
 	get imagesAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.IMAGES) === APIKeyFlags.IMAGES; }
 	get thumbsAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.THUMBS) === APIKeyFlags.THUMBS; }
+	get shortenerAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.SHORTENER) === APIKeyFlags.SHORTENER; }
 }

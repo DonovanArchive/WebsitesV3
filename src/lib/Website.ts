@@ -20,6 +20,26 @@ import path from "path";
 import { randomBytes } from "crypto";
 import { readFileSync } from "fs";
 
+/* eslint-disable */
+Handlebars.registerHelper("when", (operand_1, operator, operand_2, options) => {
+	const operators = {
+		"eq":    (l: number, r: number) => l === r,
+		"noteq": (l: number, r: number) => l !== r,
+		"gt":    (l: number, r: number) => (+l) > (+r),
+		"gteq":  (l: number, r: number) => ((+l) > (+r)) || (l === r),
+		"lt":    (l: number, r: number) => (+l) < (+r),
+		"lteq":  (l: number, r: number) => ((+l) < (+r)) || (l === r),
+		"or":    (l: number, r: number) => l || r,
+		"and":   (l: number, r: number) => l && r,
+		"%":     (l: number, r: number) => (l % r) === 0
+	};
+	const result = operators[operator.trim() as keyof typeof operators](operand_1,operand_2);
+	if (result) return options.fn(this);
+	return options.inverse(this);
+});
+/* eslint-enable */
+Handlebars.registerHelper("year", () => new Date().getFullYear());
+
 export interface GenericSiteInfo {
 	host: string;
 	port: number;

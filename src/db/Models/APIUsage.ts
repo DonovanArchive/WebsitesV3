@@ -8,7 +8,6 @@ export interface RawAPIUsage {
 	key: string | null;
 	ip: string;
 	user_agent: string;
-	type: string;
 	method: string;
 	path: string;
 	timestamp: string;
@@ -22,7 +21,6 @@ export default class APIUsage {
 	key: string | null;
 	ip: string;
 	userAgent: string;
-	type: string;
 	method: string;
 	path: string;
 	timestamp: string;
@@ -31,27 +29,31 @@ export default class APIUsage {
 		this.key = data.key;
 		this.ip = data.ip;
 		this.userAgent = data.user_agent;
-		this.type = data.type;
 		this.method = data.method;
 		this.path = data.path;
 		this.timestamp = data.timestamp;
 	}
 
-	static async track(category: string, req: Request) {
+	static async track(req: Request, service: string) {
 		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
-		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} (\`key\`, ip, user_agent, type, method, path, referrer, query) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
+		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} (\`key\`, ip, user_agent, method, path, referrer, query, service) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
 			req.headers.authorization || null,
 			ip,
 			req.query._ua || req.headers["user-agent"] || null,
-			category,
 			req.method.toUpperCase(),
 			req.originalUrl.split("?")[0],
 			req.headers.referer || null,
-			JSON.stringify(req.query)
+			JSON.stringify(req.query),
+			service
 		]) as UpsertResult;
-		await db.r.incr(`yiffy2:ip:${ip}`);
-		if (req.headers.authorization) await db.r.incr(`yiffy2:key:${req.headers.authorization}`);
-		await db.r.incr(`yiffy2:category:${category}`);
+		const multi = db.r.multi()
+			.incr(`yiffy2:ip:${ip}`)
+			.incr(`yiffy2:${service}:ip:${ip}`);
+		if (req.headers.authorization) {
+			multi.incr(`yiffy2:key:${req.headers.authorization}`)
+				.incr(`yiffy2:${service}:key:${req.headers.authorization}`);
+		}
+		await multi.exec();
 		return res.insertId;
 	}
 }

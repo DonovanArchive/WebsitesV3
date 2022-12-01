@@ -1,0 +1,112 @@
+{
+  "enabled": [
+    {
+      "name": "Animals > Birb",
+      "db": "animals.birb"
+    },
+    {
+      "name": "Animals > Blep",
+      "db": "animals.blep"
+    },
+    {
+      "name": "Animals > Dik Dik",
+      "db": "animals.dikdik"
+    },
+    {
+      "name": "Furry > Boop",
+      "db": "furry.boop"
+    },
+    {
+      "name": "Furry > Cuddle",
+      "db": "furry.cuddle"
+    },
+    {
+      "name": "Furry > Flop",
+      "db": "furry.flop"
+    },
+    {
+      "name": "Furry > Fursuit",
+      "db": "furry.fursuit"
+    },
+    {
+      "name": "Furry > Hold",
+      "db": "furry.hold"
+    },
+    {
+      "name": "Furry > Howl",
+      "db": "furry.howl"
+    },
+    {
+      "name": "Furry > Hug",
+      "db": "furry.hug"
+    },
+    {
+      "name": "Furry > Kiss",
+      "db": "furry.kiss"
+    },
+    {
+      "name": "Furry > Lick",
+      "db": "furry.lick"
+    },
+    {
+      "name": "Furry > Propose",
+      "db": "furry.propose"
+    },
+    {
+      "name": "Furry > Bulge",
+      "db": "furry.bulge"
+    },
+    {
+      "name": "Furry > Yiff > Andromorph",
+      "db": "furry.yiff.andromorph"
+    },
+    {
+      "name": "Furry > Yiff > Gay",
+      "db": "furry.yiff.gay"
+    },
+    {
+      "name": "Furry > Yiff > Gynomorph",
+      "db": "furry.yiff.gynomorph"
+    },
+    {
+      "name": "Furry > Yiff > Lesbian",
+      "db": "furry.yiff.lesbian"
+    },
+    {
+      "name": "Furry > Yiff > Straight",
+      "db": "furry.yiff.straight"
+    }
+  ],
+  "disabled": [
+    {
+      "name": "Furry > Yiff > Dickgirl",
+      "db": "furry.yiff.dickgirl",
+      "_comment": "Renamed to furry.yiff.gynomorph"
+    },
+    {
+      "name": "Animals > Cheeta",
+      "db": "animals.cheeta",
+      "_comment": "Renamed to animals.cheetah"
+    },
+    {
+      "name": "Animals > Cheetah",
+      "db": "animals.cheetah",
+      "_comment": "Category has never had any content."
+    },
+    {
+      "name": "Animals > Fox",
+      "db": "animals.fox",
+      "_comment": "Category has never had any content."
+    },
+    {
+      "name": "Animals > Lynx",
+      "db": "animals.lynx",
+      "_comment": "Category has never had any content."
+    },
+    {
+      "name": "Animals > Wolf",
+      "db": "animals.wolf",
+      "_comment": "Category has never had any content."
+    }
+  ]
+}

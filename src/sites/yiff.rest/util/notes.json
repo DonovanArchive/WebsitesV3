@@ -1,0 +1,38 @@
+[
+  {
+    "id": 0,
+    "content": null
+  },
+  {
+    "id": 1,
+    "content": "This api host (api.furry.bot) is being removed on June 9th, 2021. Please migrate to https://yiff.rest."
+  },
+  {
+    "id": 2,
+    "content": "We're moving to using subdomains for api versioning! e.g. https://v2.yiff.rest. They have the same functionality, just without the version in the path. The /V2 route will not be removed, but v3 and forward will only use the subdomain."
+  },
+  {
+    "id": 3,
+    "content": "Hey, we see you aren't using an api key. They're free! To get one, join our support server (https://yiff.rest/support), and run the command \"/apikey\", you'll see how to use it there."
+  },
+  {
+    "id": 4,
+    "content": "WARNING! This list is STATIC, it can be inaccurate! We recommended parsing the dot notation in https://v2.yiff.rest/categories instead of this!"
+  },
+  {
+    "id": 5,
+    "content": "Since images are getting bigger, we're adding a size limit parameter. Add ?sizeLimit=<size> to limit the size of images we provide you. We process sizes in powers of 2, not 10."
+  },
+  {
+    "id": 6,
+    "content": "You can now hide these notes by setting the notes parameter to disabled. (ex: ?notes=disabled)"
+  },
+  {
+    "id": 7,
+    "content": "We now have proper documentation: https://docs.yiff.rest"
+  },
+  {
+    "id": 8,
+    "content": "We have a new service available, a thumbnailer for e621. You can see its documentation at https://docs.yiff.rest/thumbnails."
+  }
+]

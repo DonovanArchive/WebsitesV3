@@ -1,64 +1,24 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../../../util/@types/simple-thumbnail.d.ts" />
 import mimeTypes from "../../../util/mimeTypes.json";
-import RateLimiter from "../util/RateLimiter";
 import { YiffyErrorCodes } from "../../../util/Constants";
 import checkForBlock from "../../../util/checkForBlock";
-import {
-	yiffyNotes,
-	categories,
-	publicDir,
-	secretKey,
-	e621Thumb,
-	userAgent,
-	services
-} from "@config";
+import categories from "../util/categories.json";
+import yiffyNotes from "../util/notes.json";
+import handleRateLimit, { validateAPIKey } from "../../../util/checks";
+import db from "../../../db";
+import { publicDir } from "@config";
 import diskSpaceCheck from "@util/diskSpaceCheck";
 import userAgentCheck from "@util/userAgentCheck";
 import { APIImage, APIUsage } from "@models";
-import {
-	APIKey,
-	DEFAULT_WINDOW_LONG,
-	DEFAULT_LIMIT_LONG,
-	DEFAULT_WINDOW_SHORT,
-	DEFAULT_LIMIT_SHORT
-} from "@models/APIKey";
+import { APIKeyFlags } from "@models/APIKey";
 import Webhooks from "@util/Webhooks";
-import ezgifPreview from "@util/ezgifPreview";
-import type { Request } from "express";
 import { Router, static as serveStatic } from "express";
 import bytes from "bytes";
-import ffmpeg from "fluent-ffmpeg";
-import ffmpegStatic from "ffmpeg-static";
-import ffprobe from "ffprobe-static";
-import thumb from "simple-thumbnail";
-import type { ThenArg } from "@uwu-codes/types";
-import fetch from "node-fetch";
-import AWS, { Credentials } from "aws-sdk";
 import { resolve as rp } from "path";
-import {
-	createReadStream,
-	createWriteStream,
-	existsSync,
-	lstatSync,
-	readdirSync,
-	unlinkSync,
-	writeFileSync
-} from "fs";
-import { randomBytes } from "crypto";
-import { tmpdir } from "os";
-import { spawnSync } from "child_process";
+import { existsSync, lstatSync, readdirSync } from "fs";
 import { access, readdir } from "fs/promises";
 const app = Router();
-const awsClient = new AWS.S3({
-	endpoint:    "thumbs.yiff.media",
-	region:      "us-central-1",
-	credentials: new Credentials({
-		accessKeyId:     services.s3.accessKey,
-		secretAccessKey: services.s3.secretKey
-	}),
-	s3BucketEndpoint: true
-});
 
 app
 	.get("/robots.txt", async(req, res) => res.header("Content-Type", "text/plain").status(200).end("User-Agent: *\nDisallow: /"))
@@ -68,49 +28,10 @@ app
 		checkForBlock,
 		diskSpaceCheck,
 		userAgentCheck,
+		validateAPIKey(false, APIKeyFlags.IMAGES),
+		handleRateLimit,
 		async(req, res, next) => {
-			if (req.headers.authorization === secretKey) return next();
-			if (req.originalUrl.startsWith("/e621-thumb") && req.method === "POST") {
-				if (req.headers.authorization !== e621Thumb) return res.status(401).end("Not Authorized.");
-				else return next();
-			}
-			if (!req.headers.authorization) {
-				const r = await RateLimiter.process(req, res, DEFAULT_WINDOW_LONG, DEFAULT_LIMIT_LONG, DEFAULT_WINDOW_SHORT, DEFAULT_LIMIT_SHORT);
-				if (!r) return;
-			} else {
-				const key = await APIKey.get(req.headers.authorization);
-				if (!key) return res.status(401).json({
-					success: false,
-					error:   "Invalid api key.",
-					code:    YiffyErrorCodes.INVALID_API_KEY
-				});
-
-				if (key.active === false) return res.status(401).json({
-					success: false,
-					error:   "Api key is inactive.",
-					code:    YiffyErrorCodes.INACTIVE_API_KEY
-				});
-
-				if (key.disabled === true) return res.status(403).json({
-					success: false,
-					error:   "Your api key has been disabled by an administrator. See \"extra.reason\" for the reasoning.",
-					code:    YiffyErrorCodes.DISABLED_API_KEY,
-					extra:   {
-						reason:  key.disabledReason,
-						support: "https://yiff.rest/support"
-					}
-				});
-
-				if (!key.imagesAccess) return res.status(403).json({
-					success: false,
-					error:   "You do not have access to this service.",
-					code:    YiffyErrorCodes.SERVICE_NO_ACCESS
-				});
-
-				const r = await RateLimiter.process(req, res, key.windowLong, key.limitLong, key.windowShort, key.limitShort);
-				if (!r) return;
-			}
-
+			void APIUsage.track(req, "images");
 			return next();
 		}
 	)
@@ -167,7 +88,7 @@ app
 			error:   {
 				message: "Category not found in list."
 			},
-			code: YiffyErrorCodes.CATEGORY_NOT_FOUND
+			code: YiffyErrorCodes.IMAGES_CATEGORY_NOT_FOUND
 		});
 	})
 	.get("/images/:id", async(req, res) => {
@@ -179,7 +100,7 @@ app
 			if (format === 0) return res.status(404).json({
 				success: false,
 				error:   "No image was found with that id.",
-				code:    YiffyErrorCodes.IMAGE_NOT_FOUND
+				code:    YiffyErrorCodes.IMAGES_NOT_FOUND
 			});
 			else if (format === 1) return res.status(404).end();
 		} else {
@@ -206,17 +127,17 @@ app
 		if (responseType === "image" && limit > 1) return res.status(400).json({
 			success: false,
 			error:   "Amount cannot be greater than one when requesting an image.",
-			code:    YiffyErrorCodes.AMOUNT_GT_ONE_IMAGE
+			code:    YiffyErrorCodes.IMAGES_AMOUNT_GT_ONE_IMAGE
 		});
 		if (limit < 1) return res.status(400).json({
 			success: false,
 			error:   "Amount must be 1 or more.",
-			code:    YiffyErrorCodes.AMOUNT_LT_ONE
+			code:    YiffyErrorCodes.IMAGES_AMOUNT_LT_ONE
 		});
 		if (limit > 5) return res.status(400).json({
 			success: false,
 			error:   "Amount must be 5 or less.",
-			code:    YiffyErrorCodes.AMOUNT_GT_FIVE
+			code:    YiffyErrorCodes.IMAGES_AMOUNT_GT_FIVE
 		});
 
 		const valid = [
@@ -243,11 +164,11 @@ app
 					}
 				}
 			},
-			code: YiffyErrorCodes.EMPTY_CATEGORY
+			code: YiffyErrorCodes.IMAGES_EMPTY_CATEGORY
 		});
 
 		try {
-			void APIUsage.track(category, req);
+			await db.r.incr(`yiffy2:images:category:${category}`);
 			const notes: Array<{ id: number; content: string | null; }> = [];
 			if ((req.query.notes ?? "").toString().toLowerCase() !== "disabled") {
 				if (req.headers.host === "api.furry.bot") notes.push(yiffyNotes[1]);
@@ -300,7 +221,7 @@ app
 							message: "invalid response type",
 							type:    "client"
 						},
-						code: YiffyErrorCodes.INVALID_RESPONSE_TYPE
+						code: YiffyErrorCodes.IMAGES_INVALID_RESPONSE_TYPE
 					});
 				}
 			}
@@ -314,160 +235,6 @@ app
 		}
 	})
 	.use("/e621-thumb/get", serveStatic("/data/e621-thumb"))
-	.post("/e621-thumb/create", async(req: Request<never, unknown, Record<string, string>>, res) => {
-		const d = Date.now();
-
-		if (!req.body.url) return res.status(400).json({
-			success: false,
-			error:   "Invalid or no url provided."
-		});
-
-		let len = 0;
-		await new Promise<void>((resolve) => {
-			void fetch(req.body.url, {
-				method:  "GET",
-				headers: {
-					"User-Agent": userAgent
-				}
-			})
-				.then((r) =>{
-					const id = randomBytes(32).toString("hex");
-					r.body.pipe(createWriteStream(`${tmpdir()}/${id}-${d}`));
-					r.body.on("end", () => {
-						const [,hour, minute, second] = spawnSync("ffprobe", [`${tmpdir()}/${id}-${d}`])
-							.stderr.toString().match(/Duration: (\d\d):(\d\d):(\d\d\.\d\d)/) || ["0", "0", "0", "0"];
-						len += Number(hour)   * 3600;
-						len += Number(minute) * 60;
-						len += Number(second);
-						resolve();
-					});
-				});
-		});
-		let v = Math.floor((Math.random() * (len / 3)) + (len / 3));
-		if (v > len) v = 0;
-		const id = Buffer.from(req.body.url, "ascii").toString("base64").replace(/=/g, "");
-		const type: "gif" | "image" = req.body.type === "gif" ? "gif" : "image";
-		const ext = type === "gif" ? "gif" : "png";
-		const responseType = req.body.responseType as "image" | "json" | undefined;
-		const prev = await awsClient.getObject({
-			Bucket: services.s3.bucket,
-			Key:    `${id}.${ext}`
-		}).promise().catch(() => null);
-		if (prev !== null) {
-			if (responseType === "image") {
-				const img = await fetch(`${services.s3.bucketURL}/${id}.${ext}`);
-				return res.status(200).end(await img.buffer());
-			} else {
-				return res.status(200).json({
-					success: true,
-					data:    {
-						url:        `${services.s3.bucketURL}/${id}.${ext}`,
-						startTime:  prev.Metadata?.starttime || null,
-						endTime:    prev.Metadata?.endtime || null,
-						createTime: prev.Metadata?.createtime || null,
-						temp:       prev.Metadata?.temp || null
-					}
-				});
-			}
-		}
-
-		const l = Number(req.body.length) || 2.5;
-		const start = `00:${Math.floor(v / 60).toString().padStart(2, "0")}:${(v % 60).toString().padStart(2, "0")}`;
-		const end = `00:${Math.floor((v + l) / 60).toString().padStart(2, "0")}:${((v + l) % 60).toString().padStart(2, "0")}`;
-
-		if (type === "image") {
-			if (existsSync(`/data/e621-thumb/${id}.png`)) unlinkSync(`/data/e621-thumb/${id}.png`);
-			// eslint-disable-next-line no-async-promise-executor
-			await new Promise(async(resolve) => (await fetch(req.body.url)).body.pipe(createWriteStream(`/data/e621-thumb/${id}.download.webm`).on("finish", resolve)));
-			await new Promise<void>((a,b) => {
-				ffmpeg(`/data/e621-thumb/${id}.download.webm`)
-					.setFfmpegPath(ffmpegStatic!)
-					.setFfprobePath(ffprobe.path)
-					.output(`/data/e621-thumb/${id}.webm`)
-					.setStartTime(v)
-					.setDuration(l)
-					.withVideoCodec("copy")
-					.withAudioCodec("copy")
-					.on("end", (err) => err ? b(err) : a())
-					.on("error", function (err) {
-						console.log("error: ", err);
-						b(err);
-					})
-					.run();
-			});
-			await thumb(`/data/e621-thumb/${id}.webm`, `/data/e621-thumb/${id}.png`, "100%");
-			unlinkSync(`/data/e621-thumb/${id}.webm`);
-			unlinkSync(`/data/e621-thumb/${id}.download.webm`);
-			await awsClient.upload({
-				Bucket:      services.s3.bucket,
-				Key:         `${id}.png`,
-				Body:        createReadStream(`/data/e621-thumb/${id}.png`),
-				ContentType: "image/png",
-				Metadata:    {
-					starttime: start,
-					endtime:   end
-				}
-			}).promise();
-			unlinkSync(`/data/e621-thumb/${id}.png`);
-			if (responseType === "image") {
-				const img = await fetch(`${services.s3.bucketURL}/${id}.png`);
-				return res.status(200).end(await img.buffer());
-			} else {
-				return res.status(200).json({
-					success: true,
-					data:    {
-						url:        `${services.s3.bucketURL}/${id}.png`,
-						startTime:  start,
-						endTime:    end,
-						createTime: null,
-						temp:       null
-					}
-				});
-			}
-		} else {
-			let r: ThenArg<ReturnType<typeof ezgifPreview>>;
-			try {
-				r = await ezgifPreview(req.body.url, v, v + 1, l);
-			} catch (e: unknown) {
-				return res.status(500).json({
-					success: false,
-					error:   {
-						name:    (e as Error).name,
-						message: (e as Error).message,
-						stack:   (e as Error).stack,
-						raw:     e
-					}
-				});
-			}
-			writeFileSync(`/data/e621-thumb/${id}.gif`, r.out);
-			await awsClient.upload({
-				Bucket:      services.s3.bucket,
-				Key:         `${id}.gif`,
-				Body:        createReadStream(`/data/e621-thumb/${id}.gif`),
-				ContentType: "image/gif",
-				Metadata:    {
-					starttime: start,
-					endtime:   end
-				}
-			}).promise();
-			unlinkSync(`/data/e621-thumb/${id}.gif`);
-			if (responseType === "image") {
-				const img = await fetch(`${services.s3.bucketURL}/${id}.gif`);
-				return res.status(200).end(await img.buffer());
-			} else {
-				return res.status(200).json({
-					success: true,
-					data:    {
-						url:        `${services.s3.bucketURL}/${id}.gif`,
-						startTime:  start,
-						endTime:    end,
-						createTime: r.time,
-						temp:       r.tempURL
-					}
-				});
-			}
-		}
-	})
 	.use(async (req, res) => res.status(404).json({
 		success: false,
 		error:   "Unknown api route.",

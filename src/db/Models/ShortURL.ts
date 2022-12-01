@@ -7,9 +7,10 @@ export interface RawShortURL {
 	code: string;
 	created_at: string;
 	modified_at: string;
-	creator_ua: string;
+	creator_apikey: string | null; // will be null for entries before 12-01-2022
 	creator_ip: string;
 	creator_name: string;
+	creator_ua: string;
 	management_code: string | null;
 	url: string;
 	pos: number;
@@ -24,9 +25,10 @@ export default class ShortURL {
 	createdAt: string;
 	modifiedAt: string | null;
 	creator: {
-		ua: string;
+		apiKey: string |  null;
 		ip: string;
 		name: string;
+		ua: string;
 	};
 	managementCode: string | null;
 	url: string;
@@ -36,9 +38,10 @@ export default class ShortURL {
 		this.createdAt = data.created_at;
 		this.modifiedAt = data.modified_at;
 		this.creator = {
-			ua:   data.creator_ua,
-			ip:   data.creator_ip,
-			name: data.creator_name
+			apiKey: data.creator_apikey,
+			ip:     data.creator_ip,
+			name:   data.creator_name,
+			ua:     data.creator_ua
 		};
 		this.managementCode = data.management_code;
 		this.url = data.url;

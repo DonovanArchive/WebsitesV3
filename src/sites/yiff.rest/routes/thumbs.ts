@@ -1,7 +1,8 @@
 import E621Thumbnails, { filePath, url } from "../../../lib/E621Thumbnails";
-import { APIKey } from "../../../db/Models";
-import RateLimiter from "../util/RateLimiter";
+import { APIKeyFlags, APIUsage } from "../../../db/Models";
 import { YiffyErrorCodes } from "../../../util/Constants";
+import handleRateLimit, { userAgentCheck, validateAPIKey } from "../../../util/checks";
+import checkForBlock from "../../../util/checkForBlock";
 import { Router } from "express";
 import E621 from "e621";
 import { access } from "fs/promises";
@@ -12,46 +13,16 @@ const app = Router();
 const e6 = new E621({ userAgent: "E621Thumbnailer/1.0.0 (donovan_dmc)" });
 const exists = (path: PathLike) => access(path).then(() => true, () => false);
 app
-	.use(async(req, res, next) => {
-		if (!req.headers.authorization) return res.status(401).json({
-			success: false,
-			error:   "An API key is required to use this service.",
-			code:    YiffyErrorCodes.THUMBS_APIKEY_REQUIRED
-		});
-		const key = await APIKey.get(req.headers.authorization);
-		if (!key) return res.status(401).json({
-			success: false,
-			error:   "Invalid api key.",
-			code:    YiffyErrorCodes.INVALID_API_KEY
-		});
-
-		if (key.active === false) return res.status(401).json({
-			success: false,
-			error:   "Api key is inactive.",
-			code:    YiffyErrorCodes.INACTIVE_API_KEY
-		});
-
-		if (key.disabled === true) return res.status(403).json({
-			success: false,
-			error:   "Your api key has been disabled by an administrator. See \"extra.reason\" for the reasoning.",
-			extra:   {
-				reason:  key.disabledReason,
-				support: "https://yiff.rest/support",
-				code:    YiffyErrorCodes.DISABLED_API_KEY
-			}
-		});
-
-		if (!key.thumbsAccess) return res.status(403).json({
-			success: false,
-			error:   "You do not have access to this service.",
-			code:    YiffyErrorCodes.SERVICE_NO_ACCESS
-		});
-
-		const r = await RateLimiter.process(req, res, key.windowLong, key.limitLong, key.windowShort, key.limitShort);
-		if (!r) return;
-
-		return next();
-	})
+	.use(
+		checkForBlock,
+		userAgentCheck,
+		validateAPIKey(true, APIKeyFlags.THUMBS),
+		handleRateLimit,
+		async(req, res, next) => {
+			void APIUsage.track(req, "thumbs");
+			return next();
+		}
+	)
 	.get("/:id", async(req, res) => {
 		let md5: string;
 		if (!isNaN(Number(req.params.id)) && !/[a-f\d]{32}/i.test(req.params.id)) {
@@ -131,7 +102,11 @@ app
 		const inQueue = E621Thumbnails.has(md5, type);
 		if (inQueue) {
 			const check = E621Thumbnails.check(md5, type)!;
-			return res.status(200).json({ success: true, ...check });
+			return res.status(check.status === "processing" ? 200 : check.status === "timeout" ? 408 : 500).json({
+				success: check.status === "processing",
+				...check,
+				...(check.status === "processing" ? {} : { code: check.status === "timeout" ? YiffyErrorCodes.THUMBS_TIMEOUT : YiffyErrorCodes.THUMBS_GENERIC_ERROR })
+			});
 		}
 		return res.status(404).json({
 			success: false,

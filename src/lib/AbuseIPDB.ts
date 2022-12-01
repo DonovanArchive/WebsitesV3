@@ -1,4 +1,4 @@
-import { blockedIPAddresses, services } from "../config";
+import { services } from "../config";
 import db from "../db";
 import { fetch } from "undici";
 
@@ -20,7 +20,6 @@ export interface IPCheckResult {
 
 export default class AbuseIPDB {
 	static async check(ip: string) {
-		if (blockedIPAddresses.includes(ip)) return true;
 		const cache = await db.r.get(`abuseipdb:${ip}`);
 		if (cache !== null) return cache === "true";
 		const response = await fetch(`https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}`, {

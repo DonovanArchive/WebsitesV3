@@ -1,31 +1,12 @@
 import v2Route from "./routes/api_v2";
 import discordRoute from "./routes/discord";
 import thumbsRoute from "./routes/thumbs";
+import categories from "./util/categories.json";
 import Website from "@lib/Website";
 import { ANON_FLAGS, APIImage, APIKey, APIKeyFlags } from "@models";
-import { categories } from "@config";
 import express, { Router } from "express";
-import Handlebars from "handlebars";
 import "./routes/bot"; // not an actual route
 
-/* eslint-disable */
-Handlebars.registerHelper("when", (operand_1, operator, operand_2, options) => {
-	const operators = {
-		"eq":    (l: number, r: number) => l === r,
-		"noteq": (l: number, r: number) => l !== r,
-		"gt":    (l: number, r: number) => (+l) > (+r),
-		"gteq":  (l: number, r: number) => ((+l) > (+r)) || (l === r),
-		"lt":    (l: number, r: number) => (+l) < (+r),
-		"lteq":  (l: number, r: number) => ((+l) < (+r)) || (l === r),
-		"or":    (l: number, r: number) => l || r,
-		"and":   (l: number, r: number) => l && r,
-		"%":     (l: number, r: number) => (l % r) === 0
-	};
-	const result = operators[operator.trim() as keyof typeof operators](operand_1,operand_2);
-	if (result) return options.fn(this);
-	return options.inverse(this);
-});
-/* eslint-enable */
 
 export default class YiffRest extends Website {
 	constructor() {
@@ -60,8 +41,9 @@ export default class YiffRest extends Website {
 							},
 							flags:    key.flags,
 							services: {
-								images: key.imagesAccess,
-								thumbs: key.thumbsAccess
+								images:    key.imagesAccess,
+								thumbs:    key.thumbsAccess,
+								shortener: key.shortenerAccess
 							}
 						}
 					});

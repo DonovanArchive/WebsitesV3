@@ -135,7 +135,8 @@ export default class APIImage {
 			method:  "POST",
 			headers: {
 				"Authorization": yiffRocksOverride,
-				"Content-Type":  "application/json"
+				"Content-Type":  "application/json",
+				"User-Agent":    "YiffyAPI/2.0.0 (https://yiff.rest)"
 			},
 			body: JSON.stringify({
 				url:    this.cdnURL,

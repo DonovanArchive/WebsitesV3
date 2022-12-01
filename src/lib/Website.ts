@@ -274,10 +274,14 @@ export default class Website {
 				return next();
 			})
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			.use(async (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => res.status(500).json({
-				success: false,
-				error:   "Unknown Internal Server Error."
-			}))
+			.use(async (err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+				Logger.getLogger(`Error:${req.method}:${req.hostname}:${req.originalUrl}`).error(err);
+				return res.status(500).json({
+					success: false,
+					error:   "Unknown Internal Server Error.",
+					code:    0
+				});
+			})
 			.get("/online", async (req, res) => res.status(200).json({
 				success: true,
 				uptime:  process.uptime()

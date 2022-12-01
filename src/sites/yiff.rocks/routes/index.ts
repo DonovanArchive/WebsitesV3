@@ -53,7 +53,7 @@ app
 			else return validateAPIKey(true, APIKeyFlags.SHORTENER)(req, res, next);
 		}
 	)
-	.post("/create", validateAPIKey(true, APIKeyFlags.SHORTENER), async (req: Request<never, unknown, Record<string, string>>, res) => {
+	.post("/create",  async (req: Request<never, unknown, Record<string, string>>, res) => {
 		const code = req.body.code || randomBytes(8).toString("hex");
 
 		if (code.length > 50) return res.status(422).json({
@@ -70,7 +70,6 @@ app
 		});
 
 		const override = req.headers.authorization === yiffRocksOverride;
-
 		const inUse = await ShortURL.get(code);
 		if (inUse !== null && inUse.url !== req.body.url) {
 			if (override) await inUse.delete();

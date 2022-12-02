@@ -64,6 +64,12 @@ export default class ShortURL {
 		return db.query(`INSERT INTO ${ShortURL.DB}.${ShortURL.TABLE} (${Object.keys(data).join(", ")}) VALUES (${Object.values(data).map(() => "?").join(", ")})`, Object.values(data)).then((r: UpsertResult) => r.affectedRows === 1 ? this.get(data.code) : null);
 	}
 
+	static async override(data: Omit<ConvertFromRaw<RawShortURL>, "modified_at" | "pos">) {
+		const exists = await this.get(data.code);
+		if (exists) await exists.delete();
+		return this.new(data);
+	}
+
 	async setCreatorName(name: string) {
 		this.creator.name = name;
 		return db.query(`UPDATE ${ShortURL.DB}.${ShortURL.TABLE} SET creator_name = ? WHERE code = ?`, [name, this.code]).then((r: UpsertResult) => r.affectedRows === 1 ? true : null);

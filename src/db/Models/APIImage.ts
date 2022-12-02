@@ -1,8 +1,8 @@
+import ShortURL from "./ShortURL";
 import Logger from "../../util/Logger";
 import db from "@db";
-import { publicDir, yiffRocksOverride } from "@config";
+import { publicDir } from "@config";
 import type { DataTypes } from "@uwu-codes/types";
-import { fetch } from "undici";
 export interface RawAPIImage {
 	id: string;
 	artists: string;
@@ -135,19 +135,15 @@ export default class APIImage {
 	}
 
 	async getShortURL() {
-		const res = await fetch("https://yiff-rocks.websites.containers.local/create", {
-			method:  "POST",
-			headers: {
-				"Authorization": yiffRocksOverride,
-				"Content-Type":  "application/json",
-				"User-Agent":    "YiffyAPI/2.0.0 (https://yiff.rest)",
-				"Host":          "yiff.rocks"
-			},
-			body: JSON.stringify({
-				url:    this.cdnURL,
-				credit: "YiffyAPI"
-			})
-		});
-		return (await res.json() as { data: { fullURL: string; }; }).data.fullURL;
+		return (await ShortURL.override({
+			created_at:      new Date().toISOString(),
+			code:            this.id,
+			url:             this.cdnURL,
+			creator_apikey:  "local",
+			creator_ip:      "127.0.0.1",
+			creator_name:    "YiffyAPI",
+			creator_ua:      "YiffyAPI/2.0.0 (https://yiff.rest)",
+			management_code: null
+		}))!.fullURL;
 	}
 }

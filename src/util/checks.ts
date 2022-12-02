@@ -104,6 +104,8 @@ export function validateAPIKey(required = false, flag?: number) {
 				error:   "You do not have access to this service.",
 				code:    YiffyErrorCodes.SERVICE_NO_ACCESS
 			});
+
+			return next();
 		}
 	});
 }

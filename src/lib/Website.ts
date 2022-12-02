@@ -158,7 +158,6 @@ export default class Website {
 				const trap = await BotTraps.test(req);
 				if (trap) {
 					Logger.getLogger("BotTraps").info(`Trap(s) "${trap}" triggered by ${ip}${req.headers["user-agent"] ? ` (${req.headers["user-agent"]})` : ""}`);
-					return res.status(403).end();
 				}
 
 				if (check) {

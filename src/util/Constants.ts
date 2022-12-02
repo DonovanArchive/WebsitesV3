@@ -5,6 +5,7 @@ export enum RedisTTLResponse {
 
 export enum YiffyErrorCodes {
 	INTERNAL_ERROR                  = 0,
+	ACCESS_DENIED                   = 1,
 	RATELIMIT_ROUTE                 = 1000,
 	RATELIMIT_GLOBAL                = 1001,
 	SUSPECTED_BROWSER_IMPERSONATION = 1002,

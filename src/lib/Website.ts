@@ -4,6 +4,7 @@ import { consoleLogger, fileLogger } from "./Logger";
 import AbuseIPDB from "./AbuseIPDB";
 import Usage from "../db/Models/Usage";
 import Logger from "../util/Logger";
+import BotTraps from "../config/bot-traps";
 import { cookieSecret } from "@config";
 import type { Express } from "express";
 import express from "express";
@@ -154,6 +155,10 @@ export default class Website {
 			.use(async(req, res, next) => {
 				const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
 				const check = await AbuseIPDB.check(ip);
+				const trap = await BotTraps.test(req);
+				if (trap) {
+					Logger.getLogger("BotTraps").info(`Trap(s) "${trap}" triggered by ${ip}${req.headers["user-agent"] ? ` (${req.headers["user-agent"]})` : ""}`);
+				}
 
 				if (check) {
 					Logger.getLogger("abuseipdb").info(`Blocked ${ip} from accessing ${req.protocol}://${req.hostname}${req.originalUrl} due to >50 abuse score.`);

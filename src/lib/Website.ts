@@ -5,6 +5,7 @@ import AbuseIPDB from "./AbuseIPDB";
 import Usage from "../db/Models/Usage";
 import Logger from "../util/Logger";
 import BotTraps from "../config/bot-traps";
+import { APIImage } from "../db/Models";
 import { cookieSecret } from "@config";
 import type { Express } from "express";
 import express from "express";
@@ -171,6 +172,11 @@ export default class Website {
 					void Usage.track(req);
 				} catch (err) {
 					console.error("Usage Tracking Failed", err);
+				}
+
+				if (req.headers["user-agent"]?.includes("Mastodon")) {
+					const img = await APIImage.getRandom("furry.yiff.gay", 1);
+					return res.status(200).sendFile(img[0].fsLocation);
 				}
 				return next();
 			})

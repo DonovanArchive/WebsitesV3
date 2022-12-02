@@ -140,6 +140,7 @@ services:
       - ./src/sites/yiff.rocks/views:/app/views
       - ./data/cache/yiff.rocks:/data/cache
       - /var/www/sites/yiff.rocks:/app/public
+      - /var/www/sites/yiff.media/V2:/app/public/V2
     environment:
       SITE: yiff.rocks
     hostname: yiff-rocks.websites.containers.local

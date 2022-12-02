@@ -148,6 +148,6 @@ export default class APIImage {
 				credit: "YiffyAPI"
 			})
 		});
-		return (await res.json() as { data: { url: string; }; }).data.url;
+		return (await res.json() as { data: { fullURL: string; }; }).data.fullURL;
 	}
 }

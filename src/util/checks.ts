@@ -1,5 +1,5 @@
 import { YiffyErrorCodes } from "./Constants";
-import { apikeyRequired, userAgents } from "../config";
+import { apiKeyRequiredIP, apiKeyRequiredUA, userAgents } from "../config";
 import {
 	APIKey,
 	DEFAULT_LIMIT_LONG,
@@ -69,6 +69,8 @@ export async function userAgentCheck(req: Request, res: Response, next: NextFunc
 export function validateAPIKey(required = false, flag?: number) {
 	return (async(req: Request, res: Response, next: NextFunction) => {
 		const auth = req.query._auth as string || req.headers.authorization;
+		const ua = req.query._ua as string || req.headers["user-agent"] || "";
+		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
 		if (!auth) {
 			if (required) return res.status(401).json({
 				success: false,
@@ -76,8 +78,7 @@ export function validateAPIKey(required = false, flag?: number) {
 				code:    YiffyErrorCodes.API_KEY_REQUIRED
 			});
 			else {
-				const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
-				if (apikeyRequired.includes(ip)) {
+				if (apiKeyRequiredIP.includes(ip) || apiKeyRequiredUA.some(userAgent => userAgent.test(ua))) {
 					return res.status(403).json({
 						success: false,
 						error:   "Your anonymous access has been restricted, please use an api key.",

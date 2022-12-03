@@ -58,8 +58,9 @@ export default class YiffRest extends Website {
 						success: true,
 						data:    {
 							services: {
-								images: (ANON_FLAGS & APIKeyFlags.IMAGES) === APIKeyFlags.IMAGES,
-								thumbs: (ANON_FLAGS & APIKeyFlags.THUMBS) === APIKeyFlags.THUMBS
+								images:    (ANON_FLAGS & APIKeyFlags.IMAGES) === APIKeyFlags.IMAGES,
+								thumbs:    (ANON_FLAGS & APIKeyFlags.THUMBS) === APIKeyFlags.THUMBS,
+								shortener: (ANON_FLAGS & APIKeyFlags.SHORTENER) === APIKeyFlags.SHORTENER
 							}
 						}
 					});

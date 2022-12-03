@@ -57,6 +57,7 @@ export default class RateLimiter {
 	static async process(req: Request, res: Response, globalWindow: number, globalLimit: number, routeWindow: number, routeLimit: number) {
 		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
 		let domain = req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!;
+		const userAgent = (req.query._ua as string || req.headers["user-agent"]) ?? "NONE";
 		const path = req.originalUrl.split("?")[0];
 
 		// ensure subdomain & route versioning are treated the same
@@ -99,7 +100,7 @@ export default class RateLimiter {
 							`**Host**: **${domain}** (${req.hostname})`,
 							`**Path**: **${path}**`,
 							`Auth: **${req.headers.authorization ? `Yes (${req.headers.authorization})` : "No"}**`,
-							`User Agent: \`${req.headers["user-agent"] ?? "NONE"}\``,
+							`User Agent: \`${userAgent}\``,
 							`IP: ${ip}`,
 							"Global: <:redTick:865401803256627221>",
 							"Info:",
@@ -156,7 +157,7 @@ export default class RateLimiter {
 							`**Host**: **${domain}** (${req.hostname})`,
 							`**Path**: **${path}**`,
 							`Auth: **${req.headers.authorization ? `Yes (${req.headers.authorization})` : "No"}**`,
-							`User Agent: \`${req.headers["user-agent"] ?? "NONE"}\``,
+							`User Agent: \`${userAgent}\``,
 							`IP: ${ip}`,
 							"Global: <:greenTick:865401802920951819>",
 							"Info:",

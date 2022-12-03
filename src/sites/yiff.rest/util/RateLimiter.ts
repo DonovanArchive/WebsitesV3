@@ -58,6 +58,7 @@ export default class RateLimiter {
 		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
 		let domain = req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!;
 		const userAgent = (req.query._ua as string || req.headers["user-agent"]) ?? "NONE";
+		const auth = req.query._auth as string || req.headers.authorization;
 		const path = req.originalUrl.split("?")[0];
 
 		// ensure subdomain & route versioning are treated the same
@@ -99,7 +100,7 @@ export default class RateLimiter {
 						description: [
 							`**Host**: **${domain}** (${req.hostname})`,
 							`**Path**: **${path}**`,
-							`Auth: **${req.headers.authorization ? `Yes (${req.headers.authorization})` : "No"}**`,
+							`Auth: **${auth ? `Yes (${auth})` : "No"}**`,
 							`User Agent: \`${userAgent}\``,
 							`IP: ${ip}`,
 							"Global: <:redTick:865401803256627221>",
@@ -156,7 +157,7 @@ export default class RateLimiter {
 						description: [
 							`**Host**: **${domain}** (${req.hostname})`,
 							`**Path**: **${path}**`,
-							`Auth: **${req.headers.authorization ? `Yes (${req.headers.authorization})` : "No"}**`,
+							`Auth: **${auth ? `Yes (${auth})` : "No"}**`,
 							`User Agent: \`${userAgent}\``,
 							`IP: ${ip}`,
 							"Global: <:greenTick:865401802920951819>",

@@ -46,7 +46,7 @@ export default class Usage {
 		const res = await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} (ip, user_agent, authorization, raw_headers, method, path, domain, referrer, query) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
 			ip,
 			req.query._ua || req.headers["user-agent"] || null,
-			req.headers.authorization || null,
+			req.query._auth as string || req.headers.authorization || null,
 			JSON.stringify(chunk(req.rawHeaders).map(r => [r[0], r[1]])),
 			req.method.toUpperCase(),
 			req.originalUrl.split("?")[0],

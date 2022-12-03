@@ -172,12 +172,13 @@ app
 		});
 
 		try {
+			const auth = req.query._auth as string || req.headers.authorization;
 			await db.r.incr(`yiffy2:images:category:${category}`);
 			const notes: Array<{ id: number; content: string | null; }> = [];
 			if ((req.query.notes ?? "").toString().toLowerCase() !== "disabled") {
 				if (req.headers.host === "api.furry.bot") notes.push(yiffyNotes[1]);
 				else if (req.headers.host !== "v2.yiff.rest") notes.push(yiffyNotes[2]);
-				if (!req.headers.authorization) notes.push(yiffyNotes[3]);
+				if (!auth) notes.push(yiffyNotes[3]);
 				if (sizeLimit === -1) notes.push(yiffyNotes[5]);
 				notes.push(yiffyNotes[6], yiffyNotes[7], yiffyNotes[8]);
 			}
@@ -191,7 +192,7 @@ app
 								`Host: **${req.headers.host!}**`,
 								`Path: **${req.originalUrl}**`,
 								`Category: \`${category}\``,
-								`Auth: ${req.headers.authorization ? `**Yes** (\`${req.headers.authorization}\`)` : "**No**"}`,
+								`Auth: ${auth ? `**Yes** (\`${auth}\`)` : "**No**"}`,
 								`Response Type: **${responseType}**`,
 								`Size Limit: **${sizeLimit === -1 ? "None" : bytes(sizeLimit)}**`,
 								`User Agent: \`${req.headers["user-agent"]!}\``,

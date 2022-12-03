@@ -2,6 +2,7 @@ import v2Route from "./routes/api_v2";
 import discordRoute from "./routes/discord";
 import thumbsRoute from "./routes/thumbs";
 import categories from "./util/categories.json";
+import { YiffyErrorCodes } from "../../util/Constants";
 import Website from "@lib/Website";
 import { ANON_FLAGS, APIImage, APIKey, APIKeyFlags } from "@models";
 import express, { Router } from "express";
@@ -19,9 +20,14 @@ export default class YiffRest extends Website {
 		this
 			.addHandler(Router().use("/status", async(req, res) => {
 				let key: APIKey | null = null;
-				if (req.headers.authorization) {
-					key = await APIKey.get(req.headers.authorization);
-					if (key === null) return res.status(401).json({ success: false, error: "Invalid API Key" });
+				const auth = req.query._auth as string || req.headers.authorization || null;
+				if (auth) {
+					key = await APIKey.get(auth);
+					if (key === null) return res.status(401).json({
+						success: false,
+						error:   "Invalid API Key",
+						code:    YiffyErrorCodes.INVALID_API_KEY
+					});
 					return res.status(200).json({
 						success: true,
 						data:    {

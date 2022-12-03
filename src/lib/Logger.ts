@@ -89,8 +89,8 @@ morgan
 		else return ip;
 	})
 	.token("dt", () => new Date().toString().split(" ").slice(1, 5).join(" "))
-	.token("auth", (req: express.Request) => req.headers.authorization ? "[AUTH]:" : ":")
-	.token("ua", (req: express.Request) => req.headers["user-agent"] || "NONE");
+	.token("auth", (req: express.Request) => req.query._auth ? "[QAUTH]" : req.headers.authorization ? "[AUTH]:" : ":")
+	.token("ua", (req: express.Request) => req.query._ua as string || req.headers["user-agent"] || "NONE");
 
 export const fileLogger = morgan("[:dt]:auth :hostnamenc - :ipnc || HTTP/:http-version :methodnc :urlnc :statusnc :response-time ms - :res[content-length] - :user-agent", {
 	stream

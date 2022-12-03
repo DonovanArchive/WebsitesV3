@@ -1,5 +1,5 @@
 import { YiffyErrorCodes } from "./Constants";
-import { userAgents } from "../config";
+import { apikeyRequired, userAgents } from "../config";
 import {
 	APIKey,
 	DEFAULT_LIMIT_LONG,
@@ -68,15 +68,26 @@ export async function userAgentCheck(req: Request, res: Response, next: NextFunc
 
 export function validateAPIKey(required = false, flag?: number) {
 	return (async(req: Request, res: Response, next: NextFunction) => {
-		if (!req.headers.authorization) {
+		const auth = req.query._auth as string || req.headers.authorization;
+		if (!auth) {
 			if (required) return res.status(401).json({
 				success: false,
 				error:   "AN API key is required to access this service.",
 				code:    YiffyErrorCodes.API_KEY_REQUIRED
 			});
-			else return next();
+			else {
+				const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
+				if (apikeyRequired.includes(ip)) {
+					return res.status(403).json({
+						success: false,
+						error:   "Your anonymous access has been restricted, please use an api key.",
+						code:    YiffyErrorCodes.ANONYMOUS_RESTRICTED
+					});
+				}
+				return next();
+			}
 		} else {
-			const key = await APIKey.get(req.headers.authorization);
+			const key = await APIKey.get(auth);
 			if (!key) return res.status(401).json({
 				success: false,
 				error:   "Invalid api key.",
@@ -111,7 +122,8 @@ export function validateAPIKey(required = false, flag?: number) {
 }
 
 export async function handleRateLimit(req: Request, res: Response, next: NextFunction) {
-	const key = !req.headers.authorization ? null : await APIKey.get(req.headers.authorization);
+	const auth = req.query._auth as string || req.headers.authorization || null;
+	const key = !auth ? null : await APIKey.get(auth);
 
 	const r = await RateLimiter.process(req, res, key?.windowLong ?? DEFAULT_WINDOW_LONG, key?.limitLong ?? DEFAULT_LIMIT_LONG, key?.windowShort ?? DEFAULT_WINDOW_SHORT, key?.limitShort ?? DEFAULT_LIMIT_SHORT);
 	if (!r) return;

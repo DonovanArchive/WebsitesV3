@@ -48,7 +48,6 @@ app
 		handleRateLimit,
 		async(req, res, next) => {
 			void APIUsage.track(req, "shortener");
-			if (req.headers.authorization === yiffRocksOverride) return next();
 			if (req.method === "GET" && !req.path.endsWith(".json")) return next();
 			else return validateAPIKey(true, APIKeyFlags.SHORTENER)(req, res, next);
 		}
@@ -101,7 +100,7 @@ app
 			const short = await ShortURL.new({
 				code,
 				created_at:      new Date().toISOString(),
-				creator_apikey:  req.headers.authorization!,
+				creator_apikey:  (req.query._auth as string || req.headers.authorization)!,
 				creator_ip:      (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString(),
 				creator_name:    req.body.credit || "Unknown",
 				creator_ua:      req.headers["user-agent"]!.toString(),

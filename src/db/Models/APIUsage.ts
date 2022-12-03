@@ -36,8 +36,9 @@ export default class APIUsage {
 
 	static async track(req: Request, service: string) {
 		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
+		const auth = req.query._auth as string || req.headers.authorization || null;
 		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} (\`key\`, ip, user_agent, method, path, referrer, query, service) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
-			req.headers.authorization || null,
+			auth,
 			ip,
 			req.query._ua || req.headers["user-agent"] || null,
 			req.method.toUpperCase(),
@@ -49,9 +50,9 @@ export default class APIUsage {
 		const multi = db.r.multi()
 			.incr(`yiffy2:ip:${ip}`)
 			.incr(`yiffy2:${service}:ip:${ip}`);
-		if (req.headers.authorization) {
-			multi.incr(`yiffy2:key:${req.headers.authorization}`)
-				.incr(`yiffy2:${service}:key:${req.headers.authorization}`);
+		if (auth) {
+			multi.incr(`yiffy2:key:${auth}`)
+				.incr(`yiffy2:${service}:key:${auth}`);
 		}
 		await multi.exec();
 		return res.insertId;

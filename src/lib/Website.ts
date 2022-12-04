@@ -166,6 +166,7 @@ export default class Website {
 				}
 
 				if (check) {
+					if (req.originalUrl.includes("robots.txt")) return res.status(200).end("User-agent: *\nDisallow: /");
 					Logger.getLogger("abuseipdb").info(`Blocked ${ip} from accessing ${req.protocol}://${req.hostname}${req.originalUrl} due to >50 abuse score.`);
 					return res.status(403).json({
 						success: false,

@@ -154,6 +154,10 @@ export default class Website {
 				saveUninitialized: true
 			}))
 			.use(async(req, res, next) => {
+				// this application incessantly probes my servers, setting off ratelimits everywhere
+				if (req.headers["user-agent"]?.includes("Friendica")) {
+					return res.status(403).end();
+				}
 				const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
 				const check = await AbuseIPDB.check(ip);
 				const trap = await BotTraps.test(req);

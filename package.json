@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "rm -rf build && tsc",
-    "up:d": "npm run imgen-config && sudo docker compose pull && sudo docker compose up --force-recreate -d",
-    "up": "npm run imgen-config && sudo docker compose pull && sudo docker compose up --force-recreate",
-    "down": "sudo docker compose down --volumes --remove-orphans",
+    "up:d": "npm run imgen-config && sudo docker compose pull && sudo docker compose up --force-recreate -d && sudo docker network connect websites maidboye || true",
+    "up": "npm run imgen-config && sudo docker compose pull && sudo docker compose up --force-recreate && sudo docker network connect websites maidboye || true",
+    "down": "sudo docker network disconnect websites maidboye || true && sudo docker compose down",
     "up:dev": "npm run imgen-config && sudo docker compose up --force-recreate",
     "dev": "npm run down && npm run up:dev",
     "update": "npm run down && git pull && git submodule update --init --recursive --remote && npm run up:d",

@@ -1,3 +1,4 @@
+import { getIP } from "../../util/general";
 import db from "@db";
 import type { DataTypes } from "@uwu-codes/types";
 import type { Request } from "express";
@@ -42,7 +43,7 @@ export default class Usage {
 	}
 
 	static async track(req: Request) {
-		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
+		const ip = getIP(req);
 		const res = await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} (ip, user_agent, authorization, raw_headers, method, path, domain, referrer, query) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
 			ip,
 			req.query._ua || req.headers["user-agent"] || null,

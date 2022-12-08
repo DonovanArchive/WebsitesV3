@@ -6,6 +6,7 @@ import Usage from "../db/Models/Usage";
 import Logger from "../util/Logger";
 import BotTraps from "../config/bot-traps";
 import { APIImage } from "../db/Models";
+import { getIP } from "../util/general";
 import { cookieSecret } from "@config";
 import type { Express } from "express";
 import express from "express";
@@ -154,11 +155,12 @@ export default class Website {
 				saveUninitialized: true
 			}))
 			.use(async(req, res, next) => {
+				const ua = req.headers["user-agent"];
 				// this application incessantly probes my servers, setting off ratelimits everywhere
-				if (req.headers["user-agent"]?.includes("Friendica")) {
+				if (ua && (ua.includes("Friendica"))) {
 					return res.status(403).end();
 				}
-				const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
+				const ip = getIP(req);
 				const check = await AbuseIPDB.check(ip);
 				const trap = await BotTraps.test(req);
 				if (trap) {

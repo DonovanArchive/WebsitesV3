@@ -1,4 +1,5 @@
 import { YiffyErrorCodes } from "./Constants";
+import { getIP } from "./general";
 import { apiKeyRequiredIP, apiKeyRequiredUA, userAgents } from "../config";
 import {
 	APIKey,
@@ -18,7 +19,7 @@ interface BlockEntry {
 }
 
 export async function checkForBlock(req: Request, res: Response, next: NextFunction) {
-	const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
+	const ip = getIP(req);
 
 	// we reread the file each time to avoid having to restart to update the list
 	const blocked = await access("/app/src/config/blocked-ips.json").then(async() => {
@@ -70,7 +71,7 @@ export function validateAPIKey(required = false, flag?: number) {
 	return (async(req: Request, res: Response, next: NextFunction) => {
 		const auth = req.query._auth as string || req.headers.authorization;
 		const ua = req.query._ua as string || req.headers["user-agent"] || "";
-		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
+		const ip = getIP(req);
 		if (!auth) {
 			if (required) return res.status(401).json({
 				success: false,

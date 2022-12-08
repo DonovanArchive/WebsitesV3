@@ -71,7 +71,6 @@ export default class APIKey {
 			this.limitLong   = 1000;
 			this.windowShort = 1000;
 			this.limitShort  = 1000;
-			process.emitWarning(`Found unlimited key "${data.id}" (owner: ${data.owner}, application: ${data.application}), this is deprecated.`);
 		}
 	}
 

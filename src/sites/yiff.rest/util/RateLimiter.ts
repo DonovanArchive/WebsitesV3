@@ -1,6 +1,7 @@
 import db from "../../../db";
 import { RedisTTLResponse, YiffyErrorCodes } from "../../../util/Constants";
 import Webhooks from "../../../util/Webhooks";
+import { getIP } from "../../../util/general";
 import type { Request, Response } from "express";
 
 export default class RateLimiter {
@@ -55,7 +56,7 @@ export default class RateLimiter {
 	}
 
 	static async process(req: Request, res: Response, globalWindow: number, globalLimit: number, routeWindow: number, routeLimit: number) {
-		const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString();
+		const ip = getIP(req);
 		let domain = req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!;
 		const userAgent = (req.query._ua as string || req.headers["user-agent"]) ?? "NONE";
 		const auth = req.query._auth as string || req.headers.authorization;

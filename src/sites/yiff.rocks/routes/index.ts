@@ -1,5 +1,6 @@
 import { checkForBlock, userAgentCheck, validateAPIKey, handleRateLimit } from "../../../util/checks";
 import { YiffyErrorCodes } from "../../../util/Constants";
+import { getIP } from "../../../util/general";
 import { yiffRocksOverride } from "@config";
 import { APIKeyFlags, APIUsage, ShortURL } from "@db/Models";
 import Webhooks from "@util/Webhooks";
@@ -101,7 +102,7 @@ app
 				code,
 				created_at:      new Date().toISOString(),
 				creator_apikey:  (req.query._auth as string || req.headers.authorization)!,
-				creator_ip:      (req.headers["x-forwarded-for"] || req.socket.remoteAddress || req.ip).toString(),
+				creator_ip:      getIP(req),
 				creator_name:    req.body.credit || "Unknown",
 				creator_ua:      req.headers["user-agent"]!.toString(),
 				url:             req.body.url,

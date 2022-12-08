@@ -1,3 +1,4 @@
+import { getIP } from "../util/general";
 import { logsDir } from "@config";
 import morgan from "morgan";
 import { colors, styles } from "leeks.js";
@@ -71,7 +72,7 @@ morgan
 	})
 	.token("ip", (req: express.Request) => {
 		if (!req) return "UNKNOWN";
-		const ip = req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+		const ip = getIP(req);
 		if (!ip) return "UNKNOWN";
 		if (ip.includes("127.0.0.1") || ip.includes("::1")) return `${colors.blue(styles.bold("[LOCAL]"))} ${colors.cyan(String(ip))}`;
 		else return colors.cyan(String(ip));
@@ -82,8 +83,7 @@ morgan
 	.token("statusnc", (req: express.Request, res: ServerResponse) => res.statusCode.toString())
 	.token("ipnc", (req: express.Request) => {
 		if (!req) return "UNKNOWN";
-		let ip = req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-		if (Array.isArray(ip)) ip = ip[0];
+		const ip = getIP(req);
 		if (!ip) return "UNKNOWN";
 		if (ip.includes("127.0.0.1") || ip.includes("::1")) return `[LOCAL] ${ip}`;
 		else return ip;

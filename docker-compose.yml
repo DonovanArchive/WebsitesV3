@@ -14,26 +14,15 @@ x-shared: &shared
     timeout: 2s
     test: lsof -i :443 || exit 1
   depends_on:
-    build:
-      condition: service_completed_successfully
     mariadb:
       condition: service_healthy
     redis:
       condition: service_healthy
 
-services:
-  build:
-    container_name: websites.build
-    build: .
-    volumes:
-      - build:/app/build
-      - modules:/app/node_modules
   butts-are.cool:
     <<: *shared
     container_name: butts-are.cool
     volumes:
-      - build:/app
-      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
       - ./data/shared:/data
@@ -51,8 +40,6 @@ services:
     <<: *shared
     container_name: furry.cool
     volumes:
-      - build:/app
-      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
       - ./data/shared:/data
@@ -70,8 +57,6 @@ services:
     <<: *shared
     container_name: maid.gay
     volumes:
-      - build:/app
-      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
       - ./data/shared:/data
@@ -88,8 +73,6 @@ services:
     <<: *shared
     container_name: yiff.media
     volumes:
-      - build:/app
-      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
       - ./data/shared:/data
@@ -107,8 +90,6 @@ services:
     <<: *shared
     container_name: yiff.rest
     volumes:
-      - build:/app
-      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
       - ./data/shared:/data
@@ -131,8 +112,6 @@ services:
     <<: *shared
     container_name: yiff.rocks
     volumes:
-      - build:/app
-      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
       - ./data/shared:/data
@@ -150,8 +129,6 @@ services:
     <<: *shared
     container_name: oceanic.ws
     volumes:
-      - build:/app
-      - modules:/app/node_modules
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
       - ./data/shared:/data
@@ -166,7 +143,7 @@ services:
       default:
         ipv4_address: 172.19.2.8
   imgen:
-    build: src/imgen
+    image: registry.local/imgen
     container_name: imgen.websites
     volumes:
       - ./src/imgen:/app
@@ -261,7 +238,3 @@ networks:
       config:
         - subnet: 172.19.2.0/24
           gateway: 172.19.2.1
-
-volumes:
-  build: null
-  modules: null

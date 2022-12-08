@@ -1,6 +1,6 @@
 {
   "name": "websites",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "The code that powers all of my websites.",
   "main": "index.js",
   "scripts": {

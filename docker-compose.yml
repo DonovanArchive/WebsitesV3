@@ -1,8 +1,7 @@
 version: "3"
 
 x-shared: &shared  
-  image: node:18-alpine
-  command: node /app/src/index.js
+  image: registry.local/websites
   deploy:
       resources:
         limits:

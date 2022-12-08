@@ -18,7 +18,8 @@ x-shared: &shared
       condition: service_healthy
     redis:
       condition: service_healthy
-
+      
+services:
   butts-are.cool:
     <<: *shared
     container_name: butts-are.cool

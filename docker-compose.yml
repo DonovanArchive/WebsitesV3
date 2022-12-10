@@ -1,7 +1,7 @@
 version: "3"
 
 x-shared: &shared  
-  image: registry.local/websites
+  image: ghcr.io/donovandmc/websites
   deploy:
       resources:
         limits:
@@ -144,7 +144,7 @@ services:
       default:
         ipv4_address: 172.19.2.8
   imgen:
-    image: registry.local/imgen
+    image: ghcr.io/donovandmc/imgen
     container_name: imgen.websites
     volumes:
       - ./src/imgen:/app

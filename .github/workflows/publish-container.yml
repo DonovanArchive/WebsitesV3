@@ -1,0 +1,48 @@
+name: Publish Container
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  websites:
+    name: Build Websites
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: |
+                ${{ secrets.CONFIG_SSH_KEY }}|
+                ${{ secrets.SSL_SSH_KEY }}
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Build And Publish
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: donovandmc/websites
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+  imgen:
+    name: Build Imgen
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: |
+                ${{ secrets.CONFIG_SSH_KEY }}|
+                ${{ secrets.SSL_SSH_KEY }}
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Build And Publish
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: donovandmc/imgen
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          content: src/imgen

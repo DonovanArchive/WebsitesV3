@@ -1,6 +1,6 @@
 [submodule "Config"]
 	path = src/config
-	url = https://github.com/OwOWebsites/Config
-[submodule "imgen"]
+	url = https://github.com/DonovanDMC/WebsitesConfig
+[submodule "Image Gen"]
 	path = src/imgen
 	url = https://github.com/DonovanDMC/DMImageGen

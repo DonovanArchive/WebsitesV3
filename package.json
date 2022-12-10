@@ -17,14 +17,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OwOWebsites/Primary.git"
+    "url": "git+https://github.com/DonovanDMC/Websites.git"
   },
   "author": "Donovan Daniels <hewwo@yiff.rocks>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/OwOWebsites/Primary/issues"
+    "url": "https://github.com/DonovanDMC/Websites/issues"
   },
-  "homepage": "https://github.com/OwOWebsites/Primary#readme",
+  "homepage": "https://github.com/DonovanDMC/Websites#readme",
   "devDependencies": {
     "@types/bytes": "^3.1.1",
     "@types/cheerio": "^0.22.31",

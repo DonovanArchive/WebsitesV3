@@ -3,4 +3,4 @@
 	url = https://github.com/DonovanDMC/WebsitesConfig
 [submodule "Image Gen"]
 	path = src/imgen
-	url = https://github.com/DonovanDMC/DMImageGen
+	url = https://github.com/DonovanDMC/ImageGen

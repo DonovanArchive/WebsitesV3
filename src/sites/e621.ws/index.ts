@@ -54,7 +54,7 @@ async function write(status: number): Promise<{ status: number; since: string; }
 
 export default class E621WS extends Website {
 	constructor() {
-		super("e621.ws", "172.19.2.8", __dirname);
+		super("e621.ws", "172.19.2.9", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

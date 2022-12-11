@@ -52,7 +52,7 @@ services:
     hostname: e621-ws.websites.containers.local
     networks:
       default:
-        ipv4_address: 172.19.2.8
+        ipv4_address: 172.19.2.9
   furry.cool:
     <<: *shared
     container_name: furry.cool
@@ -103,6 +103,23 @@ services:
     networks:
       default:
         ipv4_address: 172.19.2.5
+  oceanic.ws:
+    <<: *shared
+    container_name: oceanic.ws
+    volumes:
+      - ./src/config/ssl:/app/ssl
+      - /etc/hostname:/data/hostname:ro
+      - ./data/shared:/data
+      - ./src/sites/oceanic.ws/views:/app/views
+      - ./data/cache/oceanic.ws:/data/cache
+      - /var/www/sites/oceanic.ws:/app/public
+      - /var/www/oceanic-docs:/data/docs
+    environment:
+      SITE: oceanic.ws
+    hostname: oceanic-ws.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.8
   yiff.rest:
     <<: *shared
     container_name: yiff.rest
@@ -142,23 +159,6 @@ services:
     networks:
       default:
         ipv4_address: 172.19.2.7
-  oceanic.ws:
-    <<: *shared
-    container_name: oceanic.ws
-    volumes:
-      - ./src/config/ssl:/app/ssl
-      - /etc/hostname:/data/hostname:ro
-      - ./data/shared:/data
-      - ./src/sites/oceanic.ws/views:/app/views
-      - ./data/cache/oceanic.ws:/data/cache
-      - /var/www/sites/oceanic.ws:/app/public
-      - /var/www/oceanic-docs:/data/docs
-    environment:
-      SITE: oceanic.ws
-    hostname: owo-whats-this-dev.websites.containers.local
-    networks:
-      default:
-        ipv4_address: 172.19.2.8
   imgen:
     image: ghcr.io/donovandmc/imgen
     container_name: imgen.websites

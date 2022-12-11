@@ -37,6 +37,22 @@ services:
     networks:
       default:
         ipv4_address: 172.19.2.2
+  e621.ws:
+    <<: *shared
+    container_name: e621.ws
+    volumes:
+      - ./src/config/ssl:/app/ssl
+      - /etc/hostname:/data/hostname:ro
+      - ./data/shared:/data
+      - ./src/sites/e621.ws/views:/app/views
+      - ./data/cache/e621.ws:/data/cache
+      - /var/www/sites/e621.ws:/app/public
+    environment:
+      SITE: e621.ws
+    hostname: e621-ws.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.8
   furry.cool:
     <<: *shared
     container_name: furry.cool

@@ -1,0 +1,127 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <title>E621 API Status</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="shortcut icon" href="https://e621.ws/icon.png" type="image/png">
+    <meta name="description" content="A status checker for e621's api.">
+    <meta name="theme-color" content="#002D56">
+    <meta charset="UTF-8">
+
+    <!-- Site Verification -->
+
+    <!--Twitter-->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@e621dotnet">
+    <meta name="twitter:creator" content="@e621dotnet">
+    <meta name="twitter:title" content="E621 API Status">
+    <meta name="twitter:description" content="A status checker for e621's api.">
+    <meta name="twitter:image" content="https://e621.ws/icon.png">
+    <meta name="Twitter:image:alt" content="E621's Logo">
+
+    <!--Browser Caching-->
+    <meta http-equiv="Cache-control" content="public">
+
+    <!--Dublin Core - DC-->
+    <meta name="DC.Title" lang="en" content="E621 API Status">
+    <meta name="DC.Creator" lang="en" content="E621">
+    <meta name="DC.Subject" lang="en" content="Information">
+    <meta name="DC.Description" lang="en" content="A status checker for e621's api.">
+    <meta name="DC.Publisher" lang="en" content="Donovan_DMC">
+    <meta name="DC.Contributor" lang="en" content="Self">
+    <meta name="DC.Date" lang="en" content="{{ year }}">
+    <meta name="DC.Type" lang="en" content="text">
+    <meta name="DC.Format" lang="en" content="text/html">
+    <meta name="DC.Language" lang="en" content="en-US">
+    <meta name="DC.Rights" lang="en" content="All members can access">
+    <link rel="schema.DC" lang="en" href="http://purl.org/dc/elements/1.1/">
+    <link rel="schema.DCTERMS" lang="en" href="http://purl.org/dc/terms/">
+
+    <!--Open Graph-->
+    <meta property="og:title" content="E621 API Status">
+    <meta property="og:site_name" content="E621 API Status">
+    <meta property="og:description" content="A status checker for e621's api.">
+    <meta property="og:url" content="https://status.e621.ws">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://e621.ws/icon.png">
+    <meta property="og:image:secure_url" content="https://e621.ws/icon.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="300">
+    <meta property="og:image:height" content="300">
+    <meta property="og:image:alt" content="E621's Icon">
+    <style>
+        body {
+            background-color: #012E57;
+        }
+
+        h1 {
+            color: #B8BEC4;
+            margin-top: 30vh;
+        }
+
+        h2 {
+            color: #B8BEC4;
+            margin-top: 5vh;
+        }
+
+        span#state.up {
+            color: #008000;
+        }
+
+        span#state.down {
+            color: #FF0000;
+        }
+
+        div#buttons button.stop {
+            position: fixed;
+            left: 5px;
+            bottom: 5px;
+        }
+
+        div#buttons button.start {
+            position: fixed;
+            right: 5px;
+            bottom: 5px;
+        }
+
+        button.hidden {
+            display: none;
+        }
+
+        span#status.success {
+            color: #008000;
+        }
+
+        span#status.error {
+            color: #FF0000;
+        }
+
+    </style>
+    <script>
+        window.onload = () => {
+            const fmt = new Intl.DateTimeFormat(undefined, {
+                dateStyle: "medium",
+                timeStyle: "long"
+            });
+            document.querySelector("span#time").innerText = fmt.format("{{ time }}");
+        };
+    </script>
+</head>
+
+<body>
+    <h1>
+        <center>
+            E621's API is currently <span id="state" class="{{ state }}">{{ state }}</span>.
+        </center>
+    </h1>
+
+    <h2>
+        <center>
+            We've seen a <span id="status" class="{{ statusClass }}">{{ status }}</span> since <span id="time">{{ time }}</span>.
+        </center>
+    </h2>
+</body>
+
+</html>

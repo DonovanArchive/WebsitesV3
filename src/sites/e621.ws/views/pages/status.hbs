@@ -107,7 +107,8 @@
         window.onload = () => {
             const fmt = new Intl.DateTimeFormat(undefined, {
                 dateStyle: "medium",
-                timeStyle: "long"
+                timeStyle: "long",
+                hour12: false
             });
             document.querySelector("span#time").innerText = fmt.format(new Date("{{ time }}"));
         };

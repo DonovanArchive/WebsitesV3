@@ -53,7 +53,7 @@ async function write(status: number): Promise<{ status: number; since: string; }
 }
 
 const notes: Record<number, string> = {
-	503: "E621 is likely experiencing some kind of attack right now, so api endpoints may be returning captchas."
+	503: "E621 is likely experiencing some kind of attack right now, so api endpoints may be returning challenges."
 };
 export default class E621WS extends Website {
 	constructor() {
@@ -77,7 +77,7 @@ export default class E621WS extends Website {
 							state:       status >= 200 && status <= 299 ? "up" : status === 503 ? "partially down" : "down",
 							status:      `${status} ${STATUS_CODES[status] || ""}`,
 							statusClass: status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
-							note:        notes[status] === undefined ? "" : `<h2><center>${notes[status]}</center></h2>`
+							note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`
 						});
 					})
 					.get("/json", async(req,res) => {

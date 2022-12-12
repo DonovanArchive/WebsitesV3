@@ -98,6 +98,10 @@
             color: #FF0000;
         }
 
+        a#json-link {
+            color: #E9F2FA;
+        }
+
     </style>
     <script>
         window.onload = () => {
@@ -105,7 +109,7 @@
                 dateStyle: "medium",
                 timeStyle: "long"
             });
-            document.querySelector("span#time").innerText = fmt.format("{{ time }}");
+            document.querySelector("span#time").innerText = fmt.format(new Date("{{ time }}"));
         };
     </script>
 </head>
@@ -120,6 +124,12 @@
     <h2>
         <center>
             We've seen a <span id="status" class="{{ statusClass }}">{{ status }}</span> since <span id="time">{{ time }}</span>.
+        </center>
+    </h2>
+
+    <h2>
+        <center>
+            Looking to access this data automatically? We have a <a id="json-link" href="/json">JSON</a> endpoint.
         </center>
     </h2>
 </body>

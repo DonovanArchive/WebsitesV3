@@ -66,20 +66,16 @@
             margin-top: 5vh;
         }
 
-        span#state.up {
+        span#state.up, span#status.success {
             color: #008000;
         }
 
-        span#state.down {
+        span#state.down, span#status.error {
             color: #FF0000;
         }
 
-        span#status.success {
-            color: #008000;
-        }
-
-        span#status.error {
-            color: #FF0000;
+        span#state.partially.down, span#status.partially.down {
+            color: #FFA500;
         }
 
         a#json-link {
@@ -117,6 +113,8 @@
             Looking to access this data automatically? We have a <a id="json-link" href="/json">JSON</a> endpoint.
         </center>
     </h2>
+
+    {{{note}}}
 </body>
 
 </html>

@@ -52,6 +52,9 @@ async function write(status: number): Promise<{ status: number; since: string; }
 	return { status, since };
 }
 
+const notes: Record<number, string> = {
+	503: "E621 is likely experiencing some kind of attack right now, so api endpoints may be returning captchas."
+};
 export default class E621WS extends Website {
 	constructor() {
 		super("e621.ws", "172.19.2.9", __dirname);
@@ -71,9 +74,10 @@ export default class E621WS extends Website {
 						const { status, since } = await get();
 						return res.status(200).render("status", {
 							time:        since,
-							state:       status >= 200 && status <= 299 ? "up" : "down",
+							state:       status >= 200 && status <= 299 ? "up" : status === 503 ? "partially down" : "down",
 							status:      `${status} ${STATUS_CODES[status] || ""}`,
-							statusClass: status >= 200 && status <= 299 ? "success" : "error"
+							statusClass: status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
+							note:        notes[status] === undefined ? "" : `<h2><center>${notes[status]}</center></h2>`
 						});
 					})
 					.get("/json", async(req,res) => {
@@ -84,7 +88,8 @@ export default class E621WS extends Website {
 								state:         current.status >= 200 && current.status <= 299 ? "up" : "down",
 								status:        current.status,
 								statusMessage: STATUS_CODES[current.status] || "",
-								since:         current.since
+								since:         current.since,
+								note:          notes[current.status] ?? null
 							},
 							history: history.map(({ status, since }) => ({
 								state:         status >= 200 && status <= 299 ? "up" : "down",

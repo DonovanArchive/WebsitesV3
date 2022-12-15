@@ -1,8 +1,7 @@
 import Logger from "../../util/Logger";
 import Website from "@lib/Website";
 import express from "express";
-import { fetch } from "undici";
-import { RequestAbortedError } from "undici/types/errors";
+import { fetch, errors } from "undici";
 import { access, readFile, writeFile } from "fs/promises";
 import { STATUS_CODES } from "http";
 
@@ -20,7 +19,7 @@ async function check() {
 		})).status;
 		clearTimeout(timeout);
 	} catch (err) {
-		if (err instanceof RequestAbortedError) {
+		if (err instanceof errors.RequestAbortedError) {
 			status = 408;
 		} else {
 			status = 0;

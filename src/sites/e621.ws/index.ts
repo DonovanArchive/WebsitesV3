@@ -81,7 +81,7 @@ export default class E621WS extends Website {
 			.disableNonce()
 			.init();
 
-		setInterval(check, 120000);
+		setInterval(check, 60000);
 
 		this
 			.addStatic("/app/public")

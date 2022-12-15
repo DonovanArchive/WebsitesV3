@@ -91,8 +91,8 @@ export default class E621WS extends Website {
 						return res.status(200).render("status", {
 							time:        since,
 							state:       status >= 200 && status <= 299 ? "up" : status === 503 ? "partially down" : "down",
-							status:      `${status} ${STATUS_CODES[status] || status === 0 ? "Internal Error" : ""}`.trim(),
-							statusClass: status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
+							status:      `${status} ${status === 0 ? "Internal Error" : STATUS_CODES[status] || ""}`.trim(),
+							statusClass: status === 0 ? "unreachable" : status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
 							note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`
 						});
 					})
@@ -103,14 +103,14 @@ export default class E621WS extends Website {
 							current: {
 								state:         current.status >= 200 && current.status <= 299 ? "up" : "down",
 								status:        current.status,
-								statusMessage: STATUS_CODES[current.status] || current.status === 0 ? "Internal Error" : "",
+								statusMessage: current.status === 0 ? "Internal Error" : STATUS_CODES[current.status] || "",
 								since:         current.since,
 								note:          notes[current.status] ?? null
 							},
 							history: history.map(({ status, since }) => ({
 								state:         status >= 200 && status <= 299 ? "up" : "down",
 								status,
-								statusMessage: STATUS_CODES[status] || status === 0 ? "Internal Error" : "",
+								statusMessage: status === 0 ? "Internal Error" : STATUS_CODES[status] || "",
 								since
 							}))
 						});

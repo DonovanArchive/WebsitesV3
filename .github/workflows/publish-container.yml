@@ -45,4 +45,5 @@ jobs:
         with:
           image_name: donovandmc/imgen
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          content: src/imgen
+          context: src/imgen
+          dockerfile: src/imgen/Dockerfile

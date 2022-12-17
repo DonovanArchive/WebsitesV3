@@ -4,7 +4,7 @@ import express, { Router } from "express";
 
 export default class FurryCool extends Website {
 	constructor() {
-		super("oceanic.ws", "172.19.2.8", __dirname);
+		super("oceanic.ws", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

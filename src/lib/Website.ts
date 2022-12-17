@@ -6,7 +6,7 @@ import Usage from "../db/Models/Usage";
 import Logger from "../util/Logger";
 import BotTraps from "../config/bot-traps";
 import { APIImage } from "../db/Models";
-import { getIP } from "../util/general";
+import { getIP, isWhitelisted } from "../util/general";
 import { cookieSecret } from "@config";
 import type { Express } from "express";
 import express from "express";
@@ -16,7 +16,6 @@ import { create } from "express-handlebars";
 import subdomain from "express-subdomain";
 import type { ModuleImport } from "@uwu-codes/types";
 import Handlebars from "handlebars";
-import dns from "dns";
 import * as http from "http";
 import * as https from "https";
 import path from "path";
@@ -56,7 +55,6 @@ export interface ExtendedWebsite extends Website {
 
 export default class Website {
 	name: string;
-	host: string;
 	dir: string;
 	secure = false;
 	options: http.ServerOptions | https.ServerOptions = {};
@@ -72,9 +70,8 @@ export default class Website {
 		other:   ""
 	};
 	cspNonce = true;
-	constructor(name: string, host: string, dir: string) {
+	constructor(name: string, dir: string) {
 		this.name = name;
-		this.host = host;
 		this.dir = dir;
 		this.app = express();
 		this.hbs = create({
@@ -97,31 +94,13 @@ export default class Website {
 	setOptions(data: http.ServerOptions | https.ServerOptions) { this.options = data; return this; }
 	disableNonce() { this.cspNonce = false; return this; }
 
-	private async doLookup() {
-		if (/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(this.host) || /^[a-fA-F0-9:]+$/.test(this.host)) return this.host;
-		let res4: string | null = null, res6: string | null = null;
-		try {
-			res4 = await new Promise<string | null>((a, b) => dns.resolve4(this.host, (err, addresses) => err ? b(err) : a(addresses.length === 0 ? null : addresses[0])));
-		} catch {
-			// ignore
-		}
-		try {
-			res6 = await new Promise<string | null>((a, b) => dns.resolve6(this.host, (err, addresses) => err ? b(err) : a(addresses.length === 0 ? null : addresses[0])));
-		} catch {
-			// ignore
-		}
-		if (res4 === null && res6 === null) throw new Error(`Failed to resolve host for "${this.name}" (loc: ${this.dir}, host: ${this.host})`);
-		return (res4 ?? res6)!;
-	}
-
 	async listen() {
-		const address = await this.doLookup();
-		const backlog = () => console.log(`Listening on http${this.secure ? "s" : ""}://${address}${[80, 443].includes(this.port) ? "" : `:${this.port}`}`);
+		const backlog = () => console.log(`Listening on http${this.secure ? "s" : ""}://0.0.0.0${[80, 443].includes(this.port) ? "" : `:${this.port}`}`);
 		return this.server = (
 			this.secure ?
 				https.createServer(this.options, this.app) :
 				http.createServer(this.options, this.app)
-		).listen(this.port, address, backlog);
+		).listen(this.port, "0.0.0.0", backlog);
 	}
 
 	init() {
@@ -155,25 +134,29 @@ export default class Website {
 				saveUninitialized: true
 			}))
 			.use(async(req, res, next) => {
-				const ua = req.headers["user-agent"];
-				// this application incessantly probes my servers, setting off ratelimits everywhere
-				if (ua && (ua.includes("Friendica"))) {
-					return res.status(403).end();
-				}
-				const ip = getIP(req);
-				const check = await AbuseIPDB.check(ip);
-				const trap = await BotTraps.test(req);
-				if (trap) {
-					Logger.getLogger("BotTraps").info(`Trap(s) "${trap}" triggered by ${ip}${req.headers["user-agent"] ? ` (${req.headers["user-agent"]})` : ""}`);
-				}
+				if (!isWhitelisted(req)) {
+					const ua = req.headers["user-agent"];
+					// this application incessantly probes my servers, setting off ratelimits everywhere
+					if (ua && (ua.includes("Friendica"))) {
+						return res.status(403).end();
+					}
+					const ip = getIP(req);
+					const check = await AbuseIPDB.check(ip);
+					const trap = await BotTraps.test(req);
+					if (trap) {
+						Logger.getLogger("BotTraps").info(`Trap(s) "${trap}" triggered by ${ip}${req.headers["user-agent"] ? ` (${req.headers["user-agent"]})` : ""}`);
+					}
 
-				if (check) {
-					if (req.originalUrl.includes("robots.txt")) return res.status(200).end("User-agent: *\nDisallow: /");
-					Logger.getLogger("abuseipdb").info(`Blocked ${ip} from accessing ${req.protocol}://${req.hostname}${req.originalUrl} due to >50 abuse score.`);
-					return res.status(403).json({
-						success: false,
-						error:   "You have been blocked from accessing this website."
-					});
+					if (check) {
+						if (req.originalUrl.includes("robots.txt")) return res.status(200).end("User-agent: *\nDisallow: /");
+						Logger.getLogger("abuseipdb").info(`Blocked ${ip} from accessing ${req.protocol}://${req.hostname}${req.originalUrl} due to >50 abuse score.`);
+						return res.status(403).json({
+							success: false,
+							error:   "You have been blocked from accessing this website."
+						});
+					}
+				} else {
+					Logger.getLogger("abuseipdb").info(`Skipped checks for ${getIP(req)} (whitelisted)`);
 				}
 				try {
 					void Usage.track(req);

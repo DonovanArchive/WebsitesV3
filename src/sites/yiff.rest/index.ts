@@ -11,7 +11,7 @@ import "./routes/bot"; // not an actual route
 
 export default class YiffRest extends Website {
 	constructor() {
-		super("yiff.rest", "172.19.2.6", __dirname);
+		super("yiff.rest", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

@@ -73,7 +73,7 @@ const notes: Record<number, string> = {
 };
 export default class E621WS extends Website {
 	constructor() {
-		super("e621.ws", "172.19.2.9", __dirname);
+		super("e621.ws", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

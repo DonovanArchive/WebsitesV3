@@ -10,7 +10,7 @@ import { readFile } from "fs/promises";
 const temp = multer({ dest: tmpdir() });
 export default class YiffRocks extends Website {
 	constructor() {
-		super("yiff.rocks", "172.19.2.7", __dirname);
+		super("yiff.rocks", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

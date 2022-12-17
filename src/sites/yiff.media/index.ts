@@ -3,7 +3,7 @@ import express from "express";
 
 export default class YiffMedia extends Website {
 	constructor() {
-		super("yiff.media", "172.19.2.5", __dirname);
+		super("yiff.media", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)

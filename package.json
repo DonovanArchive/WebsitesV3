@@ -10,7 +10,7 @@
     "down": "sudo docker network disconnect websites maidboye || true && sudo docker compose down",
     "up:dev": "npm run imgen-config && sudo docker compose up --force-recreate",
     "dev": "npm run down && npm run up:dev",
-    "update": "git pull && docker compose pull && npm run down && git submodule update --init --recursive --remote && ./update.sh",
+    "update": "git pull && docker compose pull && git submodule update --init --recursive --remote && ./update.sh",
     "start": "git pull && docker compose pull && npm run down && git submodule update --init --recursive --remote && npm run up:d",
     "imgen-config": "cp src/config/json/imgen.json src/imgen/config.json",
     "lint": "eslint src --ext .ts",

@@ -22,7 +22,8 @@ export default class db {
 		const start = Timer.start();
 		try {
 			this.pool = mariadb.createPool({
-				...services.mariadb
+				...services.mariadb,
+				connectionLimit: 5
 			});
 		} catch (err) {
 			Logger.getLogger("Database[MariaDB]").error("Error while connecting:", err);

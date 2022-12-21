@@ -5,7 +5,6 @@ import AbuseIPDB from "./AbuseIPDB";
 import Usage from "../db/Models/Usage";
 import Logger from "../util/Logger";
 import BotTraps from "../config/bot-traps";
-import { APIImage } from "../db/Models";
 import { getIP, isWhitelisted } from "../util/general";
 import { cookieSecret } from "@config";
 import type { Express } from "express";
@@ -165,8 +164,7 @@ export default class Website {
 				}
 
 				if (req.headers["user-agent"]?.includes("Mastodon")) {
-					const img = await APIImage.getRandom("furry.yiff.gay", 1);
-					return res.status(200).sendFile(img[0].fsLocation);
+					return res.status(403).end();
 				}
 				return next();
 			})

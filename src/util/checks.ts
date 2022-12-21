@@ -75,7 +75,7 @@ export function validateAPIKey(required = false, flag?: number) {
 		if (!auth) {
 			if (required) return res.status(401).json({
 				success: false,
-				error:   "AN API key is required to access this service.",
+				error:   "An API key is required to access this service.",
 				code:    YiffyErrorCodes.API_KEY_REQUIRED
 			});
 			else {

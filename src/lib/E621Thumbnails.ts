@@ -9,7 +9,7 @@ interface QueueEntry {
 	endedAt: number | null;
 }
 
-export const filePath = (md5: string, ext: "gif" | "png") =>  `${services["e621-thumbnails"].dir}/${md5}.${ext}`;
+export const filePath = (md5: string, ext: "gif" | "png") =>  `${md5}.${ext}`;
 export const url = (md5: string, ext: "gif" | "png") =>  `${services["e621-thumbnails"].baseURL}/${md5}.${ext}`;
 export const checkURL = (md5: string, type: "gif" | "png") =>  `${services["e621-thumbnails"].checkURL}/${md5}/${type}`;
 export function getTime(started: number, type: "gif" | "png") {
@@ -44,6 +44,7 @@ export default class E621Thumbnails {
 	}, 5e3);
 
 	static add(md5: string, type: "gif" | "png") {
+		console.log("add", this.queue);
 		const worker = new Worker(__filename.endsWith("ts") ? `require("ts-node").register({swc:true});require("${__dirname}/E621ThumbnailWorker.ts");` : `${__dirname}/E621ThumbnailWorker.js`, {
 			eval:       __filename.endsWith("ts"),
 			workerData: {
@@ -62,6 +63,7 @@ export default class E621Thumbnails {
 		worker.on("exit", (code) => {
 			if (code === 0) {
 				this.queue.delete(`${md5}-${type}`);
+				Logger.getLogger("E621Thumbnails").info(`Worker ${worker.threadId} finished processing ${md5}-${type}`);
 			} else {
 				Logger.getLogger("E621Thumbnails").error(`Worker ${worker.threadId} exited with code ${code}`);
 			}
@@ -83,10 +85,12 @@ export default class E621Thumbnails {
 	}
 
 	static has(md5: string, type: "gif" | "png") {
+		console.log("has", this.queue);
 		return this.queue.has(`${md5}-${type}`);
 	}
 
 	static get(md5: string, type: "gif" | "png") {
+		console.log("get", this.queue);
 		return this.queue.get(`${md5}-${type}`);
 	}
 

@@ -1,7 +1,6 @@
 import ShortURL from "./ShortURL";
 import Logger from "../../util/Logger";
 import db from "@db";
-import { publicDir } from "@config";
 import type { DataTypes } from "@uwu-codes/types";
 export interface RawAPIImage {
 	id: string;
@@ -24,9 +23,7 @@ export { APIImage };
 export default class APIImage {
 	static DB = "yiffyapi2";
 	static TABLE = "images";
-	static CDN_URL = "https://yiff.media/V2";
-	static NEW_URL = "https://v2.yiff.media";
-	static NEW_RAW_URL = "https://s3.us-west-1.wasabisys.com/yiffyapi2";
+	static CDN_URL = "https://v2.yiff.media";
 	id: string;
 	artists: Array<string>;
 	sources: Array<string>;
@@ -71,32 +68,27 @@ export default class APIImage {
 		return db.query(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE category = ?`, [cat]).then((d: Array<RawAPIImage>) => d.map(img => new APIImage(img)));
 	}
 
-	static categoryPath(name: string) {
-		return `${publicDir}/V2/${name.replace(/\./g, "/")}`;
-	}
-
-	get fsLocation() {
-		return `${APIImage.categoryPath(this.category)}/${this.id}.${this.ext}`;
-	}
-
 	get cdnURL() {
-		return `${APIImage.CDN_URL}/${this.category.replace(/\./g, "/")}/${this.id}.${this.ext}`;
+		return `${APIImage.CDN_URL}/${this.s3Path}`;
+	}
+
+	get s3Path() {
+		return `${this.category.replace(/\./g, "/")}/${this.id}.${this.ext}`;
 	}
 
 	get json() {
 		return {
-			artists:      this.artists.filter(Boolean),
-			sources:      this.sources.filter(Boolean),
-			width:        this.width,
-			height:       this.height,
-			url:          this.cdnURL,
-			yiffMediaURL: this.cdnURL,
-			type:         this.type,
-			name:         `${this.id}.${this.ext}`,
-			id:           this.id,
-			ext:          this.ext,
-			size:         this.size,
-			reportURL:    null
+			artists:   this.artists.filter(Boolean),
+			sources:   this.sources.filter(Boolean),
+			width:     this.width,
+			height:    this.height,
+			url:       this.cdnURL,
+			type:      this.type,
+			name:      `${this.id}.${this.ext}`,
+			id:        this.id,
+			ext:       this.ext,
+			size:      this.size,
+			reportURL: null
 		};
 	}
 

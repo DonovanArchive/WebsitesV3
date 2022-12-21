@@ -172,6 +172,9 @@ services:
       timeout: 2s
       test: mysqladmin --user=root --password=$$MYSQL_ROOT_PASSWORD ping
     hostname: mariadb.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.251
   rethinkdb:
     image: rethinkdb
     command: rethinkdb --bind all -n rdb
@@ -186,6 +189,9 @@ services:
               memory: 128M
     restart: always
     hostname: rethinkdb.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.252
   redis:
     image: redis:alpine
     command: redis-server --disable-thp yes --supervised no --bind 0.0.0.0 --requirepass "$REDIS_PASSWORD"
@@ -204,6 +210,9 @@ services:
       timeout: 5s
     restart: always
     hostname: redis.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.254
 networks:
   default:
     name: websites

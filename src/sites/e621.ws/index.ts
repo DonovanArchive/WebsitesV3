@@ -1,7 +1,7 @@
 import Logger from "../../util/Logger";
 import Website from "@lib/Website";
 import express from "express";
-import { fetch, errors } from "undici";
+import { fetch } from "undici";
 import { access, readFile, writeFile } from "fs/promises";
 import { STATUS_CODES } from "http";
 
@@ -9,7 +9,7 @@ async function check() {
 	let status: number;
 	try {
 		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 3000);
+		const timeout = setTimeout(() => controller.abort(), 1e5);
 		status = (await fetch("https://e621.net/posts.json?limit=0", {
 			headers: {
 				"User-Agent": "E621Status/1.0.0 (https://status.e621.ws; \"donovan_dmc\")"
@@ -19,7 +19,7 @@ async function check() {
 		})).status;
 		clearTimeout(timeout);
 	} catch (err) {
-		if (err instanceof errors.RequestAbortedError) {
+		if (err instanceof Error && err.constructor.name === "DOMException" && err.name === "AbortError") {
 			status = 408;
 		} else {
 			status = 0;

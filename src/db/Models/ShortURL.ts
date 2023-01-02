@@ -49,19 +49,19 @@ export default class ShortURL {
 	}
 
 	static async get(code: string) {
-		return db.query(`SELECT * FROM ${ShortURL.DB}.${ShortURL.TABLE} WHERE code = ?`, [code]).then((d: Array<RawShortURL>) => d.length === 0 ? null : new ShortURL(d[0]));
+		return db.query<Array<RawShortURL>>(`SELECT * FROM ${ShortURL.DB}.${ShortURL.TABLE} WHERE code = ?`, [code]).then(d => d.length === 0 ? null : new ShortURL(d[0]));
 	}
 
 	static async getByURL(url: string) {
-		return db.query(`SELECT * FROM ${ShortURL.DB}.${ShortURL.TABLE} WHERE url = ?`, [url]).then((d: Array<RawShortURL>) => d.length === 0 ? null : new ShortURL(d[0]));
+		return db.query<Array<RawShortURL>>(`SELECT * FROM ${ShortURL.DB}.${ShortURL.TABLE} WHERE url = ?`, [url]).then(d => d.length === 0 ? null : new ShortURL(d[0]));
 	}
 
 	static async delete(code: string) {
-		return db.query(`DELETE FROM ${ShortURL.DB}.${ShortURL.TABLE} WHERE code = ?`, [code]) as Promise<UpsertResult>;
+		return db.query<UpsertResult>(`DELETE FROM ${ShortURL.DB}.${ShortURL.TABLE} WHERE code = ?`, [code]);
 	}
 
 	static async new(data: Omit<ConvertFromRaw<RawShortURL>, "modified_at" | "pos">) {
-		return db.query(`INSERT INTO ${ShortURL.DB}.${ShortURL.TABLE} (${Object.keys(data).join(", ")}) VALUES (${Object.values(data).map(() => "?").join(", ")})`, Object.values(data)).then((r: UpsertResult) => r.affectedRows === 1 ? this.get(data.code) : null);
+		return db.query<UpsertResult>(`INSERT INTO ${ShortURL.DB}.${ShortURL.TABLE} (${Object.keys(data).join(", ")}) VALUES (${Object.values(data).map(() => "?").join(", ")})`, Object.values(data)).then(r => r.affectedRows === 1 ? this.get(data.code) : null);
 	}
 
 	static async override(data: Omit<ConvertFromRaw<RawShortURL>, "modified_at" | "pos">) {
@@ -72,12 +72,12 @@ export default class ShortURL {
 
 	async setCreatorName(name: string) {
 		this.creator.name = name;
-		return db.query(`UPDATE ${ShortURL.DB}.${ShortURL.TABLE} SET creator_name = ? WHERE code = ?`, [name, this.code]).then((r: UpsertResult) => r.affectedRows === 1 ? true : null);
+		return db.query<UpsertResult>(`UPDATE ${ShortURL.DB}.${ShortURL.TABLE} SET creator_name = ? WHERE code = ?`, [name, this.code]).then(r => r.affectedRows === 1 ? true : null);
 	}
 
 	async setURL(url: string) {
 		this.url = url;
-		return db.query(`UPDATE ${ShortURL.DB}.${ShortURL.TABLE} SET url = ? WHERE code = ?`, [url, this.code]).then((r: UpsertResult) => r.affectedRows === 1 ? true : null);
+		return db.query<UpsertResult>(`UPDATE ${ShortURL.DB}.${ShortURL.TABLE} SET url = ? WHERE code = ?`, [url, this.code]).then(r => r.affectedRows === 1 ? true : null);
 	}
 
 	async delete() {

@@ -1,5 +1,4 @@
 import { logsDir } from "@config";
-import mkdirp from "mkdirp";
 import type { ILogObject } from "tslog";
 import { Logger as TSLog } from "tslog";
 import * as fs from "fs";
@@ -7,7 +6,7 @@ import * as fs from "fs";
 export default class Logger {
 	private static log = new TSLog();
 	private static saveToFile(obj: ILogObject) {
-		mkdirp.sync(logsDir);
+		fs.mkdirSync(logsDir, { recursive: true });
 		const d = new Date();
 		const current = `${d.getMonth() + 1}-${d.getDate()}-${d.getFullYear()}`;
 		fs.appendFileSync(`${logsDir}/${current}.log`, `${JSON.stringify(obj)}\n`);

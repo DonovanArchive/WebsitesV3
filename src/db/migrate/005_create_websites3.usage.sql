@@ -18,10 +18,9 @@ CREATE TABLE `websites3`.`usage` (
 	-- the ISO-8601 timestamp this request was made at
 	`timestamp`   TINYTEXT      NOT NULL,
 	-- Indexes
-	UNIQUE INDEX     `id`        (`id`),
-	INDEX            `ip`        (`ip`),
-	INDEX            `user_agent`(`user_agent`),
-	INDEX            `method`    (`method`),
-	INDEX            `path`      (`path`),
-	INDEX            `domain`    (`domain`)
+	INDEX            `ip`         (`ip`),
+	INDEX            `user_agent` (`user_agent`),
+	INDEX            `method`     (`method`),
+	INDEX            `path`       (`path`),
+	INDEX            `domain`     (`domain`)
 );

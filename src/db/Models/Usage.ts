@@ -44,7 +44,7 @@ export default class Usage {
 
 	static async track(req: Request) {
 		const ip = getIP(req);
-		const res = await db.query(`INSERT INTO ${Usage.DB}.${Usage.TABLE} (ip, user_agent, authorization, raw_headers, method, path, domain, referrer, query) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+		const res = await db.query<UpsertResult>(`INSERT INTO ${Usage.DB}.${Usage.TABLE} (ip, user_agent, authorization, raw_headers, method, path, domain, referrer, query) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
 			ip,
 			req.query._ua || req.headers["user-agent"] || null,
 			req.query._auth as string || req.headers.authorization || null,
@@ -54,7 +54,7 @@ export default class Usage {
 			req.hostname?.endsWith(process.env.SITE!) ? req.hostname : process.env.SITE!,
 			req.headers.referer || null,
 			JSON.stringify(req.query)
-		]) as UpsertResult;
+		]);
 		await db.r
 			.multi()
 			.incr(`websites3:ip:${ip}`)

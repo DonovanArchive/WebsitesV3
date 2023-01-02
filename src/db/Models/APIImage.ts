@@ -53,19 +53,19 @@ export default class APIImage {
 	}
 
 	static async get(id: string) {
-		return db.query(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE id = ? LIMIT 1`, [id]).then((d: Array<RawAPIImage>) => d.length === 0 ? null : new APIImage(d[0]));
+		return db.query<Array<RawAPIImage>>(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE id = ? LIMIT 1`, [id]).then(d => d.length === 0 ? null : new APIImage(d[0]));
 	}
 
 	static async getRandom(category: string, limit: number): Promise<Array<APIImage>> {
-		return db.query(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE category = ? ORDER BY RAND() LIMIT ${limit}`, [category]).then((d: Array<RawAPIImage>) => d.map(i => new APIImage(i)));
+		return db.query<Array<RawAPIImage>>(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE category = ? ORDER BY RAND() LIMIT ${limit}`, [category]).then(d => d.map(i => new APIImage(i)));
 	}
 
 	static async getAll() {
-		return db.query(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE}`).then((d: Array<RawAPIImage>) => d.map(img => new APIImage(img)));
+		return db.query<Array<RawAPIImage>>(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE}`).then(d => d.map(img => new APIImage(img)));
 	}
 
 	static async getByCategory(cat: string) {
-		return db.query(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE category = ?`, [cat]).then((d: Array<RawAPIImage>) => d.map(img => new APIImage(img)));
+		return db.query< Array<RawAPIImage>>(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE category = ?`, [cat]).then(d => d.map(img => new APIImage(img)));
 	}
 
 	get cdnURL() {

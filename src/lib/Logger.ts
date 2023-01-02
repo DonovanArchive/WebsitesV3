@@ -4,9 +4,9 @@ import morgan from "morgan";
 import { colors, styles } from "leeks.js";
 import * as rfs from "rotating-file-stream";
 import type express from "express";
-import * as fs from "fs-extra";
 import type { ServerResponse } from "http";
-fs.mkdirpSync(logsDir);
+import { mkdirSync } from "fs";
+mkdirSync(logsDir, { recursive: true });
 const stream = rfs.createStream("access.log", {
 	interval: "1d", // rotate daily
 	path:     logsDir

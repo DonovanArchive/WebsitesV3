@@ -111,7 +111,7 @@ export default class RateLimiter {
 							`\u25fd Reset: **${reset}**`,
 							`\u25fd Reset After: **${resetAfter}**`,
 							`\u25fd Bucket: **${bucket}**`,
-							`\u25fd Decoded Bucket: **${Buffer.from(bucket).toString("ascii")}**`
+							`\u25fd Decoded Bucket: **${Buffer.from(bucket, "base64").toString("ascii")}**`
 						].join("\n")
 					}
 				]

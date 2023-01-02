@@ -4,6 +4,7 @@ import { Timer } from "@uwu-codes/utils";
 import type { Pool } from "mariadb";
 import mariadb from "mariadb";
 import Redis from "ioredis";
+import debug from "debug";
 
 export default class db {
 	static pool: Pool;
@@ -54,5 +55,8 @@ export default class db {
 		});
 	}
 
-	static get query() { return this.pool.query.bind(this.pool); }
+	static async query<T = unknown>(sql: string, values?: Array<unknown>) {
+		debug("db:query")(sql);
+		return this.pool.query(sql, values) as Promise<T>;
+	}
 }

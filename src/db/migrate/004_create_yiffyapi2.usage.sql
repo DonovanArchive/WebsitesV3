@@ -14,7 +14,6 @@ CREATE TABLE `yiffyapi2`.`usage` (
 	-- the ISO-8601 timestamp this request was made at
 	`timestamp`   TINYTEXT      NOT NULL,
 	-- Indexes
-	UNIQUE INDEX  `id`          (`id`),
 	INDEX         `key`         (`key`),
 	INDEX         `ip`          (`ip`),
 	INDEX         `user_agent`  (`user_agent`),

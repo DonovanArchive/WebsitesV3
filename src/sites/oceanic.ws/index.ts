@@ -1,6 +1,6 @@
 import docsRoute from "./routes/docs";
 import Website from "@lib/Website";
-import express, { Router } from "express";
+import express from "express";
 
 export default class FurryCool extends Website {
 	constructor() {
@@ -12,7 +12,7 @@ export default class FurryCool extends Website {
 			.init();
 
 		this
-			.addSubdomain("docs", Router().use(docsRoute))
+			.addSubdomain("docs", docsRoute)
 			.addSubdomain("i", express.static("/app/public/images"))
 			.addHandler(
 				express.Router()

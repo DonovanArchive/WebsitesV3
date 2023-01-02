@@ -38,7 +38,7 @@ export default class APIUsage {
 	static async track(req: Request, service: string) {
 		const ip = getIP(req);
 		const auth = req.query._auth as string || req.headers.authorization || null;
-		const res = await db.query(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} (\`key\`, ip, user_agent, method, path, referrer, query, service) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
+		const res = await db.query<UpsertResult>(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} (\`key\`, ip, user_agent, method, path, referrer, query, service) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [
 			auth,
 			ip,
 			req.query._ua || req.headers["user-agent"] || null,
@@ -47,7 +47,7 @@ export default class APIUsage {
 			req.headers.referer || null,
 			JSON.stringify(req.query),
 			service
-		]) as UpsertResult;
+		]);
 		const multi = db.r.multi()
 			.incr(`yiffy2:ip:${ip}`)
 			.incr(`yiffy2:${service}:ip:${ip}`);

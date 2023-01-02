@@ -29,6 +29,5 @@ CREATE TABLE `yiffyapi2`.`images` (
 	-- the cloudflare images id of this image
 	`cf_id`         CHAR(36)            NULL,
 	-- Indexes
-	UNIQUE INDEX    `id`                (`id`),
 	INDEX           `category`          (`category`)
 );

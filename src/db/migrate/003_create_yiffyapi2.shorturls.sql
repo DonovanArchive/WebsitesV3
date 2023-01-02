@@ -18,7 +18,6 @@ CREATE TABLE `yiffyapi2`.`shorturls` (
 	-- the position of this shorturl
 	`pos`              MEDIUMINT    NOT NULL AUTO_INCREMENT,
 	-- Indexes
-	UNIQUE INDEX    `code`          (`code`),
 	INDEX           `url`           (`url`),
 	UNIQUE INDEX    `pos`           (`pos`)
 );

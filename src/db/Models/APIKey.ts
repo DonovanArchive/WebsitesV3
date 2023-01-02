@@ -75,7 +75,7 @@ export default class APIKey {
 	}
 
 	static async get(id: string): Promise<APIKey | null> {
-		return db.query(`SELECT * FROM ${APIKey.DB}.${APIKey.TABLE} WHERE id = ? LIMIT 1`, [id]).then((k: Array<RawAPIKey>) => k.length === 0 ? null : new APIKey(k[0]));
+		return db.query<Array<RawAPIKey>>(`SELECT * FROM ${APIKey.DB}.${APIKey.TABLE} WHERE id = ? LIMIT 1`, [id]).then(k => k.length === 0 ? null : new APIKey(k[0]));
 	}
 
 	static async getOrThrow(id: string): Promise<APIKey> {
@@ -85,18 +85,18 @@ export default class APIKey {
 	}
 
 	static async getOwned(owner: string): Promise<Array<APIKey>> {
-		return db.query(`SELECT * FROM ${APIKey.DB}.${APIKey.TABLE} WHERE owner = ?`, [owner]).then((k: Array<RawAPIKey>) => k.map(d => new APIKey(d)));
+		return db.query<Array<RawAPIKey>>(`SELECT * FROM ${APIKey.DB}.${APIKey.TABLE} WHERE owner = ?`, [owner]).then(k => k.map(d => new APIKey(d)));
 	}
 
 	static async new(data: Omit<ConvertFromRaw<RawAPIKey>, "id" | "window_long" | "limit_long" | "window_short" | "limit_short"> & Partial<Record<"window_long" | "limit_long" | "window_short" | "limit_short", number>>) {
 		const id = randomBytes(20).toString("hex");
 		if ("id" in data) delete (data as {id?: string; }).id;
-		await db.query(`INSERT INTO ${APIKey.DB}.${APIKey.TABLE} (id, ${Object.keys(data).join(", ")}) VALUES (?, ${Object.values(data).map(() => "?").join(", ")})`, [id, ...Object.values(data)]).then((r: UpsertResult) => r.affectedRows === 1 ? id : null);
+		await db.query<UpsertResult>(`INSERT INTO ${APIKey.DB}.${APIKey.TABLE} (id, ${Object.keys(data).join(", ")}) VALUES (?, ${Object.values(data).map(() => "?").join(", ")})`, [id, ...Object.values(data)]).then(r => r.affectedRows === 1 ? id : null);
 		return id;
 	}
 
 	static async delete(id: string) {
-		return db.query(`DELETE FROM ${APIKey.DB}.${APIKey.TABLE} WHERE id = ?`, [id]).then((r: UpsertResult) => r.affectedRows > 0);
+		return db.query<UpsertResult>(`DELETE FROM ${APIKey.DB}.${APIKey.TABLE} WHERE id = ?`, [id]).then(r => r.affectedRows > 0);
 	}
 
 	async delete() { return APIKey.delete(this.id); }

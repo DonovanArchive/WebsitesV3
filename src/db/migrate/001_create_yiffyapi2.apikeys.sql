@@ -16,6 +16,5 @@ CREATE TABLE `yiffyapi2`.`apikeys` (
 	-- the contact method for the application developer
 	`contact`          TINYTEXT  NULL,
 	-- Indexes
-	UNIQUE INDEX       `id`      (`id`),
 	INDEX              `owner`   (`owner`)
 );

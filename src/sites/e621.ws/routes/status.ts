@@ -3,7 +3,6 @@ import { Router } from "express";
 import { fetch } from "undici";
 import { access, readFile, writeFile } from "fs/promises";
 import { STATUS_CODES } from "http";
-
 async function check() {
 	let status: number;
 	try {
@@ -20,6 +19,9 @@ async function check() {
 	} catch (err) {
 		if (err instanceof Error && err.constructor.name === "DOMException" && err.name === "AbortError") {
 			status = 408;
+		} else if (err instanceof TypeError && (err.cause as Error)?.message.includes("EAI_AGAIN")) {
+			status = (await get(true)).status;
+			Logger.getLogger("e621.ws").error("Caught and ignored EAI_AGAIN error");
 		} else {
 			status = 0;
 			Logger.getLogger("e621.ws").error(err);

@@ -17,6 +17,51 @@ import { APIKeyFlags } from "@models/APIKey";
 import Webhooks from "@util/Webhooks";
 import { Router } from "express";
 import bytes from "bytes";
+
+async function getStats(ip: string, key?: string) {
+	const list = categories.enabled.map(c => c.db);
+	const enabledCount = categories.enabled.length;
+	const pr = (str: string) => categories.enabled.map(c => `${str}:${c.db}`);
+	const keys = [
+		"yiffy2:stats:images:total",
+		...pr("yiffy2:stats:images:total"),
+		`yiffy2:stats:images:ip:${ip}`,
+		...pr(`yiffy2:stats:images:ip:${ip}`)
+	];
+	if (key) {
+		keys.push(`yiffy2:stats:images:key:${key}`, ...pr(`yiffy2:stats:images:key:${key}`));
+	}
+	const values = await db.r.mget(keys);
+	const total = Number(values.shift()!);
+	const totalSpecific = values.splice(0, enabledCount);
+	const ipTotal = Number(values.shift()!);
+	const ipSpecific = values.splice(0, enabledCount);
+	const keyTotal = key ? Number(values.shift()!) : 0;
+	const keySpecific = key ? values.splice(0, enabledCount) : [];
+	const stats = {
+		global: {
+			total
+		} as Record<string, number | Record<string, number | Record<string, number>>>,
+		ip: {
+			total: ipTotal
+		} as Record<string, number | Record<string, number | Record<string, number>>>,
+		key: (key ? {
+			total: keyTotal
+		} : null) as Record<string, number | Record<string, number | Record<string, number>>> | null
+	};
+	for (const cat of list) {
+		const statTotal = totalSpecific[list.indexOf(cat)];
+		const statIP = ipSpecific[list.indexOf(cat)];
+		const statKey = keySpecific[list.indexOf(cat)];
+		dot.set(cat, Number(statTotal), stats.global);
+		dot.set(cat, Number(statIP), stats.ip);
+		if (key) {
+			dot.set(cat, Number(statKey), stats.key!);
+		}
+	}
+
+	return stats;
+}
 const app = Router();
 app
 	.get("/robots.txt", async(req, res) => res.header("Content-Type", "text/plain").status(200).end("User-Agent: *\nDisallow: /"))
@@ -34,6 +79,10 @@ app
 		}
 	)
 	.get("/online", async (req, res) => res.status(200).json({ success: true, uptime: process.uptime() }))
+	.get("/stats", async(req, res) => res.status(200).json({
+		success: true,
+		data:    await getStats(req.ip, req.query._auth as string || req.headers.authorization)
+	}))
 	.get("/categories", async (req, res) => res.status(200).json({ success: true, data: categories }))
 	.get("/categories/:db", async (req, res) => {
 		const c = Object.keys(categories).map(k => categories[k as keyof typeof categories]).reduce((a, b) => a.concat(b as never), []);
@@ -129,6 +178,16 @@ app
 		try {
 			const auth = req.query._auth as string || req.headers.authorization;
 			await db.r.incr(`yiffy2:images:category:${category}`);
+			const m = db.r.multi()
+				.incr(`yiffy2:stats:images:ip:${req.ip}`)
+				.incr(`yiffy2:stats:images:ip:${req.ip}:${category}`)
+				.incr("yiffy2:stats:images:total")
+				.incr(`yiffy2:stats:images:total:${category}`);
+			if (auth) {
+				m.incr(`yiffy2:stats:images:key:${auth}`)
+					.incr(`yiffy2:stats:images:key:${auth}:${category}`);
+			}
+			await m.exec();
 			const notes: Array<{ id: number; content: string | null; }> = [];
 			if ((req.query.notes ?? "").toString().toLowerCase() !== "disabled") {
 				if (req.headers.host === "api.furry.bot") notes.push(yiffyNotes[1]);

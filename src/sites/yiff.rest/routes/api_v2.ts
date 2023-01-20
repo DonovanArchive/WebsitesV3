@@ -17,6 +17,7 @@ import { APIKeyFlags } from "@models/APIKey";
 import Webhooks from "@util/Webhooks";
 import { Router } from "express";
 import bytes from "bytes";
+import dot from "dot-object";
 
 async function getStats(ip: string, key?: string) {
 	const list = categories.enabled.map(c => c.db);

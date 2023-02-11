@@ -34,8 +34,8 @@ export default class E621Thumbnails {
 	static workers = new Map<string, Worker>();
 	static checksInterval = setInterval(() => {
 		Array.from(this.queue.entries()).filter(([,q]) => q.status === "processing").forEach(async([k, q]) => {
-			// we can end up with ~64995ms runtime, but 5 seconds isn't really that much of a concern
-			if (Date.now() - q.startedAt >= 60000) {
+			// we can end up with ~1204995ms runtime, but 5 seconds isn't really that much of a concern
+			if (Date.now() - q.startedAt >= 120000) {
 				this.queue.set(k, { thread: q.thread, status: "timeout", startedAt: q.startedAt, endedAt: Date.now() });
 				await this.workers.get(k)?.terminate();
 				this.workers.delete(k);

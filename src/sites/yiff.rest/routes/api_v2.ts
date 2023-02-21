@@ -260,9 +260,9 @@ app
 		if (images.length === 0) return res.status(404).json({
 			success: false,
 			error:   {
-				message: "No images were found in that category."
+				message: "No results were found. Try changing your search parameters."
 			},
-			code: YiffyErrorCodes.IMAGES_EMPTY_CATEGORY
+			code: YiffyErrorCodes.IMAGES_NO_RESULTS
 		});
 
 		try {

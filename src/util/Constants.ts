@@ -28,6 +28,7 @@ export enum YiffyErrorCodes {
 	IMAGES_CATEGORY_NOT_FOUND            = 1030,
 	IMAGES_EMPTY_CATEGORY                = 1031,
 	IMAGES_NOT_FOUND                     = 1040,
+	IMAGES_NO_RESULTS                    = 1041,
 	IMAGES_AMOUNT_LT_ONE                 = 1051,
 	IMAGES_AMOUNT_GT_FIVE                = 1052,
 	IMAGES_IMAGE_RESPONSE_DISABLED       = 1053,

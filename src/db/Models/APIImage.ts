@@ -56,8 +56,8 @@ export default class APIImage {
 		return db.query<Array<RawAPIImage>>(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE id = ? LIMIT 1`, [id]).then(d => d.length === 0 ? null : new APIImage(d[0]));
 	}
 
-	static async getRandom(category: string, limit: number): Promise<Array<APIImage>> {
-		return db.query<Array<RawAPIImage>>(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE category = ? ORDER BY RAND() LIMIT ${limit}`, [category]).then(d => d.map(i => new APIImage(i)));
+	static async getRandom(category: string, limit: number, sizeLimit: number): Promise<Array<APIImage>> {
+		return db.query<Array<RawAPIImage>>(`SELECT * FROM ${APIImage.DB}.${APIImage.TABLE} WHERE category = ?${sizeLimit === -1 ? "" : ` AND size <= ${sizeLimit}`} ORDER BY RAND() LIMIT ${limit}`, [category]).then(d => d.map(i => new APIImage(i)));
 	}
 
 	static async getAll() {

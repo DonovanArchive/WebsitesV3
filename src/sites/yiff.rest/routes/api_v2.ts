@@ -165,8 +165,8 @@ app
 		if (!Array.from(new Set(valid)).includes(parts[0])) return next();
 		const category = parts.join(".");
 
-		const images = await APIImage.getRandom(category, limit);
-		const sizeLimit = bytes.parse((req.body as { sizeLimit: string; }).sizeLimit?.toString?.()) ?? -1;
+		const sizeLimit = bytes.parse((req.query as { sizeLimit: string; }).sizeLimit?.toString?.()) ?? -1;
+		const images = await APIImage.getRandom(category, limit, sizeLimit);
 
 		if (images.length === 0) return res.status(404).json({
 			success: false,

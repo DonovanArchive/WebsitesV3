@@ -16,6 +16,9 @@ import FuzzySearch from "fuzzy-search";
 import { createHash } from "crypto";
 import { access, readFile, writeFile } from "fs/promises";
 
+const greenTick = "<:greenTick:865401802920951819>";
+const redTick = "<:redTick:865401803256627221>";
+
 const client = new Client({
 	auth:    `Bot ${discord["yiffy-bot"].token}`,
 	gateway: {
@@ -144,9 +147,10 @@ client.on("interactionCreate", async(interaction) => {
 									`- Key: ||${k.id}||`,
 									`- Application: \`${k.application}\``,
 									`- Contact: \`${k.contact || "NONE"}\``,
-									`- Active: ${k.active ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`,
-									`- Disabled: ${k.disabled ? `<:greenTick:865401802920951819> (Reason: ${k.disabledReason ?? "NONE"})` : "<:redTick:865401803256627221>"}`,
-									`- Unlimited: ${k.unlimited ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`
+									`- Active: ${k.active ? greenTick : redTick}`,
+									`- Disabled: ${k.disabled ? `${greenTick} (Reason: ${k.disabledReason ?? "NONE"})` : redTick}`,
+									`- Unlimited: ${k.unlimited ? greenTick : redTick}`,
+									`- Services: ${k.servicesString}`
 								].join("\n")).join("\n\n")}`,
 								flags: MessageFlags.EPHEMERAL
 							});
@@ -177,10 +181,11 @@ client.on("interactionCreate", async(interaction) => {
 								.setDescription([
 									`Key: \`${key.id}\``,
 									`Application: **${key.application}**`,
-									`Contact: ${key.contact || "**NONE**"}`,
-									`Active: ${key.active ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`,
-									`Disabled: ${key.disabled ? `<:greenTick:865401802920951819> (Reason: ${key.disabledReason ?? "NONE"})` : "<:redTick:865401803256627221>"}`,
-									`Unlimited: ${key.unlimited ? "<:greenTick:865401802920951819>" : "<:redTick:865401803256627221>"}`
+									`Contact: ${key.contact || "NONE"}`,
+									`Active: ${key.active ? greenTick : redTick}`,
+									`Disabled: ${key.disabled ? `${greenTick} (Reason: ${key.disabledReason ?? "NONE"})` : redTick}`,
+									`Unlimited: ${key.unlimited ? greenTick : redTick}`,
+									`Services: ${key.servicesString}`
 								])
 								.setColor(0xDC143C)
 								.setTimestamp(new Date().toISOString())
@@ -252,19 +257,25 @@ client.on("interactionCreate", async(interaction) => {
 						flags:           DEFAULT_FLAGS,
 						bulk_limit:      100
 					});
+					if (!key) {
+						return interaction.createMessage({
+							content: "An error occurred while creating your API key.",
+							flags:   MessageFlags.EPHEMERAL
+						});
+					}
 
 					void Webhooks.get("yiffyAPIKey").execute({
 						embeds: [
 							new EmbedBuilder()
 								.setTitle("API Key Created")
 								.setDescription([
-									`Key: \`${key}\``,
-									// <:redTick:865401803256627221> <:greenTick:865401802920951819>
-									`Application: **${name}**`,
-									`Contact: ${contact}`,
-									"Active: <:greenTick:865401802920951819>",
-									"Disabled: <:redTick:865401803256627221>",
-									"Unlimited: <:redTick:865401803256627221>"
+									`Key: \`${key.id}\``,
+									`Application: **${key.application}**`,
+									`Contact: ${key.contact}`,
+									`Active: ${key.active ? greenTick : redTick}`,
+									`Disabled: ${key.disabled ? `${greenTick} (Reason: ${key.disabledReason ?? "NONE"})` : redTick}`,
+									`Unlimited: ${key.unlimited ? greenTick : redTick}`,
+									`Services: ${key.servicesString}`
 								])
 								.setColor(0x008000)
 								.setTimestamp(new Date().toISOString())
@@ -273,7 +284,7 @@ client.on("interactionCreate", async(interaction) => {
 						]
 					});
 					return interaction.createMessage({
-						content: `Your API key: \`${key}\`. Provide this in the \`Authorization\` header. You must still provide a unique user agent. If you have any issues, contact a developer.`,
+						content: `Your API key: \`${key.id}\`. Provide this in the \`Authorization\` header. You must still provide a unique user agent. If you have any issues, contact a developer.`,
 						flags:   MessageFlags.EPHEMERAL
 					});
 				}

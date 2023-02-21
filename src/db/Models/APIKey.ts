@@ -95,8 +95,8 @@ export default class APIKey {
 	static async new(data: Omit<ConvertFromRaw<RawAPIKey>, "id" | "window_long" | "limit_long" | "window_short" | "limit_short"> & Partial<Record<"window_long" | "limit_long" | "window_short" | "limit_short", number>>) {
 		const id = randomBytes(20).toString("hex");
 		if ("id" in data) delete (data as {id?: string; }).id;
-		await db.query<UpsertResult>(`INSERT INTO ${APIKey.DB}.${APIKey.TABLE} (id, ${Object.keys(data).join(", ")}) VALUES (?, ${Object.values(data).map(() => "?").join(", ")})`, [id, ...Object.values(data)]).then(r => r.affectedRows === 1 ? id : null);
-		return id;
+		const key = await db.query<Array<RawAPIKey>>(`INSERT INTO ${APIKey.DB}.${APIKey.TABLE} (id, ${Object.keys(data).join(", ")}) VALUES (?, ${Object.values(data).map(() => "?").join(", ")}) RETURNING *`, [id, ...Object.values(data)]).then(r => r.length ? r[0] : null);
+		return key ? new APIKey(key) : null;
 	}
 
 	static async delete(id: string) {
@@ -108,4 +108,15 @@ export default class APIKey {
 	get imagesAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.IMAGES) === APIKeyFlags.IMAGES; }
 	get thumbsAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.THUMBS) === APIKeyFlags.THUMBS; }
 	get shortenerAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.SHORTENER) === APIKeyFlags.SHORTENER; }
+	get imagesBulkAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.IMAGES_BULK) === APIKeyFlags.IMAGES_BULK; }
+
+	get servicesString() {
+		const services: Array<string> = [];
+		if (this.imagesAccess) services.push("Images");
+		if (this.imagesBulkAccess) services.push(`Bulk Images (${this.bulkLimit})`);
+		if (this.thumbsAccess) services.push("Thumbs");
+		if (this.shortenerAccess) services.push("Shortener");
+
+		return services.join(", ") || "None";
+	}
 }

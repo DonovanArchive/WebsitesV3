@@ -47,9 +47,11 @@ export default class YiffRest extends Website {
 							},
 							flags:    key.flags,
 							services: {
-								images:    key.imagesAccess,
-								thumbs:    key.thumbsAccess,
-								shortener: key.shortenerAccess
+								images:     key.imagesAccess,
+								imagesBulk: key.imagesBulkAccess,
+								thumbs:     key.thumbsAccess,
+								shortener:  key.shortenerAccess
+
 							}
 						}
 					});

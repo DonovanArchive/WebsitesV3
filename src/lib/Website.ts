@@ -93,7 +93,7 @@ export default class Website {
 	setOptions(data: http.ServerOptions | https.ServerOptions) { this.options = data; return this; }
 	disableNonce() { this.cspNonce = false; return this; }
 
-	async listen() {
+	listen() {
 		const backlog = () => console.log(`Listening on http${this.secure ? "s" : ""}://0.0.0.0${[80, 443].includes(this.port) ? "" : `:${this.port}`}`);
 		return this.server = (
 			this.secure ?

@@ -92,7 +92,7 @@ export default class APIImage {
 		};
 	}
 
-	async getJSON() {
+	async toJSON() {
 		return {
 			...this.json,
 			shortURL: await this.getShortURL().catch((err) => {

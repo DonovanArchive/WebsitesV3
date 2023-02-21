@@ -248,7 +248,8 @@ client.on("interactionCreate", async(interaction) => {
 						disabled:        false,
 						disabled_reason: null,
 						active:          true,
-						flags:           DEFAULT_FLAGS
+						flags:           DEFAULT_FLAGS,
+						bulk_limit:      100
 					});
 
 					void Webhooks.get("yiffyAPIKey").execute({

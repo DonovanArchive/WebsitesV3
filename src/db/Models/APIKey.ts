@@ -19,13 +19,15 @@ export interface RawAPIKey {
 	window_short: number;
 	limit_short: number;
 	flags: number;
+	bulk_limit: number;
 }
 export type APIKeyKV = DataTypes<APIKey>;
 export { APIKey };
 export enum APIKeyFlags {
-	IMAGES    = 1 << 0,
-	THUMBS    = 1 << 1,
-	SHORTENER = 1 << 2,
+	IMAGES      = 1 << 0,
+	THUMBS      = 1 << 1,
+	SHORTENER   = 1 << 2,
+	IMAGES_BULK = 1 << 3,
 }
 
 export const DEFAULT_WINDOW_LONG  = 10000;
@@ -51,6 +53,7 @@ export default class APIKey {
 	windowShort: number;
 	limitShort: number;
 	flags: number;
+	bulkLimit: number;
 	constructor(data: RawAPIKey) {
 		this.id = data.id;
 		this.unlimited = Boolean(data.unlimited);
@@ -66,6 +69,7 @@ export default class APIKey {
 		this.windowShort = data.window_short;
 		this.limitShort = data.limit_short;
 		this.flags = data.flags ?? DEFAULT_FLAGS;
+		this.bulkLimit = data.bulk_limit ?? 0;
 		if (data.unlimited) {
 			this.windowLong  = 1000;
 			this.limitLong   = 1000;

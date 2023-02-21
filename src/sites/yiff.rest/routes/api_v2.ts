@@ -13,7 +13,7 @@ import {
 import db from "../../../db";
 import Logger from "../../../util/Logger";
 import { APIImage, APIUsage } from "@models";
-import { APIKeyFlags } from "@models/APIKey";
+import APIKey, { APIKeyFlags } from "@models/APIKey";
 import Webhooks from "@util/Webhooks";
 import { Router } from "express";
 import bytes from "bytes";
@@ -131,11 +131,54 @@ app
 			return res.status(200).json({
 				success: true,
 				data:    {
-					...(await img.getJSON()),
+					...(await img.toJSON()),
 					category: img.category
 				}
 			});
 		}
+	})
+	.post("/bulk", validateAPIKey(true, APIKeyFlags.IMAGES_BULK), async(req, res) => {
+		const key = await APIKey.getOrThrow((req.query._auth as string || req.headers.authorization)!);
+		if (!req.headers["content-type"]?.includes("application/json") || !req.body || typeof req.body !== "object" || Array.isArray(req.body) || req.body === null || Object.keys(req.body as object).length === 0) return res.status(400).json({
+			success: false,
+			error:   "Invalid body, or no categories specified.",
+			code:    YiffyErrorCodes.IMAGES_BULK_INVALID_BODY
+		});
+		const sizeLimit = bytes.parse((req.query as { sizeLimit: string; }).sizeLimit?.toString?.()) ?? -1;
+		const valid = [
+			"chris",
+			...categories.enabled.map(e => e.db)
+		];
+		let total = 0;
+		for (const [cat, amount] of Object.entries(req.body as object)) {
+			if (!valid.includes(cat)) return res.status(400).json({
+				success: false,
+				error:   `Invalid category specified: ${cat}`,
+				code:    YiffyErrorCodes.IMAGES_BULK_INVALID_CATEGORY
+			});
+			if (typeof amount !== "number" || isNaN(amount) || amount < 1 || amount > 100) return res.status(400).json({
+				success: false,
+				error:   `Invalid amount specified for category ${cat}: ${String(amount)}`,
+				code:    YiffyErrorCodes.IMAGES_BULK_NUMBER_GT_MAX
+			});
+			total += amount;
+		}
+		if (total > key.bulkLimit) return res.status(400).json({
+			success: false,
+			error:   `Total amount of images requested is greater than ${key.bulkLimit} (${total}).`,
+			code:    YiffyErrorCodes.IMAGES_BULK_NUMBER_GT_MAX
+		});
+
+		const data: Record<string, Array<Awaited<ReturnType<APIImage["toJSON"]>>>> = {};
+		for (const [cat, amount] of Object.entries(req.body as object)) {
+			const images = await APIImage.getRandom(cat, amount as number, sizeLimit);
+			data[cat] = await Promise.all(images.map(i => i.toJSON()));
+		}
+
+		return res.status(200).json({
+			success: true,
+			data
+		});
 	})
 	.get("/:category*", async (req, res, next) => {
 		const parts = req.originalUrl.split("?")[0].split("/").filter(r => !["", "V2"].includes(r.toUpperCase())).map(r => r.toLowerCase());
@@ -222,7 +265,7 @@ app
 			}
 
 			return res.status(200).json({
-				images:  await Promise.all(images.map(async(img) => img.getJSON())),
+				images:  await Promise.all(images.map(async(img) => img.toJSON())),
 				$schema: "https://schema.yiff.rest/V2.json",
 				success: true,
 				notes

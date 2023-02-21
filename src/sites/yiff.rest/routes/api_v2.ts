@@ -170,6 +170,57 @@ app
 			data[cat] = await Promise.all(images.map(i => i.toJSON()));
 		}
 
+
+		const auth = req.query._auth as string || req.headers.authorization;
+		await db.r.incr("yiffy2:images:bulk");
+		const m = db.r.multi()
+			.incr(`yiffy2:stats:images:ip:${req.ip}`)
+			.incr(`yiffy2:stats:images:ip:${req.ip}:bulk`)
+			.incr("yiffy2:stats:images:total")
+			.incr("yiffy2:stats:images:total:bulk");
+		if (auth) {
+			m.incr(`yiffy2:stats:images:key:${auth}`)
+				.incr(`yiffy2:stats:images:key:${auth}:bulk`);
+		}
+		let hasNSFW = false;
+		for (const [cat, amount] of Object.entries(req.body as object)) {
+			if (["furry.bulge", "furry.butts"].includes(cat) || cat.startsWith("furry.yiff")) {
+				hasNSFW = true;
+			}
+			m.incrby(`yiffy2:stats:images:ip:${req.ip}:${cat}`, Number(amount))
+				.incrby(`yiffy2:stats:images:total:${cat}`, Number(amount));
+			if (auth) {
+				m.incrby(`yiffy2:stats:images:key:${auth}:${cat}`, Number(amount));
+			}
+		}
+		await m.exec();
+
+		try {
+			void Webhooks.get("yiffy").execute({
+				embeds: [
+					{
+						title:       "V2 API Request",
+						description: [
+							`Host: **${req.headers.host!}**`,
+							`Path: **${req.originalUrl}**`,
+							"Category: `Bulk`",
+							`Auth: ${auth ? `**Yes** (\`${auth}\`)` : "**No**"}`,
+							`Size Limit: **${sizeLimit === -1 ? "None" : bytes(sizeLimit)}**`,
+							`User Agent: \`${req.headers["user-agent"]!}\``,
+							`IP: **${req.ip}**`,
+							"",
+							"**Categories:**",
+							...Object.entries(req.body as object).map(([cat, amount]) => `• **${cat}**: ${String(amount)}`)
+						].join("\n"),
+						color:     hasNSFW ? 0xDC143C : 0x008000,
+						timestamp: new Date().toISOString()
+					}
+				]
+			});
+		} catch (err) {
+			Logger.getLogger(`${req.hostname}:${req.path}`).error("Failed To Send Webhook:", err);
+		}
+
 		return res.status(200).json({
 			success: true,
 			data

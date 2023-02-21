@@ -12,8 +12,6 @@ export default class YiffMedia extends Website {
 		this
 			.addSubdomain("assets", express.static("/app/public/assets"))
 			.addSubdomain("i", express.static("/app/public/images"))
-			.addSubdomain("v2", express.static("/app/public/V2"))
-			.addSubdomain("v3", express.static("/data/yiffyapi_v3"))
 			.addSubdomain("thumbs", express.static("/data/e621-thumbnails"))
 			.addStatic("/app/public")
 			.addSubdomain("report", express.Router().use(async(req,res) => res.end("Resources cannot be reported through this method. Please contact a developer for removal of content.")))
@@ -23,6 +21,7 @@ export default class YiffMedia extends Website {
 					.get("/support", async (req, res) => res.redirect("https://api.maid.gay/links/support?source=website"))
 					.get("/inv", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))
 					.get("/invite", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))
+					.get("/V2*", async (req, res) => res.redirect(`https://v2.yiff.media${req.url.slice(3)}`))
 			);
 	}
 }

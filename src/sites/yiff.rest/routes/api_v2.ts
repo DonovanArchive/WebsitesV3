@@ -156,11 +156,6 @@ app
 				error:   `Invalid category specified: ${cat}`,
 				code:    YiffyErrorCodes.IMAGES_BULK_INVALID_CATEGORY
 			});
-			if (typeof amount !== "number" || isNaN(amount) || amount < 1 || amount > 100) return res.status(400).json({
-				success: false,
-				error:   `Invalid amount specified for category ${cat}: ${String(amount)}`,
-				code:    YiffyErrorCodes.IMAGES_BULK_NUMBER_GT_MAX
-			});
 			total += amount;
 		}
 		if (total > key.bulkLimit) return res.status(400).json({

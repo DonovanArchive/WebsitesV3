@@ -1,3 +1,4 @@
+import CleanupActions from "../../../util/CleanupActions";
 import { cacheDir, dev, discord } from "@config";
 import { APIKey, DEFAULT_FLAGS } from "@models";
 import Webhooks from "@util/Webhooks";
@@ -282,4 +283,7 @@ client.on("interactionCreate", async(interaction) => {
 	}
 });
 
-if (!dev) void client.connect();
+if (!dev) {
+	void client.connect();
+	CleanupActions.add("yiffyapi-bot", () => client.disconnect(false));
+}

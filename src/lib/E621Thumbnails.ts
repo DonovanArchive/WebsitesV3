@@ -1,4 +1,5 @@
 import { services } from "../config";
+import CleanupActions from "../util/CleanupActions";
 import Logger from "../util/Logger";
 import { Worker } from "worker_threads";
 
@@ -44,7 +45,7 @@ export default class E621Thumbnails {
 	}, 5e3);
 
 	static add(md5: string, type: "gif" | "png") {
-		console.log("add", this.queue);
+		CleanupActions.add(`e621-thumbnails-${md5}-${type}`, () => this.workers.get(`${md5}-${type}`)?.terminate());
 		const worker = new Worker(__filename.endsWith("ts") ? `require("ts-node").register({swc:true});require("${__dirname}/E621ThumbnailWorker.ts");` : `${__dirname}/E621ThumbnailWorker.js`, {
 			eval:       __filename.endsWith("ts"),
 			workerData: {
@@ -61,8 +62,10 @@ export default class E621Thumbnails {
 			endedAt: null
 		});
 		worker.on("exit", (code) => {
+			this.queue.delete(`${md5}-${type}`);
+			this.workers.delete(`${md5}-${type}`);
+			CleanupActions.remove(`e621-thumbnails-${md5}-${type}`);
 			if (code === 0) {
-				this.queue.delete(`${md5}-${type}`);
 				Logger.getLogger("E621Thumbnails").info(`Worker ${worker.threadId} finished processing ${md5}-${type}`);
 			} else {
 				Logger.getLogger("E621Thumbnails").error(`Worker ${worker.threadId} exited with code ${code}`);

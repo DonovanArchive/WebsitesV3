@@ -35,7 +35,10 @@ export default class YiffRest extends Website {
 							disabled:       key.disabled,
 							disabledReason: key.disabledReason,
 							unlimited:      key.unlimited,
-							rateLimit:      {
+							...(key.imagesBulkAccess ? {
+								bulkLimit: key.bulkLimit
+							} : {}),
+							rateLimit: {
 								long: {
 									window: key.windowLong,
 									limit:  key.limitLong
@@ -51,7 +54,6 @@ export default class YiffRest extends Website {
 								imagesBulk: key.imagesBulkAccess,
 								thumbs:     key.thumbsAccess,
 								shortener:  key.shortenerAccess
-
 							}
 						}
 					});

@@ -142,7 +142,7 @@ app
 		if (!req.headers["content-type"]?.includes("application/json") || !req.body || typeof req.body !== "object" || Array.isArray(req.body) || req.body === null || Object.keys(req.body as object).length === 0) return res.status(400).json({
 			success: false,
 			error:   "Invalid body, or no categories specified.",
-			code:    YiffyErrorCodes.IMAGES_BULK_INVALID_BODY
+			code:    YiffyErrorCodes.BULK_IMAGES_INVALID_BODY
 		});
 		const sizeLimit = bytes.parse((req.query as { sizeLimit: string; }).sizeLimit?.toString?.()) ?? -1;
 		const valid = [
@@ -154,14 +154,14 @@ app
 			if (!valid.includes(cat)) return res.status(400).json({
 				success: false,
 				error:   `Invalid category specified: ${cat}`,
-				code:    YiffyErrorCodes.IMAGES_BULK_INVALID_CATEGORY
+				code:    YiffyErrorCodes.BULK_IMAGES_INVALID_CATEGORY
 			});
 			total += amount;
 		}
 		if (total > key.bulkLimit) return res.status(400).json({
 			success: false,
 			error:   `Total amount of images requested is greater than ${key.bulkLimit} (${total}).`,
-			code:    YiffyErrorCodes.IMAGES_BULK_NUMBER_GT_MAX
+			code:    YiffyErrorCodes.BULK_IMAGES_NUMBER_GT_MAX
 		});
 
 		const data: Record<string, Array<Awaited<ReturnType<APIImage["toJSON"]>>>> = {};
@@ -253,11 +253,20 @@ app
 		];
 		if (!Array.from(new Set(valid)).includes(parts[0])) return next();
 		const category = parts.join(".");
+		const list = [
+			"chris",
+			...Object.values(categories.enabled).map(k => k.db.split(".")[0])
+		];
+		if (!list.includes(category)) return res.status(404).json({
+			success: false,
+			error:   "Category not found.",
+			code:    YiffyErrorCodes.IMAGES_CATEGORY_NOT_FOUND
+		});
 
 		const sizeLimit = bytes.parse((req.query as { sizeLimit: string; }).sizeLimit?.toString?.()) ?? -1;
 		const images = await APIImage.getRandom(category, limit, sizeLimit);
 
-		if (images.length === 0) return res.status(404).json({
+		if (images.length === 0) return res.status(400).json({
 			success: false,
 			error:   {
 				message: "No results were found. Try changing your search parameters."

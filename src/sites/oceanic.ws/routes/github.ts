@@ -1,3 +1,4 @@
+import type { PushEvent } from "@octokit/webhooks-types/schema";
 import { services } from "@config";
 import { Webhooks } from "@octokit/webhooks";
 import simpleGit from "simple-git";
@@ -22,46 +23,54 @@ const exists = async(path: PathLike) => access(path).then(() => true).catch(() =
 const baseDir = "/data/docs";
 hook.on("push", async({ payload: data }) => {
 	if (data.ref.startsWith("refs/tags/")) {
-		const tmp = `${tmpdir()}/${mkdtempSync("oceanic.")}`;
-		await mkdir(tmp, { recursive: true });
-		const tag = data.ref.split("/")[2];
-		if (await exists(`${baseDir}/${tag}`)) await rm(`${baseDir}/${tag}`, { force: true, recursive: true });
-		const git = simpleGit(tmp);
-		await git
-			.init()
-			.addRemote("origin", "https://github.com/OceanicJS/Oceanic")
-			.fetch("origin", `${tag}:${tag}`)
-			.checkout(tag);
-		await writeFiles(tmp);
-		execSync("npm i --ignore-scripts typedoc typedoc-plugin-extras typedoc-plugin-rename-defaults && npx --yes typedoc", { cwd: tmp, stdio: "inherit" });
-		await cp(`${tmp}/docs`, `${baseDir}/${tag}`, { recursive: true });
-		await rm(tmp, { force: true, recursive: true });
-		const versions = await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [];
-		if (!versions.includes(tag)) {
-			versions.push(tag);
-			await writeFile(`${baseDir}/versions.json`, JSON.stringify(versions));
-		}
-		/* const list = await createList(`${baseDir}/${tag}`, tag);
-		await replaceAll(`${baseDir}/${tag}`, list.replacements, list.localReplacements);
-		await writeFile(`${baseDir}/${tag}/conversions.json`, JSON.stringify(list, null, "\t")); */
+		void tagPush(data);
 	} else if (data.ref === "refs/heads/dev") {
-		const tmp = `${tmpdir()}/${mkdtempSync("oceanic.")}`;
-		await mkdir(tmp, { recursive: true });
-		const branch = data.ref.split("/")[2];
-		if (await exists(`${baseDir}/${branch}`)) await rm(`${baseDir}/${branch}`, { force: true, recursive: true });
-		const git = simpleGit(tmp);
-		await git
-			.init()
-			.addRemote("origin", "https://github.com/OceanicJS/Oceanic")
-			.fetch("origin", `${branch}:${branch}`)
-			.checkout(branch);
-		await writeFiles(tmp);
-		// make sure to add to .github/workflows/docs.yml
-		execSync("npm i --ignore-scripts typedoc typedoc-plugin-extras typedoc-plugin-rename-defaults && npx --yes typedoc", { cwd: tmp, stdio: "inherit" });
-		await cp(`${tmp}/docs`, `${baseDir}/${branch}`, { recursive: true });
-		await rm(tmp, { force: true, recursive: true });
+		void devPush(data);
 	}
 });
+
+async function tagPush(data: PushEvent) {
+	const tmp = `${tmpdir()}/${mkdtempSync("oceanic.")}`;
+	await mkdir(tmp, { recursive: true });
+	const tag = data.ref.split("/")[2];
+	if (await exists(`${baseDir}/${tag}`)) await rm(`${baseDir}/${tag}`, { force: true, recursive: true });
+	const git = simpleGit(tmp);
+	await git
+		.init()
+		.addRemote("origin", "https://github.com/OceanicJS/Oceanic")
+		.fetch("origin", `${tag}:${tag}`)
+		.checkout(tag);
+	await writeFiles(tmp);
+	execSync("npm i --ignore-scripts typedoc typedoc-plugin-extras typedoc-plugin-rename-defaults && npx --yes typedoc", { cwd: tmp, stdio: "inherit" });
+	await cp(`${tmp}/docs`, `${baseDir}/${tag}`, { recursive: true });
+	await rm(tmp, { force: true, recursive: true });
+	const versions = await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [];
+	if (!versions.includes(tag)) {
+		versions.push(tag);
+		await writeFile(`${baseDir}/versions.json`, JSON.stringify(versions));
+	}
+	/* const list = await createList(`${baseDir}/${tag}`, tag);
+    await replaceAll(`${baseDir}/${tag}`, list.replacements, list.localReplacements);
+    await writeFile(`${baseDir}/${tag}/conversions.json`, JSON.stringify(list, null, "\t")); */
+}
+
+async function devPush(data: PushEvent) {
+	const tmp = `${tmpdir()}/${mkdtempSync("oceanic.")}`;
+	await mkdir(tmp, { recursive: true });
+	const branch = data.ref.split("/")[2];
+	if (await exists(`${baseDir}/${branch}`)) await rm(`${baseDir}/${branch}`, { force: true, recursive: true });
+	const git = simpleGit(tmp);
+	await git
+		.init()
+		.addRemote("origin", "https://github.com/OceanicJS/Oceanic")
+		.fetch("origin", `${branch}:${branch}`)
+		.checkout(branch);
+	await writeFiles(tmp);
+	// make sure to add to .github/workflows/docs.yml
+	execSync("npm i --ignore-scripts typedoc typedoc-plugin-extras typedoc-plugin-rename-defaults && npx --yes typedoc", { cwd: tmp, stdio: "inherit" });
+	await cp(`${tmp}/docs`, `${baseDir}/${branch}`, { recursive: true });
+	await rm(tmp, { force: true, recursive: true });
+}
 
 async function writeFiles(tmp: string) {
 

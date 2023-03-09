@@ -255,7 +255,7 @@ app
 		const category = parts.join(".");
 		const list = [
 			"chris",
-			...Object.values(categories.enabled).map(k => k.db.split(".")[0])
+			...Object.values(categories.enabled).map(k => k.db)
 		];
 		if (!list.includes(category)) return res.status(404).json({
 			success: false,

@@ -61,25 +61,15 @@
             margin-top: 30vh;
         }
 
-        h2, h3 {
+        h2,
+        h3 {
             color: #B8BEC4;
             margin-top: 5vh;
         }
 
-        span#state.up, span#status.success {
-            color: #008000;
-        }
-
-        span#state.down, span#status.error {
-            color: #FF0000;
-        }
-
-        span#state.maintenance, span#status.maintenance {
-            color: #002E56;
-        }
-
-        span#state.partially.down, span#status.partially.down {
-            color: #FFA500;
+        span#state.maintenance,
+        span#status.maintenance {
+            color: #00549E;
         }
 
         a#json-link {
@@ -102,13 +92,13 @@
 <body>
     <h1>
         <center>
-            E621's API is currently <span id="state" class="{{ state }}">{{ state }}</span>.
+            E621's API is currently <span id="state" class="maintenance">under maintenance</span>.
         </center>
     </h1>
 
     <h2>
         <center>
-            We've seen a <span id="status" class="{{ statusClass }}">{{ status }}</span> since <span id="time">{{ time }}</span>.
+            We've seen a <span id="status" class="maintenance">200 OK</span> (maintenance) since <span id="time">{{ time }}</span>.
         </center>
     </h2>
 
@@ -117,8 +107,6 @@
             Looking to access this data automatically? We have a <a id="json-link" href="/json">JSON</a> endpoint.
         </center>
     </h2>
-
-    {{{note}}}
 </body>
 
 </html>

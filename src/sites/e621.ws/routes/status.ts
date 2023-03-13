@@ -78,6 +78,10 @@ const notes: Record<number, string> = {
 	1:   "E621 is currently in maintenance mode.",
 	503: "E621 is likely experiencing some kind of attack right now, so api endpoints may be returning challenges."
 };
+const statuses: Record<number, number> = {
+	0: 500,
+	1: 503
+};
 
 setInterval(check, 60000);
 
@@ -85,13 +89,25 @@ const app = Router();
 app
 	.get("/", async(req, res) => {
 		const { status, since } = await get();
-		return res.status(200).render("status", {
-			time:        since,
-			state:       status === 0 ? "unreachable" : status === 1 ? "maintenance" : status >= 200 && status <= 299 ? "up" : status === 503 ? "partially down" : "down",
-			status:      `${status} ${status === 0 ? "Internal Error" : status === 1 ? "Maintenance" : STATUS_CODES[status] || ""}`.trim(),
-			statusClass: status === 0 ? "unreachable" : status === 1 ? "maintenance" : status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
-			note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`
-		});
+		switch (status) {
+			case 0: {
+				return res.status(200).render("status/error", { time: since });
+			}
+
+			case 1: {
+				return res.status(200).render("status/maintenance", { time: since });
+			}
+
+			default: {
+				return res.status(200).render("status/index", {
+					time:        since,
+					state:       status >= 200 && status <= 299 ? "up" : status === 503 ? "partially down" : "down",
+					status:      `${status} ${STATUS_CODES[status] || ""}`.trim(),
+					statusClass: status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
+					note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`
+				});
+			}
+		}
 	})
 	.get("/json", async(req,res) => {
 		const [current, ...history] = await getAll();
@@ -99,15 +115,15 @@ app
 		return res.status(200).json({
 			current: {
 				state:         current.status >= 200 && current.status <= 299 ? "up" : "down",
-				status:        current.status,
-				statusMessage: current.status === 0 ? "Internal Error" : STATUS_CODES[current.status] || "",
+				status:        statuses[current.status] ?? current.status,
+				statusMessage: current.status === 0 ? "Internal Error" : current.status === 1 ? "Maintenance" : STATUS_CODES[current.status] || "",
 				since:         current.since,
 				note:          notes[current.status] ?? null
 			},
 			history: history.map(({ status, since }) => ({
 				state:         status >= 200 && status <= 299 ? "up" : "down",
-				status,
-				statusMessage: status === 0 ? "Internal Error" : STATUS_CODES[status] || "",
+				status:        statuses[status] ?? status,
+				statusMessage: status === 0 ? "Internal Error" : current.status === 1 ? "Maintenance" : STATUS_CODES[status] || "",
 				since
 			}))
 		});

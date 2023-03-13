@@ -8,13 +8,18 @@ async function check() {
 	try {
 		const controller = new AbortController();
 		const timeout = setTimeout(() => controller.abort(), 1e5);
-		status = (await fetch("https://e621.net/posts.json?limit=0", {
+		const r = (await fetch("https://e621.net/posts.json?limit=0", {
 			headers: {
 				"User-Agent": "E621Status/1.0.0 (https://status.e621.ws; \"donovan_dmc\")"
 			},
 			method: "HEAD",
 			signal: controller.signal
-		})).status;
+		}));
+		if (r.status === 200 && r.headers.get("content-type") !== "application/json") {
+			status = 1;
+		} else {
+			status = r.status;
+		}
 		clearTimeout(timeout);
 	} catch (err) {
 		if (err instanceof Error && err.constructor.name === "DOMException" && err.name === "AbortError") {
@@ -70,6 +75,7 @@ async function write(status: number): Promise<{ status: number; since: string; }
 
 const notes: Record<number, string> = {
 	0:   "Some internal issue happened while contacting e621.",
+	1:   "E621 is currently in maintenance mode.",
 	503: "E621 is likely experiencing some kind of attack right now, so api endpoints may be returning challenges."
 };
 
@@ -81,9 +87,9 @@ app
 		const { status, since } = await get();
 		return res.status(200).render("status", {
 			time:        since,
-			state:       status >= 200 && status <= 299 ? "up" : status === 503 ? "partially down" : "down",
-			status:      `${status} ${status === 0 ? "Internal Error" : STATUS_CODES[status] || ""}`.trim(),
-			statusClass: status === 0 ? "unreachable" : status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
+			state:       status === 0 ? "unreachable" : status === 1 ? "maintenance" : status >= 200 && status <= 299 ? "up" : status === 503 ? "partially down" : "down",
+			status:      `${status} ${status === 0 ? "Internal Error" : status === 1 ? "Maintenance" : STATUS_CODES[status] || ""}`.trim(),
+			statusClass: status === 0 ? "unreachable" : status === 1 ? "maintenance" : status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
 			note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`
 		});
 	})

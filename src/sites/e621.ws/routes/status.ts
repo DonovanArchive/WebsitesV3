@@ -82,6 +82,15 @@ const statuses: Record<number, number> = {
 	0: 500,
 	1: 503
 };
+const states: Record<number, string> = {
+	0:   "error",
+	1:   "maintenance",
+	503: "partially-down"
+};
+const statusMessages: Record<number, string> = {
+	0: "Internal Error",
+	1: "Maintenance"
+};
 
 setInterval(check, 60000);
 
@@ -101,7 +110,7 @@ app
 			default: {
 				return res.status(200).render("status/index", {
 					time:        since,
-					state:       status >= 200 && status <= 299 ? "up" : status === 503 ? "partially down" : "down",
+					state:       states[status] ?? (status >= 200 && status <= 299) ? "up" : "down",
 					status:      `${status} ${STATUS_CODES[status] || ""}`.trim(),
 					statusClass: status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
 					note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`
@@ -114,16 +123,16 @@ app
 
 		return res.status(200).json({
 			current: {
-				state:         current.status >= 200 && current.status <= 299 ? "up" : "down",
+				state:         states[current.status] ?? (current.status >= 200 && current.status <= 299) ? "up" : "down",
 				status:        statuses[current.status] ?? current.status,
-				statusMessage: current.status === 0 ? "Internal Error" : current.status === 1 ? "Maintenance" : STATUS_CODES[current.status] || "",
+				statusMessage: statusMessages[current.status] ?? (STATUS_CODES[current.status] || ""),
 				since:         current.since,
 				note:          notes[current.status] ?? null
 			},
 			history: history.map(({ status, since }) => ({
-				state:         status >= 200 && status <= 299 ? "up" : "down",
+				state:         states[status] ?? (status >= 200 && status <= 299) ? "up" : "down",
 				status:        statuses[status] ?? status,
-				statusMessage: status === 0 ? "Internal Error" : current.status === 1 ? "Maintenance" : STATUS_CODES[status] || "",
+				statusMessage: statusMessages[status] ?? (STATUS_CODES[status] || ""),
 				since
 			}))
 		});

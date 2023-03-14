@@ -15,7 +15,7 @@ async function check() {
 			method: "HEAD",
 			signal: controller.signal
 		}));
-		if (r.status === 200 && r.headers.get("content-type") !== "application/json") {
+		if (r.status === 200 && !r.headers.get("content-type")?.startsWith("application/json")) {
 			status = 1;
 		} else {
 			status = r.status;
@@ -78,10 +78,6 @@ const notes: Record<number, string> = {
 	1:   "E621 is currently in maintenance mode.",
 	503: "E621 is likely experiencing some kind of attack right now, so api endpoints may be returning challenges."
 };
-const statuses: Record<number, number> = {
-	0: 500,
-	1: 503
-};
 const states: Record<number, string> = {
 	0:   "error",
 	1:   "maintenance",
@@ -124,14 +120,14 @@ app
 		return res.status(200).json({
 			current: {
 				state:         states[current.status] ?? (current.status >= 200 && current.status <= 299) ? "up" : "down",
-				status:        statuses[current.status] ?? current.status,
+				status:        current.status,
 				statusMessage: statusMessages[current.status] ?? (STATUS_CODES[current.status] || ""),
 				since:         current.since,
 				note:          notes[current.status] ?? null
 			},
 			history: history.map(({ status, since }) => ({
 				state:         states[status] ?? (status >= 200 && status <= 299) ? "up" : "down",
-				status:        statuses[status] ?? status,
+				status,
 				statusMessage: statusMessages[status] ?? (STATUS_CODES[status] || ""),
 				since
 			}))

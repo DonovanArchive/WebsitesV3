@@ -119,7 +119,7 @@ app
 		});
 	})
 	.get("/images/:id", async(req, res) => {
-		const img = await APIImage.get(req.params.id);
+		const img = await APIImage.get(req.params.id.replace(/\.json$/, ""));
 
 		if (!img) {
 			return res.status(404).json({

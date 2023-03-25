@@ -44,6 +44,7 @@ services:
       - ./src/sites/e621.ws/views:/app/views
       - ./data/cache/e621.ws:/data/cache
       - /var/www/sites/e621.ws:/app/public
+      - /var/www/e621-docs:/data/docs
     environment:
       SITE: e621.ws
     hostname: e621-ws.websites.containers.local

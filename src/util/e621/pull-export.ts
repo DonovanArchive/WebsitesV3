@@ -141,5 +141,3 @@ export async function refresh() {
 	Logger.getLogger("E621Refresh").info(`Refreshed in ${Timer.calc(start, end, 0, false)}`);
 	await db.end();
 }
-
-void refresh();

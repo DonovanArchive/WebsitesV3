@@ -3,22 +3,22 @@
   <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-	<title>Oceanic</title>
-	<link rel="shortcut icon" href="https://i.oceanic.ws/icon.png" type="image/png">
+	<title>Oceanic Documentation</title>
+	<link rel="shortcut icon" href="https://e621.ws/icon.png" type="image/png">
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
-	<meta name="description" content="A NodeJS library for interfacing with Discord.">
-	<meta name="keywords" content="oceanic oceanic.js discord discord.js node node.js eris biscuit detritus droff harmony snowtransfer tiscord discall discord-api">
-	<meta name="theme-color" content="#0FF">
+	<meta name="description" content="A parser for https://e621.net/mod_actions.">
+	<meta name="keywords" content="e621 mod-actions e621-mod-actions">
+	<meta name="theme-color" content="#01559F">
 	<meta charset="UTF-8">
 
 	<!--Browser Caching-->
 	<meta http-equiv="Cache-control" content="public">
 
 	<!--Dublin Core - DC-->
-	<meta name="DC.Title" lang="en" content="Oceanic">
+	<meta name="DC.Title" lang="en" content="Oceanic Documentation">
 	<meta name="DC.Creator" lang="en" content="Donovan_DMC">
 	<meta name="DC.Subject" lang="en" content="Information">
-	<meta name="DC.Description" lang="en" content="A NodeJS library for interfacing with Discord.">
+	<meta name="DC.Description" lang="en" content="A parser for https://e621.net/mod_actions.">
 	<meta name="DC.Publisher" lang="en" content="Donovan_DMC">
 	<meta name="DC.Contributor" lang="en" content="Self">
 	<meta name="DC.Date" lang="en" content="{{ year }}">
@@ -30,17 +30,17 @@
 	<link rel="schema.DCTERMS" lang="en" href="http://purl.org/dc/terms/">
 
 	<!--Open Graph-->
-	<meta property="og:title" content="Oceanic">
-	<meta property="og:site_name" content="Oceanic">
-	<meta property="og:description" content="A NodeJS library for interfacing with Discord.">
-	<meta property="og:url" content="https://oceanic.ws">
+	<meta property="og:title" content="E621 NPM Documentation">
+	<meta property="og:site_name" content="E621 NPM Documentation">
+	<meta property="og:description" content="Documentation for some e621 libraries.">
+	<meta property="og:url" content="https://npm.e621.ws/{{ name }}">
 	<meta property="og:type" content="website">
-	<meta property="og:image" content="https://i.oceanic.ws/icon.png">
-	<meta property="og:image:secure_url" content="https://i.oceanic.ws/icon.png">
+	<meta property="og:image" content="https://e621.ws/icon.png">
+	<meta property="og:image:secure_url" content="https://e621.ws/icon.png">
 	<meta property="og:image:type" content="image/png">
-	<meta property="og:image:width" content="363">
-	<meta property="og:image:height" content="363">
-	<meta property="og:image:alt" content="Oceanic Icon">
+	<meta property="og:image:width" content="300">
+	<meta property="og:image:height" content="300">
+	<meta property="og:image:alt" content="E621 Icon">
 	<style>
 		html, body {
 			height: 100%;
@@ -65,35 +65,24 @@
 		}
 
 		span.spacer {
-			margin-left: 0.2rem;
-			margin-right: 0.2rem;
+			margin-left: 1rem;
+			margin-right: 1rem;
 		}
 
 		a:visited {
 			color: #56B9ED;
 		}
-
-		img.logo {
-			max-width: 20%;
-			margin-bottom: 3rem;
-		}
 	</style>
   </head>
   <body>
 	<div id="main">
-		<center>
-			<img class="logo" src="https://i.oceanic.ws/icon.png">
-		</center>
-		<h1><center>Oceanic</center></h1>
-		<h2>
-			<center>
-				<a href="https://github.com/OceanicJS/Oceanic">Github</a>
-				<span class="spacer">|</span>
-				<a href="https://docs.oceanic.ws">Documentation</a>
-				<span class="spacer">|</span>
-				<a href="https://npm.im/oceanic.js">NPM</a>
-			</center>
-		</h2>
+		{{#each versions}}
+			<h2><center>
+			{{#each this}}
+				<a href="/{{@root.name}}/{{this}}">{{this}}</a>&emsp;
+			{{/each}}
+			</center></h2>
+		{{/each}}
 	</div>
   </body>
   </html>

@@ -22,7 +22,7 @@ export default class E621WS extends Website {
 			.addSubdomain("stats", statsRoute)
 			.addSubdomain("npm", npmRoute)
 			.addSubdomain("git", express.Router()
-				.use("/mod-actions", createNodeMiddleware(gitE621ModActionsRoute, { path: "/" }))
+				.use("/e621-mod-actions", createNodeMiddleware(gitE621ModActionsRoute, { path: "/" }))
 				.use("/e621", createNodeMiddleware(gitE621Route, { path: "/" }))
 			)
 			.addHandler(

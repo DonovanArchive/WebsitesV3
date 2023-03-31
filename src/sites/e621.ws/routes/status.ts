@@ -1,6 +1,7 @@
 import Logger from "../../../util/Logger";
 import { Router } from "express";
 import { fetch } from "undici";
+import { Type } from "@sinclair/typebox";
 import { access, readFile, writeFile } from "fs/promises";
 import { STATUS_CODES } from "http";
 async function check() {
@@ -114,10 +115,12 @@ app
 			}
 		}
 	})
+	.get("/schema.json", async(req, res) => res.status(200).json(Schema))
 	.get("/json", async(req,res) => {
 		const [current, ...history] = await getAll();
 
 		return res.status(200).json({
+			$schema: "https://status.e621.ws/schema.json",
 			current: {
 				state:         states[current.status] ?? (current.status >= 200 && current.status <= 299) ? "up" : "down",
 				status:        current.status,
@@ -133,5 +136,25 @@ app
 			}))
 		});
 	});
+
+const Schema = Type.Object({
+	current: Type.Object({
+		state: Type.String({
+			enum: ["up", "down", "partially-down", "maintenance", "error"]
+		}),
+		status:        Type.Number(),
+		statusMessage: Type.String(),
+		since:         Type.String(),
+		note:          Type.Union([Type.Null(), Type.String()])
+	}),
+	history: Type.Array(Type.Object({
+		state: Type.String({
+			enum: ["up", "down", "partially-down", "maintenance", "error"]
+		}),
+		status:        Type.Number(),
+		statusMessage: Type.String(),
+		since:         Type.String()
+	}))
+});
 
 export default app;

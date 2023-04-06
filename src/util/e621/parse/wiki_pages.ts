@@ -1,5 +1,3 @@
-import type { RawE621WikiPage } from "../../../db/Models/E621WikiPage";
-
 type TF = "t" | "f";
 export interface RawWikiPage {
 	id: string;
@@ -12,7 +10,7 @@ export interface RawWikiPage {
 	is_locked: TF;
 }
 
-export function parse(record: RawWikiPage) {
+export function parse(record: RawWikiPage): WikiPageData {
 	return {
 		id:         Number(record.id),
 		created_at: new Date(record.created_at).toISOString(),
@@ -22,5 +20,37 @@ export function parse(record: RawWikiPage) {
 		creator_id: record.creator_id === "" ? null : Number(record.creator_id),
 		updater_id: record.updater_id === "" ? null : Number(record.updater_id),
 		is_locked:  record.is_locked === "t"
-	} satisfies RawE621WikiPage as RawE621WikiPage;
+	};
+}
+
+export interface WikiPageData {
+	body: string;
+	created_at: string;
+	creator_id: number | null;
+	id: number;
+	is_locked: boolean;
+	title: string;
+	updated_at: string | null;
+	updater_id: number | null;
+}
+
+export class WikiPage {
+	body: string;
+	created_at: Date;
+	creator_id: number | null;
+	id: number;
+	is_locked: boolean;
+	title: string;
+	updated_at: Date | null;
+	updater_id: number | null;
+	constructor(data: WikiPageData) {
+		this.body = data.body;
+		this.created_at = new Date(data.created_at);
+		this.creator_id = data.creator_id;
+		this.id = data.id;
+		this.is_locked = data.is_locked;
+		this.title = data.title;
+		this.updated_at = data.updated_at === null ? null : new Date(data.updated_at);
+		this.updater_id = data.updater_id;
+	}
 }

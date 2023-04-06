@@ -1,5 +1,3 @@
-import type { RawE621Post } from "../../../db/Models/E621Post";
-
 type TF = "t" | "f";
 export interface RawPost {
 	id: string;
@@ -33,38 +31,139 @@ export interface RawPost {
 	is_note_locked: TF;
 }
 
-export function parse(record: RawPost) {
+export function parse(record: RawPost): PostData {
 	return {
-		id:               Number(record.id),
-		uploader_id:      record.uploader_id === "" ? null : Number(record.uploader_id),
+		animated_png:     record.tag_string.split(" ").some(tag => tag === "animated_png") && record.file_ext === "png",
+		animated:         record.tag_string.split(" ").some(tag => tag === "animated"),
+		approver_id:      record.approver_id === "" ? null : Number(record.approver_id),
+		change_seq:       Number(record.change_seq),
+		comment_count:    Number(record.comment_count),
 		created_at:       new Date(record.created_at).toISOString(),
-		md5:              record.md5 === "" ? null : record.md5,
-		sources:          record.source.replace(/\r\n/g, "\n"),
-		rating:           record.rating,
-		width:            Number(record.image_width),
-		height:           Number(record.image_height),
-		tags:             record.tag_string,
-		locked_tags:      record.locked_tags,
+		description:      record.description.replace(/\r\n/g, "\n"),
+		down_score:       Number(record.down_score),
+		duration:         record.duration === "" ? null : Number(record.duration),
 		fav_count:        Number(record.fav_count),
 		file_ext:         record.file_ext,
-		parent_id:        record.parent_id === "" ? null : Number(record.parent_id),
-		change_seq:       Number(record.change_seq),
-		approver_id:      record.approver_id === "" ? null : Number(record.approver_id),
 		file_size:        Number(record.file_size),
-		comment_count:    Number(record.comment_count),
-		description:      record.description.replace(/\r\n/g, "\n"),
-		duration:         record.duration === "" ? null : Number(record.duration),
-		updated_at:       record.updated_at === "" ? null : new Date(record.updated_at).toISOString(),
+		height:           Number(record.image_height),
+		id:               Number(record.id),
 		is_deleted:       record.is_deleted === "t",
-		is_pending:       record.is_pending === "t",
 		is_flagged:       record.is_flagged === "t",
-		score:            Number(record.score),
-		up_score:         Number(record.up_score),
-		down_score:       Number(record.down_score),
+		is_note_locked:   record.is_note_locked === "t",
+		is_pending:       record.is_pending === "t",
 		is_rating_locked: record.is_rating_locked === "t",
 		is_status_locked: record.is_status_locked === "t",
-		is_note_locked:   record.is_note_locked === "t",
-		animated:         record.tag_string.split(" ").some(tag => tag === "animated"),
-		animated_png:     record.tag_string.split(" ").some(tag => tag === "animated_png") && record.file_ext === "png"
-	} satisfies RawE621Post as RawE621Post;
+		locked_tags:      record.locked_tags,
+		md5:              record.md5 === "" ? null : record.md5,
+		parent_id:        record.parent_id === "" ? null : Number(record.parent_id),
+		rating:           record.rating,
+		score:            Number(record.score),
+		sources:          record.source.replace(/\r\n/g, "\n"),
+		tags:             record.tag_string,
+		up_score:         Number(record.up_score),
+		updated_at:       record.updated_at === "" ? null : new Date(record.updated_at).toISOString(),
+		uploader_id:      record.uploader_id === "" ? null : Number(record.uploader_id),
+		width:            Number(record.image_width)
+	};
+}
+
+export interface PostData {
+	animated_png: boolean;
+	animated: boolean;
+	approver_id: number | null;
+	change_seq: number;
+	comment_count: number;
+	created_at: string;
+	description: string;
+	down_score: number;
+	duration: number | null;
+	fav_count: number;
+	file_ext: string;
+	file_size: number;
+	height: number;
+	id: number;
+	is_deleted: boolean;
+	is_flagged: boolean;
+	is_note_locked: boolean;
+	is_pending: boolean;
+	is_rating_locked: boolean;
+	is_status_locked: boolean;
+	locked_tags: string;
+	md5: string | null;
+	parent_id: number | null;
+	rating: "s" | "q" | "e";
+	score: number;
+	sources: string;
+	tags: string;
+	up_score: number;
+	updated_at: string | null;
+	uploader_id: number | null;
+	width: number;
+}
+
+export default class Post {
+	animated_png: boolean;
+	animated: boolean;
+	approver_id: number | null;
+	change_seq: number;
+	comment_count: number;
+	created_at: Date;
+	description: string;
+	down_score: number;
+	duration: number | null;
+	fav_count: number;
+	file_ext: string;
+	file_size: number;
+	height: number;
+	id: number;
+	is_deleted: boolean;
+	is_flagged: boolean;
+	is_note_locked: boolean;
+	is_pending: boolean;
+	is_rating_locked: boolean;
+	is_status_locked: boolean;
+	locked_tags: string;
+	md5: string | null;
+	parent_id: number | null;
+	rating: "s" | "q" | "e";
+	score: number;
+	sources: Array<string>;
+	tags: string;
+	up_score: number;
+	updated_at: Date | null;
+	uploader_id: number | null;
+	width: number;
+	constructor(data: PostData) {
+		this.animated_png = data.animated_png;
+		this.animated = data.animated;
+		this.approver_id = data.approver_id;
+		this.change_seq = data.change_seq;
+		this.comment_count = data.comment_count;
+		this.created_at = new Date(data.created_at);
+		this.description = data.description;
+		this.down_score = data.down_score;
+		this.duration = data.duration;
+		this.fav_count = data.fav_count;
+		this.file_ext = data.file_ext;
+		this.file_size = data.file_size;
+		this.height = data.height;
+		this.id = data.id;
+		this.is_deleted = data.is_deleted;
+		this.is_flagged = data.is_flagged;
+		this.is_note_locked = data.is_note_locked;
+		this.is_pending = data.is_pending;
+		this.is_rating_locked = data.is_rating_locked;
+		this.is_status_locked = data.is_status_locked;
+		this.locked_tags = data.locked_tags;
+		this.md5 = data.md5;
+		this.parent_id = data.parent_id;
+		this.rating = data.rating;
+		this.score = data.score;
+		this.sources = data.sources.split("\n");
+		this.tags = data.tags;
+		this.up_score = data.up_score;
+		this.updated_at = data.updated_at === null ? null : new Date(data.updated_at);
+		this.uploader_id = data.uploader_id;
+		this.width = data.width;
+	}
 }

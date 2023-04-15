@@ -80,6 +80,7 @@ const app = Router();
 app
 	.get("/", async(req, res) => {
 		const { status, since } = await get();
+		console.log(status, since);
 		switch (status) {
 			case 0: {
 				return res.status(200).render("status/error", { time: since });

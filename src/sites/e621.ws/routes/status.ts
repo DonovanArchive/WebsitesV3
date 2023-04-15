@@ -80,7 +80,6 @@ const app = Router();
 app
 	.get("/", async(req, res) => {
 		const { status, since } = await get();
-		console.log(status, since);
 		switch (status) {
 			case 0: {
 				return res.status(200).render("status/error", { time: since });
@@ -93,7 +92,7 @@ app
 			default: {
 				return res.status(200).render("status/index", {
 					time:        since,
-					state:       states[status] ?? (status >= 200 && status <= 299) ? "up" : "down",
+					state:       states[status] ?? ((status >= 200 && status <= 299) ? "up" : "down"),
 					status:      `${status} ${STATUS_CODES[status] || ""}`.trim(),
 					statusClass: status >= 200 && status <= 299 ? "success" : status === 403 ? "partially down" : "error",
 					note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`
@@ -109,14 +108,16 @@ app
 		return res.status(200).json({
 			$schema: "https://status.e621.ws/schema.json",
 			current: {
-				state:         states[current.status] ?? (current.status >= 200 && current.status <= 299) ? "up" : "down",
+				available:     current.status >= 200 && current.status <= 299,
+				state:         states[current.status] ?? ((current.status >= 200 && current.status <= 299) ? "up" : "down"),
 				status:        current.status,
 				statusMessage: statusMessages[current.status] ?? (STATUS_CODES[current.status] || ""),
 				since:         current.since,
 				note:          notes[current.status] ?? null
 			},
 			history: history.map(({ status, since }) => ({
-				state:         states[status] ?? (status >= 200 && status <= 299) ? "up" : "down",
+				available:     status >= 200 && status <= 299,
+				state:         states[status] ?? ((status >= 200 && status <= 299) ? "up" : "down"),
 				status,
 				statusMessage: statusMessages[status] ?? (STATUS_CODES[status] || ""),
 				since
@@ -126,7 +127,8 @@ app
 
 const Schema = Type.Object({
 	current: Type.Object({
-		state: Type.String({
+		available: Type.Boolean(),
+		state:     Type.String({
 			enum: ["up", "down", "partially-down", "maintenance", "error"]
 		}),
 		status:        Type.Number(),
@@ -135,7 +137,8 @@ const Schema = Type.Object({
 		note:          Type.Union([Type.Null(), Type.String()])
 	}),
 	history: Type.Array(Type.Object({
-		state: Type.String({
+		available: Type.Boolean(),
+		state:     Type.String({
 			enum: ["up", "down", "partially-down", "maintenance", "error"]
 		}),
 		status:        Type.Number(),

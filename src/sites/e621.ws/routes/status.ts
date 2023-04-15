@@ -67,7 +67,7 @@ const notes: Record<number, string> = {
 const states: Record<number, string> = {
 	0:   "error",
 	1:   "maintenance",
-	403: "partially-down"
+	403: "partially down"
 };
 const statusMessages: Record<number, string> = {
 	0: "Internal Error",
@@ -109,7 +109,7 @@ app
 			$schema: "https://status.e621.ws/schema.json",
 			current: {
 				available:     current.status >= 200 && current.status <= 299,
-				state:         states[current.status] ?? ((current.status >= 200 && current.status <= 299) ? "up" : "down"),
+				state:         (states[current.status] ?? ((current.status >= 200 && current.status <= 299) ? "up" : "down")).replace(/\s/g, "-"),
 				status:        current.status,
 				statusMessage: statusMessages[current.status] ?? (STATUS_CODES[current.status] || ""),
 				since:         current.since,
@@ -117,7 +117,7 @@ app
 			},
 			history: history.map(({ status, since }) => ({
 				available:     status >= 200 && status <= 299,
-				state:         states[status] ?? ((status >= 200 && status <= 299) ? "up" : "down"),
+				state:         (states[status] ?? ((status >= 200 && status <= 299) ? "up" : "down")).replace(/\s/g, "-"),
 				status,
 				statusMessage: statusMessages[status] ?? (STATUS_CODES[status] || ""),
 				since

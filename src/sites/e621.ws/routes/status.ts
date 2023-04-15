@@ -1,8 +1,9 @@
 import Logger from "../../../util/Logger";
+import E621Status from "../../../db/Models/E621Status";
 import { Router } from "express";
 import { fetch } from "undici";
 import { Type } from "@sinclair/typebox";
-import { access, readFile, writeFile } from "fs/promises";
+import { access } from "fs/promises";
 import { STATUS_CODES } from "http";
 async function check() {
 	let status: number;
@@ -45,32 +46,16 @@ async function get(noLoop = false): Promise<{ status: number; since: string; }> 
 		return { status, since };
 	}
 
-	const data = JSON.parse(await readFile("/data/cache/status.json", "utf8")) as Array<{ status: number; since: string; }>;
-	return data[0];
+	return E621Status.getLatest();
 }
 
-async function getAll(): Promise<Array<{ status: number; since: string; }>> {
-	if (!(await access("/data/cache/status.json").then(() => true, () => false))) {
-		const { status, since } = await check();
-		return [{ status, since }];
-	}
-
-	const data = JSON.parse(await readFile("/data/cache/status.json", "utf8")) as Array<{ status: number; since: string; }>;
-	return data;
+async function getAll(limit = 100): Promise<Array<{ status: number; since: string; }>> {
+	return E621Status.getHistory(limit);
 }
 
 async function write(status: number): Promise<{ status: number; since: string; }> {
 	const since = new Date().toISOString();
-	if (!(await access("/data/cache/status.json").then(() => true, () => false))) {
-		await writeFile("/data/cache/status.json", JSON.stringify([{ status, since }]));
-		return { status, since };
-	}
-
-	const data = JSON.parse(await readFile("/data/cache/status.json", "utf8")) as Array<{ status: number; since: string; }>;
-	await writeFile("/data/cache/status.json", JSON.stringify([
-		{ status, since },
-		...data
-	].slice(0, 20)));
+	await E621Status.new({ status, since });
 	return { status, since };
 }
 
@@ -117,7 +102,8 @@ app
 	})
 	.get("/schema.json", async(req, res) => res.status(200).json(Schema))
 	.get("/json", async(req,res) => {
-		const [current, ...history] = await getAll();
+		const limit = !req.query.limit ? 100 : Number(req.query.limit);
+		const [current, ...history] = await getAll(Math.min(limit, 1000));
 
 		return res.status(200).json({
 			$schema: "https://status.e621.ws/schema.json",

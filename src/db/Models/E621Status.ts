@@ -2,7 +2,6 @@ import db from "@db";
 import type { ConvertFromRaw } from "@util/@types/general";
 import type { DataTypes } from "@uwu-codes/types";
 import type { UpsertResult } from "mariadb";
-import { randomBytes } from "crypto";
 
 export interface RawE621Status {
 	id: number;
@@ -29,9 +28,8 @@ export default class E621Status {
 	}
 
 	static async new(data: Omit<ConvertFromRaw<RawE621Status>, "id">) {
-		const id = randomBytes(20).toString("hex");
-		if ("id" in data) delete (data as {id?: string; }).id;
-		const key = await db.query<Array<RawE621Status>>(`INSERT INTO ${E621Status.DB}.${E621Status.TABLE} (id, ${Object.keys(data).join(", ")}) VALUES (?, ${Object.values(data).map(() => "?").join(", ")}) RETURNING *`, [id, ...Object.values(data)]).then(r => r.length ? r[0] : null);
+		if ("id" in data) delete (data as {id?: number; }).id;
+		const key = await db.query<Array<RawE621Status>>(`INSERT INTO ${E621Status.DB}.${E621Status.TABLE} (${Object.keys(data).join(", ")}) VALUES (?, ${Object.values(data).map(() => "?").join(", ")}) RETURNING *`, [...Object.values(data)]).then(r => r.length ? r[0] : null);
 		return key ? new E621Status(key) : null;
 	}
 

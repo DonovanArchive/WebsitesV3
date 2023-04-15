@@ -10,13 +10,13 @@ const list = scaled.join(" ");
 
 const oldIDs: Array<string> = [], newIPs: Record<string, string> = {};
 for (const name of scaled) {
-	oldIDs.push(execSync(`docker ps -f name=${name} -q | head -n1`).toString().trim());
+	oldIDs.push(execSync(`docker ps -f name=${name} -q | sed -n '1p'`).toString().trim());
 }
 console.log("Scaling Up");
 execSync(`docker compose up -d --no-deps ${scale2} --no-recreate ${list}`, { stdio: "inherit" });
 
 for (const name of scaled) {
-	const newID = execSync(`docker ps -f name=${name} -q | head -n1`).toString().trim();
+	const newID = execSync(`docker ps -f name=${name} -q | sed -n '2p'`).toString().trim();
 	const newIP = execSync(`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${newID}`).toString().trim();
 	newIPs[name] = newIP;
 }

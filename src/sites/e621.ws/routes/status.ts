@@ -77,12 +77,12 @@ async function write(status: number): Promise<{ status: number; since: string; }
 const notes: Record<number, string> = {
 	0:   "Some internal issue happened while contacting e621.",
 	1:   "E621 is currently in maintenance mode.",
-	503: "E621 is likely experiencing some kind of attack right now, so api endpoints may be returning challenges."
+	403: "E621 is likely experiencing some kind of attack right now, so api endpoints may be returning challenges."
 };
 const states: Record<number, string> = {
 	0:   "error",
 	1:   "maintenance",
-	503: "partially-down"
+	403: "partially-down"
 };
 const statusMessages: Record<number, string> = {
 	0: "Internal Error",
@@ -109,7 +109,7 @@ app
 					time:        since,
 					state:       states[status] ?? (status >= 200 && status <= 299) ? "up" : "down",
 					status:      `${status} ${STATUS_CODES[status] || ""}`.trim(),
-					statusClass: status >= 200 && status <= 299 ? "success" : status === 503 ? "partially down" : "error",
+					statusClass: status >= 200 && status <= 299 ? "success" : status === 403 ? "partially down" : "error",
 					note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`
 				});
 			}

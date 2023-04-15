@@ -29,7 +29,7 @@ export default class E621Status {
 
 	static async new(data: Omit<ConvertFromRaw<RawE621Status>, "id">) {
 		if ("id" in data) delete (data as {id?: number; }).id;
-		const key = await db.query<Array<RawE621Status>>(`INSERT INTO ${E621Status.DB}.${E621Status.TABLE} (${Object.keys(data).join(", ")}) VALUES (?, ${Object.values(data).map(() => "?").join(", ")}) RETURNING *`, [...Object.values(data)]).then(r => r.length ? r[0] : null);
+		const key = await db.query<Array<RawE621Status>>(`INSERT INTO ${E621Status.DB}.${E621Status.TABLE} (${Object.keys(data).join(", ")}) VALUES (${Object.values(data).map(() => "?").join(", ")}) RETURNING *`, [...Object.values(data)]).then(r => r.length ? r[0] : null);
 		return key ? new E621Status(key) : null;
 	}
 

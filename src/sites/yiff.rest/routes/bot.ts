@@ -150,7 +150,8 @@ client.on("interactionCreate", async(interaction) => {
 									`- Active: ${k.active ? greenTick : redTick}`,
 									`- Disabled: ${k.disabled ? `${greenTick} (Reason: ${k.disabledReason ?? "NONE"})` : redTick}`,
 									`- Unlimited: ${k.unlimited ? greenTick : redTick}`,
-									`- Services: ${k.servicesString}`
+									`- Services: ${k.servicesString}`,
+									`- SFW Only: ${k.sfwOnly ? greenTick : redTick}`
 								].join("\n")).join("\n\n")}`,
 								flags: MessageFlags.EPHEMERAL
 							});
@@ -185,7 +186,8 @@ client.on("interactionCreate", async(interaction) => {
 									`Active: ${key.active ? greenTick : redTick}`,
 									`Disabled: ${key.disabled ? `${greenTick} (Reason: ${key.disabledReason ?? "NONE"})` : redTick}`,
 									`Unlimited: ${key.unlimited ? greenTick : redTick}`,
-									`Services: ${key.servicesString}`
+									`Services: ${key.servicesString}`,
+									`SFW Only: ${key.sfwOnly ? greenTick : redTick}`
 								])
 								.setColor(0xDC143C)
 								.setTimestamp(new Date().toISOString())

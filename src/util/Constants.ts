@@ -36,6 +36,7 @@ export enum YiffyErrorCodes {
 	BULK_IMAGES_INVALID_BODY             = 1054,
 	BULK_IMAGES_INVALID_CATEGORY         = 1055,
 	BULK_IMAGES_NUMBER_GT_MAX            = 1056,
+	IMAGES_SFW_ONLY_API_KEY              = 1057,
 
 	THUMBS_GENERIC_ERROR    = 1060,
 	/** @deprecated */

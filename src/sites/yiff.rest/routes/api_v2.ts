@@ -12,6 +12,7 @@ import {
 } from "../../../util/checks";
 import db from "../../../db";
 import Logger from "../../../util/Logger";
+import { sfwOnlyIP } from "../../../config";
 import { APIImage, APIUsage } from "@models";
 import APIKey, { APIKeyFlags } from "@models/APIKey";
 import Webhooks from "@util/Webhooks";
@@ -149,8 +150,15 @@ app
 			"chris",
 			...categories.enabled.map(e => e.db)
 		];
+		const sfwCategories = categories.enabled.filter(e => e.sfw).map(e => e.db);
+		const sfwOnly = key.sfwOnly || sfwOnlyIP.includes(req.ip);
 		let total = 0;
 		for (const [cat, amount] of Object.entries(req.body as object)) {
+			if (sfwOnly && !sfwCategories.includes(cat)) return res.status(403).json({
+				success: false,
+				error:   `You are only allowed to access sfw categories, and the category "${cat}" is not SFW.`,
+				code:    YiffyErrorCodes.IMAGES_SFW_ONLY_API_KEY
+			});
 			if (!valid.includes(cat)) return res.status(400).json({
 				success: false,
 				error:   `Invalid category specified: ${cat}`,
@@ -252,7 +260,16 @@ app
 			...Object.values(categories.enabled).map(k => k.db.split(".")[0])
 		];
 		if (!Array.from(new Set(valid)).includes(parts[0])) return next();
+		let key: APIKey | undefined;
+		const auth = req.query._auth as string || req.headers.authorization;
+		const sfwCategories = categories.enabled.filter(e => e.sfw).map(e => e.db);
+		const sfwOnly = key?.sfwOnly || sfwOnlyIP.includes(req.ip);
 		const category = parts.join(".");
+		if (sfwOnly && !sfwCategories.includes(category)) return res.status(403).json({
+			success: false,
+			error:   `You are only allowed to access sfw categories, and the category "${category}" is not SFW.`,
+			code:    YiffyErrorCodes.IMAGES_SFW_ONLY_API_KEY
+		});
 		const list = [
 			"chris",
 			...Object.values(categories.enabled).map(k => k.db)
@@ -275,7 +292,6 @@ app
 		});
 
 		try {
-			const auth = req.query._auth as string || req.headers.authorization;
 			await db.r.incr(`yiffy2:images:category:${category}`);
 			const m = db.r.multi()
 				.incr(`yiffy2:stats:images:ip:${req.ip}`)

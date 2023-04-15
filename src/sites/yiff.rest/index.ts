@@ -54,7 +54,8 @@ export default class YiffRest extends Website {
 								imagesBulk: key.imagesBulkAccess,
 								thumbs:     key.thumbsAccess,
 								shortener:  key.shortenerAccess
-							}
+							},
+							sfwOnly: key.sfwOnly
 						}
 					});
 				} else {

@@ -28,6 +28,7 @@ export enum APIKeyFlags {
 	THUMBS      = 1 << 1,
 	SHORTENER   = 1 << 2,
 	IMAGES_BULK = 1 << 3,
+	SFW_ONLY    = 1 << 4,
 }
 
 export const DEFAULT_WINDOW_LONG  = 10000;
@@ -109,6 +110,7 @@ export default class APIKey {
 	get thumbsAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.THUMBS) === APIKeyFlags.THUMBS; }
 	get shortenerAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.SHORTENER) === APIKeyFlags.SHORTENER; }
 	get imagesBulkAccess() { return this.active && !this.disabled && (this.flags & APIKeyFlags.IMAGES_BULK) === APIKeyFlags.IMAGES_BULK; }
+	get sfwOnly() { return this.active && !this.disabled && (this.flags & APIKeyFlags.SFW_ONLY) === APIKeyFlags.SFW_ONLY; }
 
 	get servicesString() {
 		const services: Array<string> = [];

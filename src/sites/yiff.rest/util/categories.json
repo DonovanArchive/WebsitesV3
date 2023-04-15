@@ -2,114 +2,140 @@
   "enabled": [
     {
       "name": "Animals > Birb",
-      "db": "animals.birb"
+      "db": "animals.birb",
+      "sfw": true
     },
     {
       "name": "Animals > Blep",
-      "db": "animals.blep"
+      "db": "animals.blep",
+      "sfw": true
     },
     {
       "name": "Animals > Dik Dik",
-      "db": "animals.dikdik"
+      "db": "animals.dikdik",
+      "sfw": true
     },
     {
       "name": "Furry > Boop",
-      "db": "furry.boop"
+      "db": "furry.boop",
+      "sfw": true
     },
     {
       "name": "Furry > Cuddle",
-      "db": "furry.cuddle"
+      "db": "furry.cuddle",
+      "sfw": true
     },
     {
       "name": "Furry > Flop",
-      "db": "furry.flop"
+      "db": "furry.flop",
+      "sfw": true
     },
     {
       "name": "Furry > Fursuit",
-      "db": "furry.fursuit"
+      "db": "furry.fursuit",
+      "sfw": true
     },
     {
       "name": "Furry > Hold",
-      "db": "furry.hold"
+      "db": "furry.hold",
+      "sfw": true
     },
     {
       "name": "Furry > Howl",
-      "db": "furry.howl"
+      "db": "furry.howl",
+      "sfw": true
     },
     {
       "name": "Furry > Hug",
-      "db": "furry.hug"
+      "db": "furry.hug",
+      "sfw": true
     },
     {
       "name": "Furry > Kiss",
-      "db": "furry.kiss"
+      "db": "furry.kiss",
+      "sfw": true
     },
     {
       "name": "Furry > Lick",
-      "db": "furry.lick"
+      "db": "furry.lick",
+      "sfw": true
     },
     {
       "name": "Furry > Propose",
-      "db": "furry.propose"
+      "db": "furry.propose",
+      "sfw": true
     },
     {
       "name": "Furry > Fursuit Butts",
-      "db": "furry.butts"
+      "db": "furry.butts",
+      "sfw": false
     },
     {
       "name": "Furry > Bulge",
-      "db": "furry.bulge"
+      "db": "furry.bulge",
+      "sfw": false
     },
     {
       "name": "Furry > Yiff > Andromorph",
-      "db": "furry.yiff.andromorph"
+      "db": "furry.yiff.andromorph",
+      "sfw": false
     },
     {
       "name": "Furry > Yiff > Gay",
-      "db": "furry.yiff.gay"
+      "db": "furry.yiff.gay",
+      "sfw": false
     },
     {
       "name": "Furry > Yiff > Gynomorph",
-      "db": "furry.yiff.gynomorph"
+      "db": "furry.yiff.gynomorph",
+      "sfw": false
     },
     {
       "name": "Furry > Yiff > Lesbian",
-      "db": "furry.yiff.lesbian"
+      "db": "furry.yiff.lesbian",
+      "sfw": false
     },
     {
       "name": "Furry > Yiff > Straight",
-      "db": "furry.yiff.straight"
+      "db": "furry.yiff.straight",
+      "sfw": false
     }
   ],
   "disabled": [
     {
       "name": "Furry > Yiff > Dickgirl",
       "db": "furry.yiff.dickgirl",
+      "sfw": false,
       "_comment": "Renamed to furry.yiff.gynomorph"
     },
     {
       "name": "Animals > Cheeta",
       "db": "animals.cheeta",
+      "sfw": true,
       "_comment": "Renamed to animals.cheetah"
     },
     {
       "name": "Animals > Cheetah",
       "db": "animals.cheetah",
+      "sfw": true,
       "_comment": "Category has never had any content."
     },
     {
       "name": "Animals > Fox",
       "db": "animals.fox",
+      "sfw": true,
       "_comment": "Category has never had any content."
     },
     {
       "name": "Animals > Lynx",
       "db": "animals.lynx",
+      "sfw": true,
       "_comment": "Category has never had any content."
     },
     {
       "name": "Animals > Wolf",
       "db": "animals.wolf",
+      "sfw": true,
       "_comment": "Category has never had any content."
     }
   ]

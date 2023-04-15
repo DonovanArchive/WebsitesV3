@@ -94,8 +94,9 @@ app
 					time:        since,
 					state:       states[status] ?? ((status >= 200 && status <= 299) ? "up" : "down"),
 					status:      `${status} ${STATUS_CODES[status] || ""}`.trim(),
-					statusClass: status >= 200 && status <= 299 ? "success" : status === 403 ? "partially down" : "error",
-					note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`
+					statusClass: status >= 200 && status <= 299 ? "success" : "error",
+					note:        notes[status] === undefined ? "" : `<h3><center>${notes[status]}</center></h3>`,
+					available:   status >= 200 && status <= 299 ? "Available" : "Not Available"
 				});
 			}
 		}

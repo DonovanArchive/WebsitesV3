@@ -61,21 +61,26 @@
             margin-top: 30vh;
         }
 
-        h2,
-        h3 {
+        h2, h3 {
             color: #B8BEC4;
             margin-top: 5vh;
         }
 
-        span#state.down,
-        span#status.error {
+        span#state.up, span#status.success, span#available.success {
+            color: #008000;
+        }
+
+        span#state.down, span#status.error, span#available.error {
             color: #FF0000;
+        }
+
+        span#state.partially.down, span#status.partially.down {
+            color: #FFA500;
         }
 
         a#json-link, a#user-link {
             color: #E9F2FA;
         }
-
     </style>
     <script>
         window.onload = () => {
@@ -92,7 +97,7 @@
 <body>
     <h1>
         <center>
-            We had an issue contacting e621's api for a status check.
+            We had an issue contacting e621 for a status check.
         </center>
     </h1>
 

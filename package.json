@@ -8,7 +8,7 @@
     "up:d": "npm run imgen-config && sudo docker compose pull && sudo docker compose up --force-recreate -d",
     "up": "npm run imgen-config && sudo docker compose pull && sudo docker compose up --force-recreate",
     "down": "sudo docker compose down",
-    "up:dev": "npm run imgen-config && sudo docker compose -f docker-compose.dev.yml up --force-recreate",
+    "up:dev": "npm run imgen-config && sudo docker compose -f docker-compose.dev.yml up --force-recreate --build",
     "dev": "npm run down && npm run up:dev",
     "update": "git pull && docker compose pull && git submodule update --init --recursive --remote && ./update.sh",
     "start": "git pull && docker compose pull && npm run down && git submodule update --init --recursive --remote && npm run up:d",

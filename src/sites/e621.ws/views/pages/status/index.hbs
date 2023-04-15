@@ -66,11 +66,11 @@
             margin-top: 5vh;
         }
 
-        span#state.up, span#status.success {
+        span#state.up, span#status.success, span#available.success {
             color: #008000;
         }
 
-        span#state.down, span#status.error {
+        span#state.down, span#status.error, span#available.error {
             color: #FF0000;
         }
 
@@ -81,7 +81,6 @@
         a#json-link, a#user-link {
             color: #E9F2FA;
         }
-
     </style>
     <script>
         window.onload = () => {
@@ -98,9 +97,15 @@
 <body>
     <h1>
         <center>
-            E621's API is currently <span id="state" class="{{ state }}">{{ state }}</span>.
+            E621 is currently <span id="state" class="{{ state }}">{{ state }}</span>.
         </center>
     </h1>
+    
+    <h2>
+        <center>
+            API Status: <span id="available" class="{{ statusClass }}">{{ available }}</span>
+        </center>
+    </h2>
 
     <h2>
         <center>

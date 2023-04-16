@@ -9,6 +9,7 @@ import type { ExtendedUser } from "oceanic.js";
 import { Client, DiscordRESTError, JSONErrorCodes } from "oceanic.js";
 import { EmbedBuilder } from "@oceanicjs/builders";
 import { STATUS_CODES } from "http";
+import { writeFile } from "fs/promises";
 async function check() {
 	let status: number;
 	try {
@@ -18,13 +19,17 @@ async function check() {
 			headers: {
 				"User-Agent": "E621Status/1.0.0 (https://status.e621.ws; \"donovan_dmc\")"
 			},
-			method: "HEAD",
+			method: "GET",
 			signal: controller.signal
 		}));
 		if (r.status === 503 && !r.headers.get("content-type")?.startsWith("application/json")) {
 			status = 1;
 		} else {
 			status = r.status;
+		}
+		if (r.status === 501) {
+			status = 200;
+			await writeFile("/tmp/501", await r.text());
 		}
 		clearTimeout(timeout);
 	} catch (err) {

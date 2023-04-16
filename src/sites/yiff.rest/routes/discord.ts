@@ -76,7 +76,7 @@ app
 			[UserFlags.STAFF]:                 "Discord Employee",
 			[UserFlags.PARTNER]:               "Discord Partner",
 			[UserFlags.HYPESQUAD]:             "Hypesquad Events",
-			[UserFlags.BUGHUNTER_LEVEL_1]:     "Bug Hunter Level 1",
+			[UserFlags.BUG_HUNTER_LEVEL_1]:    "Bug Hunter Level 1",
 			// 4 & 5
 			[UserFlags.HYPESQUAD_BRAVERY]:     "House of Bravery",
 			[UserFlags.HYPESQUAD_BRILLIANCE]:  "House of Brilliance",
@@ -95,7 +95,7 @@ app
 			[UserFlags.SPAMMER]:               "Spammer",
 			// 21
 			[UserFlags.ACTIVE_DEVELOPER]:      "Active Developer"
-		};
+		} satisfies Record<UserFlags, string>;
 
 		for (let i = 1; i <= 25; i++) {
 			const flag = 1 << i;

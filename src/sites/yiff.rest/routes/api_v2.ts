@@ -260,8 +260,8 @@ app
 			...Object.values(categories.enabled).map(k => k.db.split(".")[0])
 		];
 		if (!Array.from(new Set(valid)).includes(parts[0])) return next();
-		let key: APIKey | undefined;
 		const auth = req.query._auth as string || req.headers.authorization;
+		const key = auth ? await APIKey.get(auth) : null;
 		const sfwCategories = categories.enabled.filter(e => e.sfw).map(e => e.db);
 		const sfwOnly = key?.sfwOnly || sfwOnlyIP.includes(req.ip);
 		const category = parts.join(".");

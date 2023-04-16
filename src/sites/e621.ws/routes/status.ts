@@ -1,9 +1,13 @@
 import Logger from "../../../util/Logger";
 import E621Status from "../../../db/Models/E621Status";
-import { Router } from "express";
+import { dev, discord } from "../../../config";
+import E621Webhook from "../../../db/Models/E621Webhook";
+import { Router, type Request } from "express";
 import { fetch } from "undici";
 import { Type } from "@sinclair/typebox";
-import { access } from "fs/promises";
+import type { ExtendedUser } from "oceanic.js";
+import { Client, DiscordRESTError, JSONErrorCodes } from "oceanic.js";
+import { EmbedBuilder } from "@oceanicjs/builders";
 import { STATUS_CODES } from "http";
 async function check() {
 	let status: number;
@@ -17,7 +21,7 @@ async function check() {
 			method: "HEAD",
 			signal: controller.signal
 		}));
-		if (r.status === 200 && !r.headers.get("content-type")?.startsWith("application/json")) {
+		if (r.status === 503 && !r.headers.get("content-type")?.startsWith("application/json")) {
 			status = 1;
 		} else {
 			status = r.status;
@@ -40,13 +44,12 @@ async function check() {
 }
 
 async function get(noLoop = false): Promise<{ status: number; since: string; }> {
-	if (!(await access("/data/cache/status.json").then(() => true, () => false))) {
-		if (noLoop) return { status: 404, since: new Date().toISOString() };
+	const d = await E621Status.getLatest();
+	if (!d) {
+		if (noLoop) return { status: 0, since: new Date().toISOString() };
 		const { status, since } = await check();
 		return { status, since };
-	}
-
-	return E621Status.getLatest();
+	} else return d;
 }
 
 async function getAll(limit = 100): Promise<Array<{ status: number; since: string; }>> {
@@ -56,6 +59,10 @@ async function getAll(limit = 100): Promise<Array<{ status: number; since: strin
 async function write(status: number): Promise<{ status: number; since: string; }> {
 	const since = new Date().toISOString();
 	await E621Status.new({ status, since });
+	const hooks = await E621Webhook.getAll();
+	for (const hook of hooks) {
+		await sendWebhook(hook, status, since);
+	}
 	return { status, since };
 }
 
@@ -74,8 +81,55 @@ const statusMessages: Record<number, string> = {
 	1: "Maintenance"
 };
 
-setInterval(check, 60000);
+async function sendWebhook(webhook: E621Webhook, status: number, since: string) {
+	const embed = new EmbedBuilder()
+		.setTitle("E621 Status Update")
+		.setDescription(`E621's api is ${status >= 200 && status <= 299 ? "available" : "unavailable"}.`)
+		.addField("Status", `${status} ${STATUS_CODES[status] || ""}`.trim(), true)
+		.addField("State", states[status] ?? ((status >= 200 && status <= 299) ? "up" : "down"), true)
+		.setColor(status >= 200 && status <= 299 ? 0x008000 : status === 403 ? 0xFFA500 : 0xFF0000)
+		.setTimestamp(since)
+		.setFooter("Since");
+	if (notes[status]) {
+		embed.addField("Note", notes[status], false);
+	}
+	await client.rest.webhooks.execute(webhook.webhook_id, webhook.webhook_token, {
+		embeds: embed
+			.toJSON(true)
+	}).catch(err => {
+		if (err instanceof DiscordRESTError && err.code === JSONErrorCodes.UNKNOWN_WEBHOOK) {
+			return webhook.delete();
+		} else {
+			Logger.getLogger("e621.ws").error(webhook);
+			Logger.getLogger("e621.ws").error(err);
+		}
+	});
+}
 
+async function validate(hooks: E621Webhook | Array<E621Webhook>) {
+	if (!Array.isArray(hooks)) hooks = [hooks];
+	const valid: Array<E621Webhook> = [];
+	for (const hook of hooks) {
+		try {
+			await client.rest.webhooks.get(hook.webhook_id, hook.webhook_token);
+			valid.push(hook);
+		} catch (err) {
+			if (err instanceof DiscordRESTError && err.code === JSONErrorCodes.UNKNOWN_WEBHOOK) {
+				await hook.delete();
+			} else {
+				Logger.getLogger("e621.ws").error(hook);
+				Logger.getLogger("e621.ws").error(err);
+			}
+		}
+	}
+	return valid;
+}
+
+if (!dev) {
+	setInterval(check, 60000);
+}
+
+const client = new Client();
 const app = Router();
 app
 	.get("/", async(req, res) => {
@@ -124,6 +178,84 @@ app
 				since
 			}))
 		});
+	})
+	.get("/discord", async(req, res) => res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${discord["e621-status-check"].id}&redirect_uri=${encodeURIComponent(discord["e621-status-check"].redirect)}&response_type=code&scope=${discord["e621-status-check"].scopes.join("%20")}`))
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
+	.get("/discord/cb", async(req: Request<{}, any, any, { code: string; guild_id: string; }, Record<string, any>>, res) => {
+		const { code, guild_id } = req.query;
+		const exec = await client.rest.oauth.exchangeCode({
+			clientID:     discord["e621-status-check"].id,
+			clientSecret: discord["e621-status-check"].secret,
+			code,
+			redirectURI:  discord["e621-status-check"].redirect
+		});
+
+		if (!exec.webhook) {
+			return res.status(400).end("No webhook was recieved from Discord. Please try again.");
+		}
+
+		let user: ExtendedUser | null = null;
+		if (exec.scopes.includes("identify")) {
+			const helper = client.rest.oauth.getHelper(`${exec.tokenType} ${exec.accessToken}`);
+			user = await helper.getCurrentUser();
+		}
+
+		const existingChannel = await validate(await E621Webhook.getForChannel(exec.webhook.channelID!));
+		if (existingChannel.length >= 1) {
+			await exec.webhook.execute({
+				wait:   true,
+				embeds: new EmbedBuilder()
+					.setTitle("E621 Status Check")
+					.setThumbnail("https://status.e621.ws/icon.png")
+					.setURL("https://status.e621.ws")
+					.setDescription("You already have a status check enabled in this channel. Delete the other webhook to use a new webhook. This webhook will be automatically deleted.")
+					.setTimestamp(new Date().toISOString())
+					.setColor(0x012E57)
+					.toJSON(true)
+			});
+			await exec.webhook.deleteToken();
+			return res.status(409).end("You already have a status check enabled in that channel. Delete the other webhook to use a new webhook. The newly created webhook will be automatically deleted.");
+		}
+
+		const existingGuild = await validate(await E621Webhook.getForGuild(guild_id));
+		if (existingGuild.length >= 5) {
+			await exec.webhook.execute({
+				wait:   true,
+				embeds: new EmbedBuilder()
+					.setTitle("E621 Status Check")
+					.setThumbnail("https://status.e621.ws/icon.png")
+					.setURL("https://status.e621.ws")
+					.setDescription("You've already enabled 5 status checks in this server. Please delete the other webhooks before adding a new check. This webhook will be automatically deleted.")
+					.setTimestamp(new Date().toISOString())
+					.setColor(0x012E57)
+					.toJSON(true)
+			});
+			await exec.webhook.deleteToken();
+			return res.status(409).end("You've already enabled 5 status checks in that server. Please delete the other webhooks before adding a new check. The newly created webhook will be automatically deleted.");
+		}
+
+		const hook = await E621Webhook.new({
+			guild_id,
+			channel_id:    exec.webhook.channelID!,
+			webhook_id:    exec.webhook.id,
+			webhook_token: exec.webhook.token!,
+			creator_id:    user?.id ?? null
+		});
+
+		await exec.webhook.execute({
+			embeds: new EmbedBuilder()
+				.setTitle("E621 Status Check")
+				.setThumbnail("https://status.e621.ws/icon.png")
+				.setURL("https://status.e621.ws")
+				.setDescription(`This webhook has been setup to recieve status updates for e621's api${user ? ` by ${user.mention}` : ""}.`)
+				.setTimestamp(new Date().toISOString())
+				.setColor(0x012E57)
+				.toJSON(true)
+		});
+
+		const latest = await get();
+		await sendWebhook(hook!, latest.status, latest.since);
+		return res.status(200).end("Check successfully setup. Delete the webhook to disable the updates.");
 	});
 
 const Schema = Type.Object({

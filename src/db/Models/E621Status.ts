@@ -42,7 +42,7 @@ export default class E621Status {
 	}
 
 	static async getLatest() {
-		return db.query<Array<RawE621Status>>("SELECT status, since FROM e621.status ORDER BY id DESC LIMIT 1").then(k => new E621Status(k[0]));
+		return db.query<Array<RawE621Status>>("SELECT status, since FROM e621.status ORDER BY id DESC LIMIT 1").then(k => k.length === 0 ? null : new E621Status(k[0]));
 	}
 
 	async delete() { return E621Status.delete(this.id); }

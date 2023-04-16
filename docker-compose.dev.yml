@@ -16,8 +16,6 @@ x-shared: &shared
       condition: service_healthy
     redis:
       condition: service_healthy
-  networks:
-    - default
       
 services:
   butts-are.cool:
@@ -33,6 +31,9 @@ services:
     environment:
       SITE: butts-are.cool
     hostname: butts-are-cool.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.2
   e621.ws:
     <<: *shared
     volumes:
@@ -46,6 +47,9 @@ services:
     environment:
       SITE: e621.ws
     hostname: e621-ws.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.3
   furry.cool:
     <<: *shared
     volumes:
@@ -59,6 +63,9 @@ services:
     environment:
       SITE: furry.cool
     hostname: furry-cool.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.4
   maid.gay:
     <<: *shared
     volumes:
@@ -71,6 +78,9 @@ services:
     environment:
       SITE: maid.gay
     hostname: maid-gay.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.5
   yiff.media:
     <<: *shared
     volumes:
@@ -84,6 +94,9 @@ services:
     environment:
       SITE: yiff.media
     hostname: yiff-media.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.6
   oceanic.ws:
     <<: *shared
     volumes:
@@ -97,6 +110,9 @@ services:
     environment:
       SITE: oceanic.ws
     hostname: oceanic-ws.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.7
   yiff.rest:
     <<: *shared
     volumes:
@@ -115,6 +131,9 @@ services:
             memory: 1024M
           reservations:
             memory: 256M
+    networks:
+      default:
+        ipv4_address: 172.19.2.8
     environment:
       SITE: yiff.rest
       FFMPEG_PATH: /usr/bin/ffmpeg
@@ -134,6 +153,9 @@ services:
     environment:
       SITE: yiff.rocks
     hostname: yiff-rocks.websites.containers.local
+    networks:
+      default:
+        ipv4_address: 172.19.2.9
   imgen:
     build:
       context: src/imgen
@@ -156,6 +178,9 @@ services:
         resources:
             limits:
               memory: 256M
+    networks:
+      default:
+        ipv4_address: 172.19.2.10
   mariadb:
     image: mariadb
     container_name: mariadb.websites

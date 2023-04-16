@@ -78,7 +78,7 @@
             color: #FFA500;
         }
 
-        a#json-link, a#user-link {
+        a#json-link, a#user-link, #discord-link {
             color: #E9F2FA;
         }
     </style>
@@ -109,13 +109,13 @@
 
     <h2>
         <center>
-            We've seen a <span id="status" class="maintenance">200 OK</span> (maintenance) since <span id="time">{{ time }}</span>.
+            We've seen a <span id="status" class="maintenance">503 Service Unavailable</span> (maintenance) since <span id="time">{{ time }}</span>.
         </center>
     </h2>
 
     <h2>
         <center>
-            Looking to access this data automatically, or see the history? We have a <a id="json-link" href="/json">JSON</a> endpoint.
+            Looking to access this data automatically, or see the history? We have a <a id="json-link" href="/json">JSON</a> endpoint. We also provide a <a id="discord-link" href="/discord">Discord Webhook</a> service.
         </center>
     </h2>
 

@@ -41,7 +41,7 @@ async function tagPush(data: PushEvent) {
 		.fetch("origin", `${tag}:${tag}`)
 		.checkout(tag);
 	await writeFiles(tmp);
-	execSync("npm i --ignore-scripts typedoc typedoc-plugin-extras typedoc-plugin-rename-defaults && npx --yes typedoc", { cwd: tmp, stdio: "inherit" });
+	execSync("npm run test:docs", { cwd: tmp, stdio: "inherit" });
 	await cp(`${tmp}/docs`, `${baseDir}/${tag}`, { recursive: true });
 	await rm(tmp, { force: true, recursive: true });
 	const versions = await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [];
@@ -67,7 +67,7 @@ async function devPush(data: PushEvent) {
 		.checkout(branch);
 	await writeFiles(tmp);
 	// make sure to add to .github/workflows/docs.yml
-	execSync("npm i --ignore-scripts typedoc typedoc-plugin-extras typedoc-plugin-rename-defaults && npx --yes typedoc", { cwd: tmp, stdio: "inherit" });
+	execSync("npm run test:docs", { cwd: tmp, stdio: "inherit" });
 	await cp(`${tmp}/docs`, `${baseDir}/${branch}`, { recursive: true });
 	await rm(tmp, { force: true, recursive: true });
 }

@@ -193,9 +193,10 @@ app
 			}))
 		});
 	})
-	.get("/discord", async(req, res) => res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${discord["e621-status-check"].id}&redirect_uri=${encodeURIComponent(discord["e621-status-check"].redirect)}&response_type=code&scope=${discord["e621-status-check"].scopes.join("%20")}`))
+	.get("/webhook", async(req, res) => res.status(200).render("status/webhook-pre"))
+	.get("/webhook/discord", async(req, res) => res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${discord["e621-status-check"].id}&redirect_uri=${encodeURIComponent(discord["e621-status-check"].redirect)}&response_type=code&scope=${(req.query.min ? discord["e621-status-check"].scopesMin : discord["e621-status-check"].scopes).join("%20")}`))
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
-	.get("/discord/cb", async(req: Request<{}, any, any, { code: string; guild_id: string; }, Record<string, any>>, res) => {
+	.get("/webhook/discord/cb", async(req: Request<{}, any, any, { code: string; guild_id: string; }, Record<string, any>>, res) => {
 		const { code, guild_id } = req.query;
 		const exec = await client.rest.oauth.exchangeCode({
 			clientID:     discord["e621-status-check"].id,

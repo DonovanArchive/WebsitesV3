@@ -1,0 +1,148 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <title>E621 API Status | Webhook Prerequisites</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="shortcut icon" href="https://e621.ws/icon.png" type="image/png">
+    <meta name="description" content="Prerequisites for adding a status check webhook.">
+    <meta name="theme-color" content="#002D56">
+    <meta charset="UTF-8">
+
+    <!-- Site Verification -->
+
+    <!--Twitter-->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@e621dotnet">
+    <meta name="twitter:creator" content="@e621dotnet">
+    <meta name="twitter:title" content="E621 API Status | Webhook Prerequisites">
+    <meta name="twitter:description" content="Prerequisites for adding a status check webhook.">
+    <meta name="twitter:image" content="https://e621.ws/icon.png">
+    <meta name="Twitter:image:alt" content="E621's Logo">
+
+    <!--Browser Caching-->
+    <meta http-equiv="Cache-control" content="public">
+
+    <!--Dublin Core - DC-->
+    <meta name="DC.Title" lang="en" content="E621 API Status | Webhook Prerequisites">
+    <meta name="DC.Creator" lang="en" content="E621">
+    <meta name="DC.Subject" lang="en" content="Information">
+    <meta name="DC.Description" lang="en" content="Prerequisites for adding a status check webhook.">
+    <meta name="DC.Publisher" lang="en" content="Donovan_DMC">
+    <meta name="DC.Contributor" lang="en" content="Self">
+    <meta name="DC.Date" lang="en" content="{{ year }}">
+    <meta name="DC.Type" lang="en" content="text">
+    <meta name="DC.Format" lang="en" content="text/html">
+    <meta name="DC.Language" lang="en" content="en-US">
+    <meta name="DC.Rights" lang="en" content="All members can access">
+    <link rel="schema.DC" lang="en" href="http://purl.org/dc/elements/1.1/">
+    <link rel="schema.DCTERMS" lang="en" href="http://purl.org/dc/terms/">
+
+    <!--Open Graph-->
+    <meta property="og:title" content="E621 API Status | Webhook Prerequisites">
+    <meta property="og:site_name" content="E621 API Status">
+    <meta property="og:description" content="Prerequisites for adding a status check webhook.">
+    <meta property="og:url" content="https://status.e621.ws/webhook/pre">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://e621.ws/icon.png">
+    <meta property="og:image:secure_url" content="https://e621.ws/icon.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="300">
+    <meta property="og:image:height" content="300">
+    <meta property="og:image:alt" content="E621's Icon">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@500">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js" integrity="sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        * {
+            font-family: "Raleway", sans-serif;
+            line-height: 1.3;
+        }
+        body {
+            background-color: #012E57;
+        }
+
+        h2 {
+            color: #B8BEC4;
+            margin-top: 2vh;
+        }
+
+        span#state.up,
+        span#status.success,
+        span#available.success {
+            color: #008000;
+        }
+
+        span#state.down,
+        span#status.error,
+        span#available.error {
+            color: #FF0000;
+        }
+
+        span#state.partially.down,
+        span#status.partially.down {
+            color: #FFA500;
+        }
+
+        a {
+            color: #E9F2FA;
+        }
+
+        p {
+            color: #B8BEC4;
+            margin-left: 7.5vw;
+            margin-right: 7.5vw;
+            font-size: 20px;
+        }
+
+        div#buttons {}
+
+        .btn-authorize {
+            color: #E9F2FA; 
+        }
+    </style>
+</head>
+
+<body>
+    <h2 class="text-center">
+        Webhook Prerequisites
+    </h2>
+    <p class="text-center">
+        A Discord webhook is a good way to get status updates right inside of Discord, the minute we know about con'hanges.<br>
+        The link at the bottom of the page will take you to an OAuth authorization page, which will create a webhook and give the information to us.<br>
+        We do not accept previously create webhooks, this OAuth flow must be followed.
+    </p>
+    <p class="text-center">
+        Don't trust me? That's fine, I wouldn't trust an online stranger either.<br>
+        You can view the code for this site <a href="https://github.com/DonovanDMC/Websites/tree/master/src/sites/e621.ws">here</a>.<br>
+        The code for handling setting up webhooks is specifically in <a href="https://github.com/DonovanDMC/Websites/blob/master/src/sites/e621.ws/routes/status.ts#L198-L274">routes/status.ts, Lines 198-274</a>.
+    </p>
+    <p class="text-center">
+        There's a hard limit of one webhook per channel, and 5 webhooks per server.<br>
+        The latter <i>may</i> be negotiable, contact <a href="https://e621.net/users/Donovan_DMC">Donovan_DMC</a> if needs be.<br>
+        To disable a status check, simply delete the webhook.<br>
+        The webhook will be marked as "managed" by us, so it serves no other use.
+    </p>
+    <p class="text-center">
+        Some other miscellaneous information.<br>
+        Webhook details are not stored in an encrypted format, but the database they are in is disconnected from the internet.<br>
+        The OAuth authorization does not add a bot or application to your server, just the webhook.<br>
+        You can view an example of some status updates <a href="https://cdn.discordapp.com/attachments/486330319331655700/1097823650108940358/image.png">here</a>.<br>
+        Updates are posted as soon as we know about them currently. In the future, updates may be delayed to avoid spam.
+    </p>
+    <p class="text-center">
+        With all of that out of the way, the buttons.<br>
+        The minimal button will only authorize the webhook.<br>
+        The other button will authorize both the webhook and your user info (which is optional).<br>
+    </p>
+
+    <div class="position-relative mt-4">
+        <div class="position-absolute top-100 start-50 translate-middle-x">
+            <a class="btn btn-danger btn-authorize me-2" href="/webhook/discord/auth?min=true">Authorize (Minimal)</a>
+            <a class="btn btn-success btn-authorize ms-2" href="/webhook/discord/auth">Authorize</a>
+        </div>
+    </div>
+</body>
+
+</html>

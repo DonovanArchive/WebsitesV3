@@ -82,8 +82,17 @@ const states: Record<number, string> = {
 	403: "partially down"
 };
 const statusMessages: Record<number, string> = {
-	0: "Internal Error",
-	1: "Maintenance"
+	0:   "Internal Error",
+	1:   "Maintenance",
+	520: "Unknown Cloudflare Error",
+	521: "Web Server Is Down",
+	522: "Connection Timed Out",
+	523: "Origin Is Unreachable",
+	524: "A Timeout Occurred",
+	525: "SSL Handshake Failed",
+	526: "Invalid SSL Certificate",
+	527: "Railgun Error",
+	530: "Site Is Frozen"
 };
 
 async function sendWebhook(webhook: E621Webhook, status: number, since: string) {
@@ -248,6 +257,7 @@ app
 		});
 
 		await exec.webhook.execute({
+			wait:   true,
 			embeds: new EmbedBuilder()
 				.setTitle("E621 Status Check")
 				.setThumbnail("https://status.e621.ws/icon.png")

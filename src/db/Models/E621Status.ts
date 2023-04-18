@@ -38,11 +38,15 @@ export default class E621Status {
 	}
 
 	static async getHistory(limit = 100) {
-		return db.query<Array<RawE621Status>>(`SELECT status, since FROM ${E621Status.DB}.${E621Status.TABLE} ORDER BY id DESC LIMIT ?`, [limit]).then(k => k.map(kk => new E621Status(kk)));
+		return db.query<Array<RawE621Status>>(`SELECT * FROM ${E621Status.DB}.${E621Status.TABLE} ORDER BY id DESC LIMIT ?`, [limit]).then(k => k.map(kk => new E621Status(kk)));
 	}
 
 	static async getLatest() {
-		return db.query<Array<RawE621Status>>("SELECT status, since FROM e621.status ORDER BY id DESC LIMIT 1").then(k => k.length === 0 ? null : new E621Status(k[0]));
+		return db.query<Array<RawE621Status>>("SELECT * FROM e621.status ORDER BY id DESC LIMIT 1").then(k => k.length === 0 ? null : new E621Status(k[0]));
+	}
+
+	static async getForDate(date: Date, limit = 100) {
+		return db.query<Array<RawE621Status>>(`SELECT * FROM ${E621Status.DB}.${E621Status.TABLE} WHERE since LIKE '${date.toISOString().slice(0, 10)}%' ORDER BY id DESC LIMIT ?`, [limit]).then(k => k.map(kk => new E621Status(kk)));
 	}
 
 	async delete() { return E621Status.delete(this.id); }

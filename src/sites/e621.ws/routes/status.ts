@@ -57,8 +57,8 @@ async function get(noLoop = false): Promise<{ status: number; since: string; }> 
 	} else return d;
 }
 
-async function getAll(limit = 100): Promise<Array<{ status: number; since: string; }>> {
-	return E621Status.getHistory(limit);
+async function getAll(limit = 100, date?: Date): Promise<Array<{ status: number; since: string; }>> {
+	return date === undefined ? E621Status.getHistory(limit) : E621Status.getForDate(date, limit);
 }
 
 async function write(status: number): Promise<{ status: number; since: string; }> {
@@ -169,13 +169,15 @@ app
 			}
 		}
 	})
-	.get("/schema.json", async(req, res) => res.status(200).json(Schema))
+	.get(["/schema.json", "/schema/combined.json"], async(req, res) => res.status(200).json(CombinedSchema))
+	.get("/schema/current.json", async(req, res) => res.status(200).json(CurrentSchema))
+	.get("/schema/history.json", async(req, res) => res.status(200).json("root" in req.params && req.params.root !== undefined ? Type.Array(HistorySchema) : HistorySchema))
 	.get("/json", async(req,res) => {
 		const limit = !req.query.limit ? 100 : Number(req.query.limit);
-		const [current, ...history] = await getAll(Math.min(limit, 1000));
+		const [current, ...history] = await getAll(Math.min(limit, 1000) + 1);
 
 		return res.status(200).json({
-			$schema: "https://status.e621.ws/schema.json",
+			$schema: "https://status.e621.ws/schema/combined.json",
 			current: {
 				available:     current.status >= 200 && current.status <= 299,
 				state:         (states[current.status] ?? ((current.status >= 200 && current.status <= 299) ? "up" : "down")).replace(/\s/g, "-"),
@@ -193,7 +195,45 @@ app
 			}))
 		});
 	})
-	.get("/webhook", async(req, res) => res.status(200).render("status/webhook-pre"))
+	.get("/json/current", async(req,res) => {
+		const current = await get();
+
+		return res.status(200).json({
+			$schema:       "https://status.e621.ws/schema/current.json",
+			available:     current.status >= 200 && current.status <= 299,
+			state:         (states[current.status] ?? ((current.status >= 200 && current.status <= 299) ? "up" : "down")).replace(/\s/g, "-"),
+			status:        current.status,
+			statusMessage: statusMessages[current.status] ?? (STATUS_CODES[current.status] || ""),
+			since:         current.since,
+			note:          notes[current.status] ?? null
+		});
+	})
+	.get("/json/history", async(req,res) => {
+		const limit = !req.query.limit ? 100 : Number(req.query.limit);
+		let date: Date | undefined;
+		if (req.query.date) {
+			try {
+				date = new Date(req.query.date as string);
+			} catch (err) {
+				return res.status(400).json({
+					error: "Invalid date.",
+					code:  1
+				});
+			}
+		}
+
+		const history = await getAll(Math.min(limit, 1000), date);
+
+		return res.status(200).json(history.map(({ status, since }) => ({
+			$schema:       "https://status.e621.ws/schema/history.json",
+			available:     status >= 200 && status <= 299,
+			state:         (states[status] ?? ((status >= 200 && status <= 299) ? "up" : "down")).replace(/\s/g, "-"),
+			status,
+			statusMessage: statusMessages[status] ?? (STATUS_CODES[status] || ""),
+			since
+		})));
+	})
+	.get("/webhook", async(req, res) => res.status(200).render("status/webhook"))
 	.get("/webhook/discord", async(req, res) => res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${discord["e621-status-check"].id}&redirect_uri=${encodeURIComponent(discord["e621-status-check"].redirect)}&response_type=code&scope=${(req.query.min ? discord["e621-status-check"].scopesMin : discord["e621-status-check"].scopes).join("%20")}`))
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
 	.get("/webhook/discord/cb", async(req: Request<{}, any, any, { code: string; guild_id: string; }, Record<string, any>>, res) => {
@@ -274,26 +314,22 @@ app
 		return res.status(200).end("Check successfully setup. Delete the webhook to disable the updates.");
 	});
 
-const Schema = Type.Object({
-	current: Type.Object({
-		available: Type.Boolean(),
-		state:     Type.String({
-			enum: ["up", "down", "partially-down", "maintenance", "error"]
-		}),
-		status:        Type.Number(),
-		statusMessage: Type.String(),
-		since:         Type.String(),
-		note:          Type.Union([Type.Null(), Type.String()])
+const CurrentSchema = Type.Object({
+	available: Type.Boolean(),
+	state:     Type.String({
+		enum: ["up", "down", "partially-down", "maintenance", "error"]
 	}),
-	history: Type.Array(Type.Object({
-		available: Type.Boolean(),
-		state:     Type.String({
-			enum: ["up", "down", "partially-down", "maintenance", "error"]
-		}),
-		status:        Type.Number(),
-		statusMessage: Type.String(),
-		since:         Type.String()
-	}))
+	status:        Type.Number(),
+	statusMessage: Type.String(),
+	since:         Type.String()
+});
+const HistorySchema = Type.Composite([CurrentSchema, Type.Object({
+	note: Type.Union([Type.Null(), Type.String()])
+})]);
+
+const CombinedSchema = Type.Object({
+	current: CurrentSchema,
+	history: Type.Array(HistorySchema)
 });
 
 export default app;

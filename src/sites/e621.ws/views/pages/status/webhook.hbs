@@ -63,26 +63,9 @@
             background-color: #012E57;
         }
 
-        h2 {
+        h1, h2 {
             color: #B8BEC4;
             margin-top: 2vh;
-        }
-
-        span#state.up,
-        span#status.success,
-        span#available.success {
-            color: #008000;
-        }
-
-        span#state.down,
-        span#status.error,
-        span#available.error {
-            color: #FF0000;
-        }
-
-        span#state.partially.down,
-        span#status.partially.down {
-            color: #FFA500;
         }
 
         a {
@@ -93,23 +76,49 @@
             color: #B8BEC4;
             margin-left: 7.5vw;
             margin-right: 7.5vw;
-            font-size: 20px;
+            font-size: 18px;
         }
-
-        div#buttons {}
 
         .btn-authorize {
             color: #E9F2FA; 
         }
+
+        @media screen and (max-width: 900px) {
+            div#fuck-off {
+                text-align: center !important;
+            }
+
+            p {
+                margin-left: 2.5vw;
+                margin-right: 2.5vw;
+                font-size: 13px;
+            }
+        }
+
+        @media screen and (min-width: 901px) {
+            div#fuck-off {
+                position: absolute;
+                top: 7px;
+                left: 8px;
+            }
+        }
+
+        div#auth-buttons a {
+            display: inline-block;
+            vertical-align: top;
+        }
     </style>
 </head>
 
-<body>
+<body class="text-responsive">
+    <div id="fuck-off">
+        <a class="btn btn-primary btn-authorize ms-2" href="/webhook/discord">I don't care, just get on with it!</a>
+    </div>
     <h2 class="text-center">
         Webhook Prerequisites
     </h2>
     <p class="text-center">
-        A Discord webhook is a good way to get status updates right inside of Discord, the minute we know about con'hanges.<br>
+        A Discord webhook is a good way to get status updates right inside of Discord, the minute we know about changes.<br>
         The link at the bottom of the page will take you to an OAuth authorization page, which will create a webhook and give the information to us.<br>
         We do not accept previously create webhooks, this OAuth flow must be followed.
     </p>
@@ -131,16 +140,26 @@
         You can view an example of some status updates <a href="https://cdn.discordapp.com/attachments/486330319331655700/1097823650108940358/image.png">here</a>.<br>
         Updates are posted as soon as we know about them currently. In the future, updates may be delayed to avoid spam.
     </p>
+    <h1 class="text-center">
+        With all of that out of the way, the buttons.
+    </h1>
     <p class="text-center">
-        With all of that out of the way, the buttons.<br>
         The minimal button will only authorize the webhook.<br>
         The other button will authorize both the webhook and your user info (which is optional).<br>
+        If authorized, the id of the user who created the webhook will be stored on our servers alongside the webhook information.<br>
+        This is purely for informational purposes.<br>
     </p>
 
     <div class="position-relative mt-4">
-        <div class="position-absolute top-100 start-50 translate-middle-x">
-            <a class="btn btn-danger btn-authorize me-2" href="/webhook/discord?min=true">Authorize (Minimal)</a>
-            <a class="btn btn-success btn-authorize ms-2" href="/webhook/discord">Authorize</a>
+        <div class="row">
+            <!--<div class="position-absolute top-100 start-50 translate-middle-x" id="auth-buttons">
+            </div>-->
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <a class="btn btn-danger btn-authorize me-2" href="/webhook/discord?min=true">Authorize (Minimal)</a>
+                    <a class="btn btn-success btn-authorize ms-2" href="/webhook/discord">Authorize</a>
+                </div>
+            </div>
         </div>
     </div>
 </body>

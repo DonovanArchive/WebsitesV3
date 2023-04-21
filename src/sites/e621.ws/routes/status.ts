@@ -2,6 +2,7 @@ import Logger from "../../../util/Logger";
 import E621Status from "../../../db/Models/E621Status";
 import { dev, discord } from "../../../config";
 import E621Webhook from "../../../db/Models/E621Webhook";
+import Webhooks from "../../../util/Webhooks";
 import { Router, type Request } from "express";
 import { fetch } from "undici";
 import { Type } from "@sinclair/typebox";
@@ -110,8 +111,18 @@ async function sendWebhook(webhook: E621Webhook, status: number, since: string) 
 	await client.rest.webhooks.execute(webhook.webhook_id, webhook.webhook_token, {
 		embeds: embed
 			.toJSON(true)
-	}).catch(err => {
+	}).catch(async(err) => {
 		if (err instanceof DiscordRESTError && err.code === JSONErrorCodes.UNKNOWN_WEBHOOK) {
+			await Webhooks.get("e621Status").execute({
+				embeds: new EmbedBuilder()
+					.setTitle("Status Check Webhook Added")
+					.setThumbnail("https://status.e621.ws/icon.png")
+					.setURL("https://status.e621.ws")
+					.setDescription(`A status check has been removed from the channel **${webhook.channel_id}** of the guild **${webhook.guild_id}**${webhook.creator_id ? ` by **${webhook.creator_id}**` : ""}.`)
+					.setTimestamp(new Date().toISOString())
+					.setColor(0x012E57)
+					.toJSON(true)
+			});
 			return webhook.delete();
 		} else {
 			Logger.getLogger("e621.ws").error(webhook);
@@ -304,6 +315,17 @@ app
 				.setThumbnail("https://status.e621.ws/icon.png")
 				.setURL("https://status.e621.ws")
 				.setDescription(`This webhook has been setup to recieve status updates for e621's api${user ? ` by ${user.mention}` : ""}.`)
+				.setTimestamp(new Date().toISOString())
+				.setColor(0x012E57)
+				.toJSON(true)
+		});
+
+		await Webhooks.get("e621Status").execute({
+			embeds: new EmbedBuilder()
+				.setTitle("Status Check Webhook Added")
+				.setThumbnail("https://status.e621.ws/icon.png")
+				.setURL("https://status.e621.ws")
+				.setDescription(`A status check has been added in the channel **${exec.webhook.channelID!}** of the guild **${exec.webhook.guildID!}**${user ? ` by **${user.tag}** (${user.id})` : ""}.`)
 				.setTimestamp(new Date().toISOString())
 				.setColor(0x012E57)
 				.toJSON(true)

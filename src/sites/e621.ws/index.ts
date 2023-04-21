@@ -26,7 +26,7 @@ export default class E621WS extends Website {
 				.use("/e621", createNodeMiddleware(gitE621Route, { path: "/" }))
 			)
 			.addHandler(
-				express.Router().use("/", async(req, res) => res.redirect("https://status.e621.ws"))
+				express.Router().get("/", async(req, res) => res.redirect("https://status.e621.ws"))
 			);
 	}
 }

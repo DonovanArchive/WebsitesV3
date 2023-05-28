@@ -64,7 +64,7 @@ app
 			clientID:     discord["yiffy-discord"].id,
 			redirectURI:  discord["yiffy-discord"].redirect.flags,
 			responseType: "code",
-			scopes:       ["guilds"],
+			scopes:       ["identify"],
 			prompt:       "none"
 		}));
 
@@ -73,33 +73,55 @@ app
 
 		const publicFlags: Array<string> = [], allFlags: Array<string> = [];
 		const Names = {
-			[UserFlags.STAFF]:                 "Discord Employee",
-			[UserFlags.PARTNER]:               "Discord Partner",
-			[UserFlags.HYPESQUAD]:             "Hypesquad Events",
-			[UserFlags.BUG_HUNTER_LEVEL_1]:    "Bug Hunter Level 1",
-			// 4 & 5
-			[UserFlags.HYPESQUAD_BRAVERY]:     "House of Bravery",
-			[UserFlags.HYPESQUAD_BRILLIANCE]:  "House of Brilliance",
-			[UserFlags.HYPESQUAD_BALANCE]:     "House of Balance",
-			[UserFlags.EARLY_SUPPORTER]:       "Early Supporter",
-			[UserFlags.PSEUDO_TEAM_USER]:      "Team User",
-			// 11
-			[UserFlags.SYSTEM]:                "System",
-			// 13
-			[UserFlags.BUG_HUNTER_LEVEL_2]:    "Bug Hunter Level 2",
+			[UserFlags.STAFF]:                        "Discord Employee",
+			[UserFlags.PARTNER]:                      "Discord Partner",
+			[UserFlags.HYPESQUAD]:                    "Hypesquad Events",
+			[UserFlags.BUG_HUNTER_LEVEL_1]:           "Bug Hunter Level 1",
+			[UserFlags.MFA_SMS]:                      "2FA SMS",
+			[UserFlags.PREMIUM_PROMO_DISMISSED]:      "Premium Promotion Dismissed",
+			[UserFlags.HYPESQUAD_BRAVERY]:            "House of Bravery",
+			[UserFlags.HYPESQUAD_BRILLIANCE]:         "House of Brilliance",
+			[UserFlags.HYPESQUAD_BALANCE]:            "House of Balance",
+			[UserFlags.EARLY_SUPPORTER]:              "Early Supporter",
+			[UserFlags.PSEUDO_TEAM_USER]:             "Team User",
+			[UserFlags.INTERNAL_APPLICATION]:         "Internal Application",
+			[UserFlags.SYSTEM]:                       "System",
+			[UserFlags.HAS_UNREAD_URGENT_MESSAGES]:   "Has Unread Urgent Messages",
+			[UserFlags.BUG_HUNTER_LEVEL_2]:           "Bug Hunter Level 2",
 			// 15
-			[UserFlags.VERIFIED_BOT]:          "Verified Bot",
-			[UserFlags.VERIFIED_DEVELOPER]:    "Early Verified Bot Developer",
-			[UserFlags.CERTIFIED_MODERATOR]:   "Certified Moderator",
-			[UserFlags.BOT_HTTP_INTERACTIONS]: "Bot HTTP Interactions",
-			[UserFlags.SPAMMER]:               "Spammer",
+			[UserFlags.VERIFIED_BOT]:                 "Verified Bot",
+			[UserFlags.VERIFIED_DEVELOPER]:           "Early Verified Bot Developer",
+			[UserFlags.CERTIFIED_MODERATOR]:          "Certified Moderator",
+			[UserFlags.BOT_HTTP_INTERACTIONS]:        "Bot HTTP Interactions",
+			[UserFlags.SPAMMER]:                      "Spammer",
 			// 21
-			[UserFlags.ACTIVE_DEVELOPER]:      "Active Developer"
+			[UserFlags.ACTIVE_DEVELOPER]:             "Active Developer",
+			// 23-32
+			[UserFlags.HIGH_GLOBAL_RATE_LIMIT]:       "High Global Rate Limit",
+			[UserFlags.DELETED]:                      "Deleted",
+			[UserFlags.DISABLED_SUSPICIOUS_ACTIVITY]: "Disabled Suspicious Activity",
+			[UserFlags.SELF_DELETED]:                 "Self Deleted",
+			[UserFlags.PREMIUM_DISCRIMINATOR]:        "Premium Discriminator",
+			[UserFlags.USED_DESKTOP_CLIENT]:          "Used Desktop Client",
+			[UserFlags.USED_WEB_CLIENT]:              "Used Web Client",
+			[UserFlags.USED_MOBILE_CLIENT]:           "Used Mobile Client",
+			[UserFlags.DISABLED]:                     "Disabled",
+			// 42
+			[UserFlags.VERIFIED_EMAIL]:               "Verified Email",
+			[UserFlags.QUARANTINED]:                  "Quarantined",
+			// 45-49
+			[UserFlags.COLLABORATOR]:                 "Collaborator",
+			[UserFlags.RESTRICTED_COLLABORATOR]:      "Restricted Collaborator"
 		} satisfies Record<UserFlags, string>;
 
-		for (let i = 1; i <= 25; i++) {
-			const flag = 1 << i;
-			if ((user.publicFlags & flag) === flag) publicFlags.push(Names[flag as 1] || `Unknown (${flag})`);
+		const flags = BigInt(user.flags);
+		const pubFlags = BigInt(user.publicFlags);
+		for (let i = 1; i <= 60; i++) {
+			const flag = 2 ** i;
+			const bflag = BigInt(flag);
+			let isPublic = false;
+			if ((isPublic = (pubFlags & bflag) === bflag)) publicFlags.push(Names[flag as UserFlags] || `Unknown (${String(i)})`);
+			if (!isPublic && (flags & bflag) === bflag) allFlags.push(Names[flag as UserFlags] || `Unknown (${String(i)})`);
 		}
 
 		return res.status(200).render("discord/flags", {

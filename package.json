@@ -95,7 +95,7 @@
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.6.6",
     "node-gzip": "^1.1.2",
-    "oceanic.js": "^1.6.1-dev.93a6f0c",
+    "oceanic.js": "^1.7.1-dev.470fc50",
     "rotating-file-stream": "^3.0.4",
     "sanitize-filename": "^1.6.3",
     "simple-git": "^3.15.1",

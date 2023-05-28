@@ -9,13 +9,18 @@
 </head>
 
 <body>
-	Number: {{ number }}<br>
+	Number: {{ publicNumber }} ([A] {{ allNumber }})<br>
 	<br>
 	Flags:<br>
-	{{#each flags}}
+	{{#each publicFlags}}
 	- {{this}}<br>
 	{{/each}}
 	<br>
+    {{#if allFlags}}
+        {{#each allFlags}}
+        - [A] {{this}}<br>
+        {{/each}}
+    {{/if}}
 	Other Links:
 	<ul>
 		<li><a href="/count-servers">Count Servers</a></li>

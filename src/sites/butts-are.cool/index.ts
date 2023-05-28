@@ -16,24 +16,24 @@ export default class ButtsAreCool extends Website {
 			.addStatic("/data/screenshots")
 			.addSubdomain("balls",
 				express.Router()
-					.use(express.static("/data/public/custom/balls"))
-					.use(async(req,res) => res.status(200).render("custom/balls"))
+					.use(express.static("/app/public/custom/balls"))
+					.get("/", async(req,res) => res.status(200).render("custom/balls"))
 			)
 			.addSubdomain("knots",
 				express.Router()
-					.use(express.static("/data/public/custom/knots"))
-					.use(async(req,res) => res.status(200).render("custom/knots"))
+					.use(express.static("/app/public/custom/knots"))
+					.get("/", async(req,res) => res.status(200).render("custom/knots"))
 			)
 			.addSubdomain("penises",
 				express.Router()
-					.use(express.static("/data/public/custom/penises"))
-					.use(async(req,res) => res.status(200).render("custom/penises"))
+					.use(express.static("/app/public/custom/penises"))
+					.get("/", async(req,res) => res.status(200).render("custom/penises"))
 			)
 			.addSubdomain("sheaths",
 				express.Router()
-					.use(express.static("/data/public/custom/sheaths"))
-					.use(async(req,res) => res.status(200).render("custom/sheaths"))
+					.use(express.static("/app/public/custom/sheaths"))
+					.get("/", async(req,res) => res.status(200).render("custom/sheaths"))
 			)
-			.addHandler(express.Router().all("/", async (req, res) => res.status(200).render("index")));
+			.addHandler(express.Router().get("/", async (req, res) => res.status(200).render("index")));
 	}
 }

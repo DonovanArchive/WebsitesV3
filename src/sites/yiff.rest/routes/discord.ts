@@ -5,6 +5,7 @@ import type { ExchangeCodeResponse } from "oceanic.js";
 const client = new Client();
 const app = Router();
 
+// @TODO application flag - all in browser for security
 app
 	.get("/", async(req,res) => res.status(200).render("discord/index"))
 	.get("/count-servers", async(req,res) => {
@@ -116,9 +117,10 @@ app
 
 		const flags = BigInt(user.flags);
 		const pubFlags = BigInt(user.publicFlags);
-		for (let i = 1; i <= 60; i++) {
+		for (let i = 0;; i++) {
 			const flag = 2 ** i;
 			const bflag = BigInt(flag);
+			if (bflag > flags && bflag > pubFlags) break;
 			let isPublic = false;
 			if ((isPublic = (pubFlags & bflag) === bflag)) publicFlags.push(Names[flag as UserFlags] || `Unknown (${String(i)})`);
 			if (!isPublic && (flags & bflag) === bflag) allFlags.push(Names[flag as UserFlags] || `Unknown (${String(i)})`);

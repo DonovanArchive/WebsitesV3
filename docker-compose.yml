@@ -1,11 +1,11 @@
 version: "3"
 
-x-shared: &shared  
+x-shared: &shared
   image: ghcr.io/donovandmc/websites
   deploy:
-      resources:
-        limits:
-          memory: 256M
+    resources:
+      limits:
+        memory: 256M
   restart: always
   healthcheck:
     interval: 10s
@@ -18,7 +18,7 @@ x-shared: &shared
       condition: service_healthy
   networks:
     - default
-      
+
 services:
   butts-are.cool:
     <<: *shared
@@ -59,17 +59,17 @@ services:
     environment:
       SITE: furry.cool
     hostname: furry-cool.websites.containers.local
-  maid.gay:
+  maidboye.cafe:
     <<: *shared
     volumes:
       - ./src/config/ssl:/app/ssl
       - /etc/hostname:/data/hostname:ro
       - ./data/shared:/data
-      - ./src/sites/maid.gay/views:/app/views
-      - ./data/cache/maid.gay:/data/cache
-      - /var/www/sites/maid.gay:/app/public
+      - ./src/sites/maidboye.cafe/views:/app/views
+      - ./data/cache/maidboye.cafe:/data/cache
+      - /var/www/sites/maidboye.cafe:/app/public
     environment:
-      SITE: maid.gay
+      SITE: maidboye.cafe
     hostname: maid-gay.websites.containers.local
   yiff.media:
     <<: *shared
@@ -110,11 +110,11 @@ services:
       - /var/www/e621-thumb:/data/e621-thumb
       - /var/www/e621-thumbnails:/data/e621-thumbnails
     deploy:
-        resources:
-          limits:
-            memory: 1024M
-          reservations:
-            memory: 256M
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 256M
     environment:
       SITE: yiff.rest
       FFMPEG_PATH: /usr/bin/ffmpeg
@@ -152,9 +152,9 @@ services:
         condition: service_healthy
     hostname: imgen.websites.containers.local
     deploy:
-        resources:
-            limits:
-              memory: 256M
+      resources:
+        limits:
+          memory: 256M
   mariadb:
     image: mariadb
     container_name: mariadb.websites
@@ -162,11 +162,11 @@ services:
     volumes:
       - ./data/db:/var/lib/mysql
     deploy:
-        resources:
-            limits:
-              memory: 512M
-            reservations:
-              memory: 256M
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
     environment:
       MYSQL_ROOT_PASSWORD: "$MARIADB_ROOT_PASSWORD"
     restart: always
@@ -185,11 +185,11 @@ services:
     volumes:
       - ./data/rethink:/data
     deploy:
-        resources:
-            limits:
-              memory: 256M
-            reservations:
-              memory: 64M
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
     restart: always
     hostname: rethinkdb.websites.containers.local
     networks:
@@ -202,11 +202,11 @@ services:
     volumes:
       - ./data/redis:/data
     deploy:
-        resources:
-            limits:
-              memory: 128M
-            reservations:
-              memory: 64M
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
     healthcheck:
       test: redis-cli ping
       interval: 10s

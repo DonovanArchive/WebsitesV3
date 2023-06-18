@@ -5,7 +5,7 @@ import express from "express";
 // likely be undone in the future
 export default class MaidGay extends Website {
 	constructor() {
-		super("maid.gay", __dirname);
+		super("maidboye.cafe", __dirname);
 		this
 			.setSecure(true)
 			.setPort(443)
@@ -22,9 +22,9 @@ export default class MaidGay extends Website {
 				express.Router()
 					.get("/", async(req, res) => res.render("index"))
 					.get("/privacy", async(req, res) => res.render("privacy"))
-					.get("/support", async (req, res) => res.redirect("https://api.maid.gay/links/support?source=website"))
-					.get("/inv", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))
-					.get("/invite", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))
+					.get("/support", async (req, res) => res.redirect("https://api.maidboye.cafe/links/support?source=website"))
+					.get("/inv", async (req, res) => res.redirect("https://api.maidboye.cafe/links/invite?source=website"))
+					.get("/invite", async (req, res) => res.redirect("https://api.maidboye.cafe/links/invite?source=website"))
 			);
 	}
 }

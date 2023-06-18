@@ -18,9 +18,9 @@ export default class YiffMedia extends Website {
 			.addHandler(
 				express.Router()
 					.get("/", async(req, res) => res.render("index"))
-					.get("/support", async (req, res) => res.redirect("https://api.maid.gay/links/support?source=website"))
-					.get("/inv", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))
-					.get("/invite", async (req, res) => res.redirect("https://api.maid.gay/links/invite?source=website"))
+					.get("/support", async (req, res) => res.redirect("https://api.maidboye.cafe/links/support?source=website"))
+					.get("/inv", async (req, res) => res.redirect("https://api.maidboye.cafe/links/invite?source=website"))
+					.get("/invite", async (req, res) => res.redirect("https://api.maidboye.cafe/links/invite?source=website"))
 					.get("/V2*", async (req, res) => res.redirect(`https://v2.yiff.media${req.url.slice(3)}`))
 			);
 	}

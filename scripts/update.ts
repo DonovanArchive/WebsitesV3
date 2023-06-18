@@ -22,6 +22,7 @@ for (const name of scaled) {
 }
 
 console.log("Writing New Websites Hosts");
+
 run(Object.entries(newIPs).map(([name, ip]) => [ip, `${name.replace(/\./g, "-")}.websites.local`]));
 execSync("sudo nginx -s reload", { stdio: "inherit" });
 console.log("Nginx Successfully Reloaded");
@@ -34,7 +35,5 @@ console.log("Old Containers Removed");
 
 console.log("Scaling Down");
 execSync(`docker compose up -d --no-deps ${scale1} --no-recreate ${list}`, { stdio: "inherit" });
-execSync("sudo nodenv exec docker-hosts --config /root/.docker-hosts.json", { stdio: "inherit" });
-console.log("Updating Generic Hosts");
 
 console.log("load shifted");

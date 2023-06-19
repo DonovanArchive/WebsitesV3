@@ -16,6 +16,8 @@ x-shared: &shared
       condition: service_healthy
     redis:
       condition: service_healthy
+  networks:
+    - default
 
 services:
   butts-are.cool:
@@ -31,9 +33,9 @@ services:
     environment:
       SITE: butts-are.cool
     hostname: butts-are-cool.websites.containers.local
-    networks:
-      default:
-        ipv4_address: 172.19.2.2
+    labels:
+      - "hostname=butts-are-cool.websites.containers.local"
+
   e621.ws:
     <<: *shared
     volumes:
@@ -47,9 +49,9 @@ services:
     environment:
       SITE: e621.ws
     hostname: e621-ws.websites.containers.local
-    networks:
-      default:
-        ipv4_address: 172.19.2.3
+    labels:
+      - "hostname=e621-ws.websites.containers.local"
+
   furry.cool:
     <<: *shared
     volumes:
@@ -63,9 +65,9 @@ services:
     environment:
       SITE: furry.cool
     hostname: furry-cool.websites.containers.local
-    networks:
-      default:
-        ipv4_address: 172.19.2.4
+    labels:
+      - "hostname=furry-cool.websites.containers.local"
+
   maidboye.cafe:
     <<: *shared
     volumes:
@@ -77,10 +79,10 @@ services:
       - /var/www/sites/maidboye.cafe:/app/public
     environment:
       SITE: maidboye.cafe
-    hostname: maid-gay.websites.containers.local
-    networks:
-      default:
-        ipv4_address: 172.19.2.5
+    hostname: maidboye-cafe.websites.containers.local
+    labels:
+      - "hostname=maidboye-cafe.websites.containers.local"
+
   yiff.media:
     <<: *shared
     volumes:
@@ -94,9 +96,9 @@ services:
     environment:
       SITE: yiff.media
     hostname: yiff-media.websites.containers.local
-    networks:
-      default:
-        ipv4_address: 172.19.2.6
+    labels:
+      - "hostname=yiff-media.websites.containers.local"
+
   oceanic.ws:
     <<: *shared
     volumes:
@@ -110,9 +112,9 @@ services:
     environment:
       SITE: oceanic.ws
     hostname: oceanic-ws.websites.containers.local
-    networks:
-      default:
-        ipv4_address: 172.19.2.7
+    labels:
+      - "hostname=oceanic-ws.websites.containers.local"
+
   yiff.rest:
     <<: *shared
     volumes:
@@ -131,15 +133,15 @@ services:
           memory: 1024M
         reservations:
           memory: 256M
-    networks:
-      default:
-        ipv4_address: 172.19.2.8
     environment:
       SITE: yiff.rest
       FFMPEG_PATH: /usr/bin/ffmpeg
       FFPROBE_PATH: /usr/bin/ffprobe
       NODE_TLS_REJECT_UNAUTHORIZED: 0
     hostname: yiff-rest.websites.containers.local
+    labels:
+      - "hostname=yiff-rest.websites.containers.local"
+
   yiff.rocks:
     <<: *shared
     volumes:
@@ -153,9 +155,9 @@ services:
     environment:
       SITE: yiff.rocks
     hostname: yiff-rocks.websites.containers.local
-    networks:
-      default:
-        ipv4_address: 172.19.2.9
+    labels:
+      - "hostname=yiff-rocks.websites.containers.local"
+
   imgen:
     build:
       context: src/imgen
@@ -171,18 +173,16 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
-      yiff.rest:
-        condition: service_healthy
-    hostname: imgen.websites.containers.local
     deploy:
       resources:
         limits:
           memory: 256M
-    networks:
-      default:
-        ipv4_address: 172.19.2.10
+    hostname: imgen.websites.containers.local
+    labels:
+      - "hostname=imgen.websites.containers.local"
+
   mariadb:
-    image: mariadb
+    image: mariadb:10.11.4
     container_name: mariadb.websites
     command: mariadbd --max_connections=500
     volumes:
@@ -199,8 +199,10 @@ services:
     healthcheck:
       interval: 5s
       timeout: 2s
-      test: mysqladmin --user=root --password=$$MYSQL_ROOT_PASSWORD ping
+      test: mariadb-admin --user=root --password=$$MYSQL_ROOT_PASSWORD ping
     hostname: mariadb.websites.containers.local
+    labels:
+      - "hostname=mariadb.websites.containers.local"
     networks:
       default:
         ipv4_address: 172.19.2.251
@@ -218,6 +220,8 @@ services:
           memory: 64M
     restart: always
     hostname: rethinkdb.websites.containers.local
+    labels:
+      - "hostname=rethinkdb.websites.containers.local"
     networks:
       default:
         ipv4_address: 172.19.2.252
@@ -239,6 +243,8 @@ services:
       timeout: 5s
     restart: always
     hostname: redis.websites.containers.local
+    labels:
+      - "hostname=redis.websites.containers.local"
     networks:
       default:
         ipv4_address: 172.19.2.254

@@ -82,10 +82,10 @@ do
     hostname=$(docker inspect $id --format "{{.Config.Labels.hostname}}")
     ip=$(docker inspect $id --format "{{.NetworkSettings.Networks.websites.IPAddress}}")
     declare -A statuses=(
-        ["host"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$hostname))
-        ["ip"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$ip))
-        ["local"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://localhost))
-        ["external"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$i))
+        ["host"]=$(status_code $(curl -m 5 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$hostname))
+        ["ip"]=$(status_code $(curl -m 5 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$ip))
+        ["local"]=$(status_code $(curl -m 5 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://localhost))
+        ["external"]=$(status_code $(curl -m 5 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$i))
     )
     info+=$'\n'"host status"$'\n'"$hostname ${statuses["host"]}"$'\n'"$ip ${statuses["ip"]}"$'\n'"local ${statuses["local"]}"$'\n'"external ${statuses["external"]}"$'\n'
 
@@ -127,10 +127,10 @@ do
     hostname=$(docker inspect $id --format "{{.Config.Labels.hostname}}")
     ip=$(docker inspect $id --format "{{.NetworkSettings.Networks.websites.IPAddress}}")
     declare -A statuses=(
-        ["host"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$hostname))
-        ["ip"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$ip))
-        ["local"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://localhost))
-        ["external"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$i))
+        ["host"]=$(status_code $(curl -m 5 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$hostname))
+        ["ip"]=$(status_code $(curl -m 5 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$ip))
+        ["local"]=$(status_code $(curl-m 5 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://localhost))
+        ["external"]=$(status_code $(curl -m 5 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$i))
     )
     info+=$'\n'"host status"$'\n'"$hostname ${statuses["host"]}"$'\n'"$ip ${statuses["ip"]}"$'\n'"local ${statuses["local"]}"$'\n'"external ${statuses["external"]}"$'\n'
 

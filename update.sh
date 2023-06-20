@@ -41,6 +41,7 @@ done
 
 echo Scaling Up
 docker compose up -d --no-deps $scale2 --no-recreate "${containers[@]}"
+sleep 2
 
 RESET='\033[0m'
 RED='\033[0;31m'
@@ -67,6 +68,7 @@ status_code () {
       printf "${GREY}$1${RESET}"
     fi
 }
+
 sudo nginx -t
 sudo nginx -s reload
 echo Nginx Reloaded
@@ -81,8 +83,9 @@ do
         ["host"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$hostname))
         ["ip"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$ip))
         ["local"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://localhost))
+        ["external"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$i))
     )
-    info+=$'\n'"host status"$'\n'"$hostname ${statuses["host"]}"$'\n'"$ip ${statuses["ip"]}"$'\n'"localhost ${statuses["local"]}"$'\n'
+    info+=$'\n'"host status"$'\n'"$hostname ${statuses["host"]}"$'\n'"$ip ${statuses["ip"]}"$'\n'"local ${statuses["local"]}"$'\n'"external ${statuses["external"]}"$'\n'
 
     if [ ${statuses["host"]} != ${statuses["ip"]} ]; then
       warn+="${RED}Host and IP response do not match ($i) ${RESET}\n"

@@ -72,6 +72,8 @@ status_code () {
 sudo nginx -t
 sudo nginx -s reload
 echo Nginx Reloaded
+
+echo Performing Reachability Test
 info=""
 warn=""
 for i in "${sites[@]}"
@@ -101,7 +103,7 @@ do
 done
 echo "$info" | column -t -L
 printf "$warn\n"
-echo Reachability Test Done
+echo Reachability Test Finished
 
 for i in "${ids[@]}"
 do
@@ -115,4 +117,37 @@ echo Old Containers Removed
 
 echo Scaling Down
 docker compose up -d --no-deps $scale1 --no-recreate "${containers[@]}"
+
+echo Performing Second Reachability Test
+info=""
+warn=""
+for i in "${sites[@]}"
+do
+    id=$(docker ps -f name=$i --format "{{.ID}}" | head -n 1)
+    hostname=$(docker inspect $id --format "{{.Config.Labels.hostname}}")
+    ip=$(docker inspect $id --format "{{.NetworkSettings.Networks.websites.IPAddress}}")
+    declare -A statuses=(
+        ["host"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$hostname))
+        ["ip"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$ip))
+        ["local"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://localhost))
+        ["external"]=$(status_code $(curl -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$i))
+    )
+    info+=$'\n'"host status"$'\n'"$hostname ${statuses["host"]}"$'\n'"$ip ${statuses["ip"]}"$'\n'"local ${statuses["local"]}"$'\n'"external ${statuses["external"]}"$'\n'
+
+    if [ ${statuses["host"]} != ${statuses["ip"]} ]; then
+      warn+="${RED}Host and IP response do not match ($i) ${RESET}\n"
+    fi
+
+    if [ ${statuses["host"]} != ${statuses["local"]} ]; then
+      warn+="${RED}Host and Local response do not match ($i) ${RESET}\n"
+    fi
+
+    if [ ${statuses["ip"]} != ${statuses["local"]} ]; then
+      warn+="${RED}IP and Local response do not match ($i) ${RESET}\n"
+    fi
+done
+echo "$info" | column -t -L
+printf "$warn\n"
+echo Second Reachability Test Finished
+
 echo Update Complete

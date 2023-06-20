@@ -11,7 +11,7 @@
     "up:dev": "npm run imgen-config && sudo docker compose -f docker-compose.dev.yml up --force-recreate --build",
     "dev": "npm run down && npm run up:dev",
     "update": "git pull && docker compose pull && git submodule update --init --recursive --remote && ./update.sh",
-    "start": "git pull && docker compose pull && npm run down && git submodule update --init --recursive --remote && npm run up:d",
+    "start": "git pull && docker compose pull && npm run down && git submodule update --init --recursive --remote && npm run up:d && nginx -t && nginx -s reload",
     "imgen-config": "cp src/config/json/imgen.json src/imgen/config.json",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix"

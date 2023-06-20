@@ -12,6 +12,7 @@ for (const name of scaled) {
 console.log("Scaling Up");
 execSync(`docker compose up -d --no-deps ${scale2} --no-recreate ${list}`, { stdio: "inherit" });
 
+execSync("sudo nginx -t", { stdio: "inherit" });
 execSync("sudo nginx -s reload", { stdio: "inherit" });
 console.log("Nginx Successfully Reloaded");
 

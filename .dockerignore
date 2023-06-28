@@ -6,3 +6,4 @@ src/imgen
 src/sites/*/views
 src/sites/*/LICENSE
 src/sites/*/README
+.npmrc

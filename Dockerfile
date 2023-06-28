@@ -8,5 +8,6 @@ RUN npm i -g pnpm
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 COPY . .
-RUN npm run build
+RUN pnpm run build
+RUN pnpm prune --prod
 CMD ["node", "/app/build/src/index.js"]

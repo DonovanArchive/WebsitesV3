@@ -1,13 +1,13 @@
-FROM node:19-alpine
+FROM node:20-alpine
 
 ENV TZ=America/Chicago
 WORKDIR /app
 RUN apk add --no-cache lsof ffmpeg git gifsicle
 RUN echo -e "update-notifier=false\nloglevel=error\nnode-linker=hoisted" > ~/.npmrc
-RUN npm i -g pnpm
+RUN npm install --no-save pnpm
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install
+RUN npx pnpm install  --frozen-lockfile
 COPY . .
-RUN pnpm run build
-RUN pnpm prune --prod
-CMD ["node", "/app/build/src/index.js"]
+RUN npx pnpm build
+RUN npx pnpm prune --prod
+CMD npx pnpm start

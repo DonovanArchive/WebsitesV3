@@ -1,9 +1,11 @@
-.git
-node_modules
-data
-test
-src/imgen
-src/sites/*/views
+.git/
+node_modules/
+data/
+test/
+dist/
+src/imgen/
+src/sites/*/views/
 src/sites/*/LICENSE
 src/sites/*/README
 .npmrc
+.env

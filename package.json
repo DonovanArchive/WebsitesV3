@@ -4,14 +4,15 @@
   "description": "The code that powers all of my websites.",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf build && tsc",
+    "start": "node dist/src/index.js",
+    "build": "rm -rf dist && tsc",
     "up:d": "npm run imgen-config && sudo docker compose pull && sudo docker compose up --force-recreate -d",
     "up": "npm run imgen-config && sudo docker compose pull && sudo docker compose up --force-recreate",
     "down": "sudo docker compose down",
     "up:dev": "npm run imgen-config && sudo docker compose -f docker-compose.dev.yml up --force-recreate --build",
     "dev": "npm run down && npm run up:dev",
     "update": "git pull && docker compose pull && git submodule update --init --recursive --remote && ./update.sh",
-    "start": "git pull && docker compose pull && npm run down && git submodule update --init --recursive --remote && npm run up:d && sudo nginx -t && sudo nginx -s reload",
+    "create": "git pull && docker compose pull && npm run down && git submodule update --init --recursive --remote && npm run up:d && sudo nginx -t && sudo nginx -s reload",
     "imgen-config": "cp src/config/json/imgen.json src/imgen/config.json",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix"

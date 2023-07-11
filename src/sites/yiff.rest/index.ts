@@ -119,7 +119,7 @@ export default class YiffRest extends Website {
 			.addHandler(
 				express.Router()
 					.get("/", async(req, res) => res.render("index"))
-					.get("/support", async (req, res) => res.redirect("https://discord.gg/xDrFswTW4h"))
+					.get("/support", async (req, res) => res.redirect("https://discord.gg/RFjb5HNCBg"))
 					.use("/V1", async (req, res) => res.status(410).json({
 						success: false,
 						error:   "This api version is no longer active, please use version 2."

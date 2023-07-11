@@ -157,6 +157,9 @@ dependencies:
     version: 2.2.0
 
 devDependencies:
+  '@octokit/webhooks-types':
+    specifier: ^7.1.0
+    version: 7.1.0
   '@types/bytes':
     specifier: ^3.1.1
     version: 3.1.1
@@ -545,6 +548,10 @@ packages:
   /@octokit/webhooks-types@6.7.0:
     resolution: {integrity: sha512-bykm7UkSnxmb2uhSfcLM1Pity/LQ6ZBSdzy9HU0vXjR+2g+tzlmRhXb7Go8oj0TlgO+vDrTivGXju6zkzOGKjA==}
     dev: false
+
+  /@octokit/webhooks-types@7.1.0:
+    resolution: {integrity: sha512-y92CpG4kFFtBBjni8LHoV12IegJ+KFxLgKRengrVjKmGE5XMeCuGvlfRe75lTRrgXaG6XIWJlFpIDTlkoJsU8w==}
+    dev: true
 
   /@octokit/webhooks@10.4.0:
     resolution: {integrity: sha512-BZYBRB8zUm8QJOkpmmg2VWzHq21qVW6vzmZw7gXhoPp/fia1N+HKF/caWyCcKpSE4DYBnPukJ9HtpMcC2GZiRw==}

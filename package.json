@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/DonovanDMC/Websites#readme",
   "devDependencies": {
+    "@octokit/webhooks-types": "^7.1.0",
     "@types/bytes": "^3.1.1",
     "@types/cheerio": "^0.22.31",
     "@types/chunk": "^0.0.0",

@@ -111,6 +111,10 @@ services:
       - /var/www/oceanic-docs:/data/docs
     environment:
       SITE: oceanic.ws
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
     hostname: oceanic-ws.websites.containers.local
     labels:
       - "hostname=oceanic-ws.websites.containers.local"

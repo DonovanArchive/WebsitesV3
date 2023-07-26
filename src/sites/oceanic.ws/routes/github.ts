@@ -65,8 +65,8 @@ async function devPush(data: PushEvent) {
 		.addRemote("origin", "https://github.com/OceanicJS/Oceanic")
 		.fetch("origin", `${branch}:${branch}`)
 		.checkout(branch);
-	execSync("npm i --frozen-lockfile --ignore-scripts", { cwd: tmp, stdio: "inherit" });
-	execSync("npm run test:docs", { cwd: tmp, stdio: "inherit" });
+	execSync("pnpm i --frozen-lockfile --ignore-scripts", { cwd: tmp, stdio: "inherit" });
+	execSync("pnpm run test:docs", { cwd: tmp, stdio: "inherit" });
 	await cp(`${tmp}/docs`, `${baseDir}/${branch}`, { recursive: true });
 	await rm(tmp, { force: true, recursive: true });
 }

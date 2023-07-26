@@ -40,6 +40,7 @@ async function tagPush(data: PushEvent) {
 		.addRemote("origin", "https://github.com/OceanicJS/Oceanic")
 		.fetch("origin", `${tag}:${tag}`)
 		.checkout(tag);
+	execSync("pnpm i --frozen-lockfile --ignore-scripts", { cwd: tmp, stdio: "inherit" });
 	execSync("npm run test:docs", { cwd: tmp, stdio: "inherit" });
 	await cp(`${tmp}/docs`, `${baseDir}/${tag}`, { recursive: true });
 	await rm(tmp, { force: true, recursive: true });

@@ -1,5 +1,5 @@
 import CleanupActions from "../../../util/CleanupActions";
-import { cacheDir, dev, discord } from "@config";
+import { READONLY, cacheDir, dev, discord } from "@config";
 import { APIKey, DEFAULT_FLAGS } from "@models";
 import Webhooks from "@util/Webhooks";
 import { ApplicationCommandBuilder, ButtonColors, ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
@@ -71,6 +71,12 @@ client.on("interactionCreate", async(interaction) => {
 					const [subcommand] = interaction.data.options.getSubCommand<["create" | "delete" | "list"]>(true);
 					switch (subcommand) {
 						case "create": {
+							if (READONLY) {
+								return interaction.createMessage({
+									flags:   MessageFlags.EPHEMERAL,
+									content: "We're currently in read-only mode. Try again later."
+								});
+							}
 							const keyCount = await APIKey.getOwned(interaction.user.id);
 							if (keyCount.length >= 3) return interaction.createMessage({
 								flags:   MessageFlags.EPHEMERAL,
@@ -102,6 +108,13 @@ client.on("interactionCreate", async(interaction) => {
 						}
 
 						case "delete": {
+							if (READONLY) {
+								return interaction.createMessage({
+									flags:   MessageFlags.EPHEMERAL,
+									content: "We're currently in read-only mode. Try again later."
+								});
+							}
+
 							const key = (await APIKey.getOwned(interaction.user.id)).find(k => createHash("md5").update(k.id).digest("hex") === interaction.data.options.getString("key", true));
 							if (!key || key.owner !== interaction.user.id) return interaction.createMessage({
 								content: "Invalid key specified.",
@@ -169,6 +182,12 @@ client.on("interactionCreate", async(interaction) => {
 			});
 			switch (interaction.data.customID.split(".")[0]) {
 				case "apikey-delete-yes": {
+					if (READONLY) {
+						return interaction.createMessage({
+							flags:   MessageFlags.EPHEMERAL,
+							content: "We're currently in read-only mode. Try again later."
+						});
+					}
 					const key = (await APIKey.getOwned(interaction.user.id)).find(k => createHash("md5").update(k.id).digest("hex") === interaction.data.customID.split(".")[1]);
 					if (!key) return interaction.createMessage({
 						content: "Invalid key specified.",
@@ -237,6 +256,12 @@ client.on("interactionCreate", async(interaction) => {
 		case InteractionTypes.MODAL_SUBMIT: {
 			switch (interaction.data.customID) {
 				case "apikey-create": {
+					if (READONLY) {
+						return interaction.createMessage({
+							flags:   MessageFlags.EPHEMERAL,
+							content: "We're currently in read-only mode. Try again later."
+						});
+					}
 					const name = interaction.data.components[0].components[0].value!;
 					const contact = interaction.data.components[1].components[0].value!;
 					if (name.length < 3 || name.length > 50) return interaction.createMessage({

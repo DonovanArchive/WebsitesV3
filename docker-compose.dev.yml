@@ -2,6 +2,7 @@ version: "3"
 
 x-shared: &shared
   build: .
+  init: true
   deploy:
     resources:
       limits:
@@ -32,6 +33,7 @@ services:
       - /var/www/screenshots:/data/screenshots
     environment:
       SITE: butts-are.cool
+      READONLY: "${READONLY:-0}"
     hostname: butts-are-cool.websites.containers.local
     labels:
       - "hostname=butts-are-cool.websites.containers.local"
@@ -48,6 +50,7 @@ services:
       - /var/www/e621-docs:/data/docs
     environment:
       SITE: e621.ws
+      READONLY: "${READONLY:-0}"
     hostname: e621-ws.websites.containers.local
     labels:
       - "hostname=e621-ws.websites.containers.local"
@@ -64,6 +67,7 @@ services:
       - /var/www/screenshots:/data/screenshots
     environment:
       SITE: furry.cool
+      READONLY: "${READONLY:-0}"
     hostname: furry-cool.websites.containers.local
     labels:
       - "hostname=furry-cool.websites.containers.local"
@@ -79,6 +83,7 @@ services:
       - /var/www/sites/maidboye.cafe:/app/public
     environment:
       SITE: maidboye.cafe
+      READONLY: "${READONLY:-0}"
     hostname: maidboye-cafe.websites.containers.local
     labels:
       - "hostname=maidboye-cafe.websites.containers.local"
@@ -95,6 +100,7 @@ services:
       - /var/www/e621-thumbnails:/data/e621-thumbnails
     environment:
       SITE: yiff.media
+      READONLY: "${READONLY:-0}"
     hostname: yiff-media.websites.containers.local
     labels:
       - "hostname=yiff-media.websites.containers.local"
@@ -111,6 +117,11 @@ services:
       - /var/www/oceanic-docs:/data/docs
     environment:
       SITE: oceanic.ws
+      READONLY: "${READONLY:-0}"
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
     hostname: oceanic-ws.websites.containers.local
     labels:
       - "hostname=oceanic-ws.websites.containers.local"
@@ -138,6 +149,7 @@ services:
       FFMPEG_PATH: /usr/bin/ffmpeg
       FFPROBE_PATH: /usr/bin/ffprobe
       NODE_TLS_REJECT_UNAUTHORIZED: 0
+      READONLY: "${READONLY:-0}"
     hostname: yiff-rest.websites.containers.local
     labels:
       - "hostname=yiff-rest.websites.containers.local"
@@ -154,13 +166,14 @@ services:
       - /var/www/sites/yiff.media/V2:/app/public/V2
     environment:
       SITE: yiff.rocks
+      READONLY: "${READONLY:-0}"
     hostname: yiff-rocks.websites.containers.local
     labels:
       - "hostname=yiff-rocks.websites.containers.local"
 
   imgen:
-    build:
-      context: src/imgen
+    build: src/imgen
+    init: true
     volumes:
       - ./src/imgen:/app
     restart: always
@@ -177,6 +190,8 @@ services:
       resources:
         limits:
           memory: 256M
+    environment:
+      READONLY: "${READONLY:-0}"
     hostname: imgen.websites.containers.local
     labels:
       - "hostname=imgen.websites.containers.local"

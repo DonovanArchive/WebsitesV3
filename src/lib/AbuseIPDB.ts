@@ -1,5 +1,6 @@
-import { services } from "../config";
+import { READONLY, services } from "../config";
 import db from "../db";
+import Logger from "../util/Logger";
 import { fetch } from "undici";
 
 export interface IPCheckResult {
@@ -39,6 +40,10 @@ export default class AbuseIPDB {
 	}
 
 	static async report(ip: string, categories: Array<number>, comment: string) {
+		if (READONLY) {
+			Logger.getLogger("AbuseIPDB").warn(`Not reporting ${ip} due to being in read-only mode.`);
+			return;
+		}
 		await fetch("https://api.abuseipdb.com/api/v2/report", {
 			method:  "POST",
 			headers: {

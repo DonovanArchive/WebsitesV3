@@ -1,4 +1,6 @@
 import { getIP } from "../../util/general";
+import { READONLY } from "../../config";
+import Logger from "../../util/Logger";
 import db from "@db";
 import type { DataTypes } from "@uwu-codes/types";
 import type { Request } from "express";
@@ -36,6 +38,10 @@ export default class APIUsage {
 	}
 
 	static async track(req: Request, service: string) {
+		if (READONLY) {
+			Logger.getLogger("APIUsage").warn(new Error(`Attempted to track usage for ${service} while read-only is enabled.`));
+			return;
+		}
 		const ip = getIP(req);
 		const auth = req.query._auth as string || req.headers.authorization || null;
 		const res = await db.query<UpsertResult>(`INSERT INTO ${APIUsage.DB}.${APIUsage.TABLE} (\`key\`, ip, user_agent, method, path, referrer, query, service) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, [

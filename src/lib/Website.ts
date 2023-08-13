@@ -6,7 +6,7 @@ import Usage from "../db/Models/Usage";
 import Logger from "../util/Logger";
 import BotTraps from "../config/bot-traps";
 import { getIP, isWhitelisted } from "../util/general";
-import { cookieSecret } from "@config";
+import { READONLY, cookieSecret } from "@config";
 import type { Express } from "express";
 import express from "express";
 import session from "express-session";
@@ -134,9 +134,10 @@ export default class Website {
 			}))
 			.use(async(req, res, next) => {
 				if (!isWhitelisted(req)) {
+					const fedUAs = ["Friendica", "Mastodon"];
 					const ua = req.headers["user-agent"];
-					// this application incessantly probes my servers, setting off ratelimits everywhere
-					if (ua && (ua.includes("Friendica"))) {
+					// these incessantly probe my servers, setting off ratelimits everywhere
+					if (ua && fedUAs.some(fedUA => ua.includes(fedUA))) {
 						return res.status(403).end();
 					}
 					const ip = getIP(req);
@@ -148,24 +149,23 @@ export default class Website {
 
 					if (check) {
 						if (req.originalUrl.includes("robots.txt")) return res.status(200).end("User-agent: *\nDisallow: /");
-						Logger.getLogger("abuseipdb").info(`Blocked ${ip} from accessing ${req.protocol}://${req.hostname}${req.originalUrl} due to >50 abuse score.`);
-						return res.status(403).json({
-							success: false,
-							error:   "You have been blocked from accessing this website."
-						});
+						Logger.getLogger("AbuseIPDB").info(`Blocked ${ip} from accessing ${req.protocol}://${req.hostname}${req.originalUrl} due to >50 abuse score.`);
+						return res.status(403).end();
 					}
 				} else {
-					Logger.getLogger("abuseipdb").info(`Skipped checks for ${getIP(req)} (whitelisted)`);
-				}
-				try {
-					void Usage.track(req);
-				} catch (err) {
-					console.error("Usage Tracking Failed", err);
+					Logger.getLogger("AbuseIPDB").info(`Skipped checks for ${getIP(req)} (whitelisted)`);
 				}
 
-				if (req.headers["user-agent"]?.includes("Mastodon")) {
-					return res.status(403).end();
+				if (READONLY) {
+					Logger.getLogger("Usage").info(`Not tracking usage for ${getIP(req)} (${req.protocol}://${req.hostname}${req.originalUrl}) due to being in readonly mode.`);
+				} else {
+					try {
+						void Usage.track(req);
+					} catch (err) {
+						console.error("Usage Tracking Failed", err);
+					}
 				}
+
 				return next();
 			})
 			.use(express.static("/app/public"))

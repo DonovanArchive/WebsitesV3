@@ -1,7 +1,7 @@
 import { checkForBlock, userAgentCheck, validateAPIKey, handleRateLimit } from "../../../util/checks";
 import { YiffyErrorCodes } from "../../../util/Constants";
 import { getIP } from "../../../util/general";
-import { yiffRocksOverride } from "@config";
+import { READONLY, yiffRocksOverride } from "@config";
 import { APIKeyFlags, APIUsage, ShortURL } from "@db/Models";
 import Webhooks from "@util/Webhooks";
 import type { Request } from "express";
@@ -48,12 +48,21 @@ app
 		userAgentCheck,
 		handleRateLimit,
 		async(req, res, next) => {
-			void APIUsage.track(req, "shortener");
+			if (!READONLY) {
+				void APIUsage.track(req, "shortener");
+			}
 			if (req.method === "GET" && !req.path.endsWith(".json")) return next();
 			else return validateAPIKey(true, APIKeyFlags.SHORTENER)(req, res, next);
 		}
 	)
 	.post("/create",  async (req: Request<never, unknown, Record<string, string>>, res) => {
+		if (READONLY) {
+			return res.status(503).json({
+				success: false,
+				error:   "Service is currently in read-only mode.",
+				code:    YiffyErrorCodes.READONLY
+			});
+		}
 		const code = req.body.code || randomBytes(8).toString("hex");
 
 		if (code.length > 50) return res.status(422).json({
@@ -179,6 +188,14 @@ app
 		}
 	})
 	.delete("/:code", async (req, res) => {
+		if (READONLY) {
+			return res.status(503).json({
+				success: false,
+				error:   "Service is currently in read-only mode.",
+				code:    YiffyErrorCodes.READONLY
+			});
+		}
+
 		const managementCode = (req.body as Partial<Record<string, string>>).managementCode;
 		if (!managementCode) return res.status(401).json({
 			success: false,
@@ -227,6 +244,14 @@ app
 		return res.status(204).end();
 	})
 	.patch("/:code", async (req: Request<Record<string, string>, unknown, Record<string, string>>, res) => {
+		if (READONLY) {
+			return res.status(503).json({
+				success: false,
+				error:   "Service is currently in read-only mode.",
+				code:    YiffyErrorCodes.READONLY
+			});
+		}
+
 		const managementCode = (req.body as Partial<Record<string, string>>).managementCode;
 		if (!managementCode) return res.status(401).json({
 			success: false,

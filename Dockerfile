@@ -10,4 +10,4 @@ RUN npx pnpm install  --frozen-lockfile
 COPY . .
 RUN npx pnpm build
 RUN npx pnpm prune --prod
-CMD npx pnpm start
+CMD ["node", "dist/src/index.js"]

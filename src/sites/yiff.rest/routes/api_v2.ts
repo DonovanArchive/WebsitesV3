@@ -12,7 +12,7 @@ import {
 } from "../../../util/checks";
 import db from "../../../db";
 import Logger from "../../../util/Logger";
-import { sfwOnlyIP } from "../../../config";
+import { READONLY, sfwOnlyIP } from "../../../config";
 import { APIImage, APIUsage } from "@models";
 import APIKey, { APIKeyFlags } from "@models/APIKey";
 import Webhooks from "@util/Webhooks";
@@ -76,7 +76,9 @@ app
 		validateAPIKey(false, APIKeyFlags.IMAGES),
 		handleRateLimit,
 		async(req, res, next) => {
-			void APIUsage.track(req, "images");
+			if (!READONLY) {
+				void APIUsage.track(req, "images");
+			}
 			return next();
 		}
 	)
@@ -180,28 +182,27 @@ app
 
 
 		const auth = req.query._auth as string || req.headers.authorization;
-		await db.r.incr("yiffy2:images:bulk");
-		const m = db.r.multi()
-			.incr(`yiffy2:stats:images:ip:${req.ip}`)
-			.incr(`yiffy2:stats:images:ip:${req.ip}:bulk`)
-			.incr("yiffy2:stats:images:total")
-			.incr("yiffy2:stats:images:total:bulk");
-		if (auth) {
-			m.incr(`yiffy2:stats:images:key:${auth}`)
-				.incr(`yiffy2:stats:images:key:${auth}:bulk`);
-		}
-		let hasNSFW = false;
-		for (const [cat, amount] of Object.entries(req.body as object)) {
-			if (["furry.bulge", "furry.butts"].includes(cat) || cat.startsWith("furry.yiff")) {
-				hasNSFW = true;
-			}
-			m.incrby(`yiffy2:stats:images:ip:${req.ip}:${cat}`, Number(amount))
-				.incrby(`yiffy2:stats:images:total:${cat}`, Number(amount));
+		const hasNSFW = Object.keys(req.body as object).some(k => !sfwCategories.includes(k));
+		if (!READONLY) {
+			await db.r.incr("yiffy2:images:bulk");
+			const m = db.r.multi()
+				.incr(`yiffy2:stats:images:ip:${req.ip}`)
+				.incr(`yiffy2:stats:images:ip:${req.ip}:bulk`)
+				.incr("yiffy2:stats:images:total")
+				.incr("yiffy2:stats:images:total:bulk");
 			if (auth) {
-				m.incrby(`yiffy2:stats:images:key:${auth}:${cat}`, Number(amount));
+				m.incr(`yiffy2:stats:images:key:${auth}`)
+					.incr(`yiffy2:stats:images:key:${auth}:bulk`);
 			}
+			for (const [cat, amount] of Object.entries(req.body as object)) {
+				m.incrby(`yiffy2:stats:images:ip:${req.ip}:${cat}`, Number(amount))
+					.incrby(`yiffy2:stats:images:total:${cat}`, Number(amount));
+				if (auth) {
+					m.incrby(`yiffy2:stats:images:key:${auth}:${cat}`, Number(amount));
+				}
+			}
+			await m.exec();
 		}
-		await m.exec();
 
 		try {
 			void Webhooks.get("yiffy").execute({
@@ -292,17 +293,19 @@ app
 		});
 
 		try {
-			await db.r.incr(`yiffy2:images:category:${category}`);
-			const m = db.r.multi()
-				.incr(`yiffy2:stats:images:ip:${req.ip}`)
-				.incr(`yiffy2:stats:images:ip:${req.ip}:${category}`)
-				.incr("yiffy2:stats:images:total")
-				.incr(`yiffy2:stats:images:total:${category}`);
-			if (auth) {
-				m.incr(`yiffy2:stats:images:key:${auth}`)
-					.incr(`yiffy2:stats:images:key:${auth}:${category}`);
+			if (!READONLY) {
+				await db.r.incr(`yiffy2:images:category:${category}`);
+				const m = db.r.multi()
+					.incr(`yiffy2:stats:images:ip:${req.ip}`)
+					.incr(`yiffy2:stats:images:ip:${req.ip}:${category}`)
+					.incr("yiffy2:stats:images:total")
+					.incr(`yiffy2:stats:images:total:${category}`);
+				if (auth) {
+					m.incr(`yiffy2:stats:images:key:${auth}`)
+						.incr(`yiffy2:stats:images:key:${auth}:${category}`);
+				}
+				await m.exec();
 			}
-			await m.exec();
 			const notes: Array<{ id: number; content: string | null; }> = [];
 			if ((req.query.notes ?? "").toString().toLowerCase() !== "disabled") {
 				if (req.headers.host === "api.furry.bot") notes.push(yiffyNotes[1]);

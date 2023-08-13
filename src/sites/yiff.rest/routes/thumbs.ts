@@ -2,25 +2,14 @@ import E621Thumbnails, { filePath, url } from "../../../lib/E621Thumbnails";
 import { APIKeyFlags, APIUsage } from "../../../db/Models";
 import { YiffyErrorCodes } from "../../../util/Constants";
 import { checkForBlock, userAgentCheck, validateAPIKey, handleRateLimit } from "../../../util/checks";
-import { services } from "../../../config";
+import { READONLY } from "../../../config";
+import StorageProvider from "../util/StorageProvider";
 import { Router } from "express";
 import E621 from "e621";
-import AWS from "aws-sdk";
 
 const app = Router();
 
 const e6 = new E621({ userAgent: "E621Thumbnailer/1.0.0 (donovan_dmc)" });
-// const exists = (path: PathLike) => access(path).then(() => true, () => false);
-const aws = new AWS.S3({
-	credentials:      new AWS.Credentials(services["e621-thumbnails"].accessKey, services["e621-thumbnails"].secretKey),
-	endpoint:         services["e621-thumbnails"].endpoint,
-	s3BucketEndpoint: true
-});
-
-async function exists(path: string) {
-	// headObject results in a 403?
-	return aws.getObject({ Bucket: services["e621-thumbnails"].bucket, Key: path }).promise().then(() => true, () => false);
-}
 app
 	.use(
 		checkForBlock,
@@ -28,7 +17,9 @@ app
 		validateAPIKey(true, APIKeyFlags.THUMBS),
 		handleRateLimit,
 		async(req, res, next) => {
-			void APIUsage.track(req, "thumbs");
+			if (!READONLY) {
+				void APIUsage.track(req, "thumbs");
+			}
 			return next();
 		}
 	)
@@ -48,8 +39,8 @@ app
 			error:   "Invalid MD5",
 			code:    YiffyErrorCodes.THUMBS_INVALID_MD5
 		});
-		const gifExists = await exists(filePath(md5, "gif"));
-		const pngExists = await exists(filePath(md5, "png"));
+		const gifExists = await StorageProvider.exists(filePath(md5, "gif"));
+		const pngExists = await StorageProvider.exists(filePath(md5, "png"));
 		return res.status(200).json({
 			success: true,
 			gifURL:  gifExists ? url(md5, "gif") : null,
@@ -57,6 +48,13 @@ app
 		});
 	})
 	.put("/:id/:type", async(req, res) => {
+		if (READONLY) {
+			return res.status(503).json({
+				success: false,
+				error:   "Service is currently in read-only mode.",
+				code:    YiffyErrorCodes.READONLY
+			});
+		}
 		let md5: string;
 		if (!isNaN(Number(req.params.id)) && !/[a-f\d]{32}/i.test(req.params.id)) {
 			const post = await e6.posts.get(Number(req.params.id));
@@ -78,7 +76,7 @@ app
 			error:   "Invalid Type",
 			code:    YiffyErrorCodes.THUMBS_INVALID_TYPE
 		});
-		const existing = await exists(filePath(md5, type));
+		const existing = await StorageProvider.exists(filePath(md5, type));
 		if (existing) return res.status(200).json({ success: true, status: "done", url: url(md5, type) });
 		const inQueue = E621Thumbnails.has(md5, type);
 		if (inQueue) {
@@ -94,6 +92,13 @@ app
 		return res.status(202).json({ success: true, status: "processing", checkURL: check.url, checkAt: Date.now() + check.time, time: check.time, startedAt: check.startedAt });
 	})
 	.get("/check/:md5/:type", async(req,res) => {
+		if (READONLY) {
+			return res.status(503).json({
+				success: false,
+				error:   "Service is currently in read-only mode.",
+				code:    YiffyErrorCodes.READONLY
+			});
+		}
 		const md5 = req.params.md5;
 		if (!/[a-f\d]{32}/i.test(md5)) return res.status(404).json({
 			success: false,
@@ -106,7 +111,7 @@ app
 			error:   "Invalid Type",
 			code:    YiffyErrorCodes.THUMBS_INVALID_TYPE
 		});
-		const existing = await exists(filePath(md5, type));
+		const existing = await StorageProvider.exists(filePath(md5, type));
 		console.log(filePath(md5, type), existing);
 		if (existing) return res.status(201).json({ success: true, status: "done", url: url(md5, type) });
 		const inQueue = E621Thumbnails.has(md5, type);

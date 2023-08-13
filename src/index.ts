@@ -1,6 +1,8 @@
 import "./util/MonkeyPatch";
 import db from "./db";
 import CleanupActions from "./util/CleanupActions";
+import { READONLY } from "./config";
+import Logger from "./util/Logger";
 import type { ExtendedWebsite } from "@lib/Website";
 import { readdirSync } from "fs";
 import type { Server as HTTPServer } from "http";
@@ -25,6 +27,10 @@ void db.init().then(() => {
 	const site = require(`${__dirname}/sites/${activeSite}/index.js`) as Record<"default", ExtendedWebsite>;
 
 	server = (new site.default()).listen();
+
+	if (READONLY) {
+		Logger.getLogger("Main").warn("Running in read-only mode.");
+	}
 	CleanupActions.add("server", () => new Promise(resolve => server?.close(resolve)));
 });
 process

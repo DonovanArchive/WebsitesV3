@@ -1,6 +1,7 @@
 import indexRoute from "./routes/index";
-import { services } from "../../config";
+import { READONLY, services } from "../../config";
 import db from "../../db";
+import { YiffyErrorCodes } from "../../util/Constants";
 import Website from "@lib/Website";
 import { Router } from "express";
 import multer from "multer";
@@ -34,6 +35,13 @@ export default class YiffRocks extends Website {
 					return next();
 				})
 				.put("/:id", temp.single("file"), async(req, res) => {
+					if (READONLY) {
+						return res.status(503).json({
+							success: false,
+							error:   "Service is currently in read-only mode.",
+							code:    YiffyErrorCodes.READONLY
+						});
+					}
 					if (!req.file) return res.status(400).end("Invalid file.");
 					await db.r.setBuffer(`temp:${req.params.id}`, await readFile(req.file.path), "EX", 300, "GET");
 					return res.status(201).end(`https://temp.yiff.rocks/${req.params.id}`);

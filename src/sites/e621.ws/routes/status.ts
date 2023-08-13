@@ -1,6 +1,6 @@
 import Logger from "../../../util/Logger";
 import E621Status from "../../../db/Models/E621Status";
-import { dev, discord } from "../../../config";
+import { READONLY, dev, discord } from "../../../config";
 import E621Webhook from "../../../db/Models/E621Webhook";
 import Webhooks from "../../../util/Webhooks";
 import { Router, type Request } from "express";
@@ -244,10 +244,23 @@ app
 			since
 		})));
 	})
-	.get("/webhook", async(req, res) => res.status(200).render("status/webhook"))
-	.get("/webhook/discord", async(req, res) => res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${discord["e621-status-check"].id}&redirect_uri=${encodeURIComponent(discord["e621-status-check"].redirect)}&response_type=code&scope=${(req.query.min ? discord["e621-status-check"].scopesMin : discord["e621-status-check"].scopes).join("%20")}`))
+	.get("/webhook", async(req, res) => {
+		if (READONLY) {
+			return res.status(503).render("status/readonly");
+		}
+		return res.status(200).render("status/webhook");
+	})
+	.get("/webhook/discord", async(req, res) => {
+		if (READONLY) {
+			return res.status(503).render("status/readonly");
+		}
+		return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${discord["e621-status-check"].id}&redirect_uri=${encodeURIComponent(discord["e621-status-check"].redirect)}&response_type=code&scope=${(req.query.min ? discord["e621-status-check"].scopesMin : discord["e621-status-check"].scopes).join("%20")}`);
+	})
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
 	.get("/webhook/discord/cb", async(req: Request<{}, any, any, { code: string; guild_id: string; }, Record<string, any>>, res) => {
+		if (READONLY) {
+			return res.status(503).render("status/readonly");
+		}
 		const { code, guild_id } = req.query;
 		const exec = await client.rest.oauth.exchangeCode({
 			clientID:     discord["e621-status-check"].id,

@@ -3,6 +3,7 @@ import discordRoute from "./routes/discord";
 import thumbsRoute from "./routes/thumbs";
 import categories from "./util/categories.json";
 import { YiffyErrorCodes } from "../../util/Constants";
+import { READONLY } from "../../config";
 import Website from "@lib/Website";
 import { ANON_FLAGS, APIImage, APIKey, APIKeyFlags } from "@models";
 import express, { Router } from "express";
@@ -49,6 +50,7 @@ export default class YiffRest extends Website {
 								}
 							},
 							flags:    key.flags,
+							readonly: READONLY,
 							services: {
 								images:     key.imagesAccess,
 								imagesBulk: key.imagesBulkAccess,
@@ -62,6 +64,7 @@ export default class YiffRest extends Website {
 					return res.status(200).json({
 						success: true,
 						data:    {
+							readonly: READONLY,
 							services: {
 								images:     (ANON_FLAGS & APIKeyFlags.IMAGES) === APIKeyFlags.IMAGES,
 								imagesBulk: (ANON_FLAGS & APIKeyFlags.IMAGES_BULK) === APIKeyFlags.IMAGES_BULK,

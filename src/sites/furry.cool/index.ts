@@ -30,6 +30,32 @@ export default class FurryCool extends Website {
 			.addHandler(
 				express.Router()
 					.get("/", async(req, res) => res.render("index"))
+					.get("/echo", async(req, res) => {
+						let { text } = req.query as Record<"text", string>, parsed = false;
+						try {
+							text = Buffer.from(text, "base64").toString("utf8");
+							if (text.startsWith("}")) {
+								parsed = true;
+								try {
+									text = JSON.stringify(JSON.parse(text), null, 4);
+								} catch {
+									// ignore
+								}
+							}
+						} catch {
+							// ignore
+						}
+
+						if (!parsed && text.startsWith("}")) {
+							try {
+								text = JSON.stringify(JSON.parse(text), null, 4);
+							} catch {
+								// ignore
+							}
+						}
+
+						return res.header("Content-Type", "text/plain").status(200).end(text);
+					})
 					.get("/icon", async(req, res) => res.sendFile("/app/public/images/DonMaidCrop.png"))
 					.get("/icon-full", async(req, res) => res.sendFile("/app/public/images/DonMaid.png"))
 					.get("/ref", async(req, res) => res.sendFile("/app/public/images/DonRef.png"))

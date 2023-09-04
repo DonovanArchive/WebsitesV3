@@ -84,7 +84,7 @@ do
     declare -A statuses=(
         ["host"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$hostname))
         ["ip"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$ip))
-        ["local"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://localhost))
+        ["local"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -H "Host: $i" http://localhost))
         ["external"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$i))
     )
     info+=$'\n'"host status"$'\n'"$hostname ${statuses["host"]}"$'\n'"$ip ${statuses["ip"]}"$'\n'"local ${statuses["local"]}"$'\n'"external ${statuses["external"]}"$'\n'
@@ -129,7 +129,7 @@ do
     declare -A statuses=(
         ["host"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$hostname))
         ["ip"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$ip))
-        ["local"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://localhost))
+        ["local"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -H "Host: $i" http://localhost))
         ["external"]=$(status_code $(curl -m 2 -s -o /dev/null -I -w "%{http_code}" -k -H "Host: $i" https://$i))
     )
     info+=$'\n'"host status"$'\n'"$hostname ${statuses["host"]}"$'\n'"$ip ${statuses["ip"]}"$'\n'"local ${statuses["local"]}"$'\n'"external ${statuses["external"]}"$'\n'

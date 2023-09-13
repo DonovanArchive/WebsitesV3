@@ -1,4 +1,5 @@
 import IStorageProvider from "./IStorageProvider";
+import { dirname } from "path";
 import { createHash } from "crypto";
 
 interface FileListEntry {
@@ -39,7 +40,7 @@ export default class BunnyProvider extends IStorageProvider {
 	}
 
 	override async exists(path: string) {
-		const r = await fetch(`https://storage.bunnycdn.com/${this.storageZoneName}/${path}`, {
+		const r = await fetch(`https://storage.bunnycdn.com/${this.storageZoneName}${dirname(`/${path}`)}`, {
 			method:  "GET",
 			headers: {
 				AccessKey: this.accessKey

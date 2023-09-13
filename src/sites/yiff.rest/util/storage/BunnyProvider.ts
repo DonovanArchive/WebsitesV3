@@ -51,7 +51,7 @@ export default class BunnyProvider extends IStorageProvider {
 			return false;
 		}
 
-		return (await r.json() as Array<FileListEntry>).find(e => `${e.Path}${e.ObjectName}` === path) !== undefined;
+		return (await r.json() as Array<FileListEntry>).find(e => `${e.Path.slice(`/${this.storageZoneName}`.length)}${e.ObjectName}` === path) !== undefined;
 	}
 
 	override async get(path: string) {

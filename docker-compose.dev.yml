@@ -7,6 +7,7 @@ x-shared: &shared
     resources:
       limits:
         memory: 256M
+        cpus: "1"
   restart: always
   healthcheck:
     interval: 10s
@@ -20,6 +21,10 @@ x-shared: &shared
   networks:
     - default
 
+x-env: &common-env
+  READONLY: "${READONLY:-0}"
+  NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:?}
+
 services:
   butts-are.cool:
     <<: *shared
@@ -32,8 +37,8 @@ services:
       - /var/www/sites/butts-are.cool:/app/public
       - /var/www/screenshots:/data/screenshots
     environment:
+      <<: *common-env
       SITE: butts-are.cool
-      READONLY: "${READONLY:-0}"
     hostname: butts-are-cool.websites.containers.local
     labels:
       - "hostname=butts-are-cool.websites.containers.local"
@@ -49,8 +54,8 @@ services:
       - /var/www/sites/e621.ws:/app/public
       - /var/www/e621-docs:/data/docs
     environment:
+      <<: *common-env
       SITE: e621.ws
-      READONLY: "${READONLY:-0}"
     hostname: e621-ws.websites.containers.local
     labels:
       - "hostname=e621-ws.websites.containers.local"
@@ -66,8 +71,8 @@ services:
       - /var/www/sites/furry.cool:/app/public
       - /var/www/screenshots:/data/screenshots
     environment:
+      <<: *common-env
       SITE: furry.cool
-      READONLY: "${READONLY:-0}"
     hostname: furry-cool.websites.containers.local
     labels:
       - "hostname=furry-cool.websites.containers.local"
@@ -82,8 +87,8 @@ services:
       - ./data/cache/maidboye.cafe:/data/cache
       - /var/www/sites/maidboye.cafe:/app/public
     environment:
+      <<: *common-env
       SITE: maidboye.cafe
-      READONLY: "${READONLY:-0}"
     hostname: maidboye-cafe.websites.containers.local
     labels:
       - "hostname=maidboye-cafe.websites.containers.local"
@@ -99,8 +104,8 @@ services:
       - /var/www/sites/yiff.media:/app/public
       - /var/www/e621-thumbnails:/data/e621-thumbnails
     environment:
+      <<: *common-env
       SITE: yiff.media
-      READONLY: "${READONLY:-0}"
     hostname: yiff-media.websites.containers.local
     labels:
       - "hostname=yiff-media.websites.containers.local"
@@ -116,8 +121,8 @@ services:
       - /var/www/sites/oceanic.ws:/app/public
       - /var/www/oceanic-docs:/data/docs
     environment:
+      <<: *common-env
       SITE: oceanic.ws
-      READONLY: "${READONLY:-0}"
     deploy:
       resources:
         limits:
@@ -145,11 +150,11 @@ services:
         reservations:
           memory: 256M
     environment:
+      <<: *common-env
       SITE: yiff.rest
       FFMPEG_PATH: /usr/bin/ffmpeg
       FFPROBE_PATH: /usr/bin/ffprobe
       NODE_TLS_REJECT_UNAUTHORIZED: 0
-      READONLY: "${READONLY:-0}"
     hostname: yiff-rest.websites.containers.local
     labels:
       - "hostname=yiff-rest.websites.containers.local"
@@ -165,8 +170,8 @@ services:
       - /var/www/sites/yiff.rocks:/app/public
       - /var/www/sites/yiff.media/V2:/app/public/V2
     environment:
+      <<: *common-env
       SITE: yiff.rocks
-      READONLY: "${READONLY:-0}"
     hostname: yiff-rocks.websites.containers.local
     labels:
       - "hostname=yiff-rocks.websites.containers.local"
@@ -190,8 +195,9 @@ services:
       resources:
         limits:
           memory: 256M
+          cpus: "1"
     environment:
-      READONLY: "${READONLY:-0}"
+      <<: *common-env
     hostname: imgen.websites.containers.local
     labels:
       - "hostname=imgen.websites.containers.local"
@@ -220,6 +226,7 @@ services:
       - "hostname=mariadb.websites.containers.local"
     networks:
       - default
+
   rethinkdb:
     image: rethinkdb
     command: rethinkdb --bind all -n rdb
@@ -238,6 +245,7 @@ services:
       - "hostname=rethinkdb.websites.containers.local"
     networks:
       - default
+
   redis:
     image: redis:alpine
     command: redis-server --disable-thp yes --supervised no --bind 0.0.0.0 --requirepass "$REDIS_PASSWORD"
@@ -260,6 +268,7 @@ services:
       - "hostname=redis.websites.containers.local"
     networks:
       - default
+
 networks:
   default:
     name: websites

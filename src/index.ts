@@ -1,3 +1,4 @@
+import "newrelic";
 import "./util/MonkeyPatch";
 import db from "./db";
 import CleanupActions from "./util/CleanupActions";

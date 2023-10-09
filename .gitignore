@@ -6,3 +6,4 @@ data/*
 !data/.gitkeep
 data/cache/*
 !data/cache/.gitkeep
+nr.sh

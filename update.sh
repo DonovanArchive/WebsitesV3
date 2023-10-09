@@ -150,4 +150,9 @@ echo "$info" | column -t -L
 printf "$warn\n"
 echo Second Reachability Test Finished
 
+if [ -f nr.sh ]; then
+  echo Alerting New Relic About Deployment..
+  ./nr.sh
+fi
+
 echo Update Complete

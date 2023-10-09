@@ -219,8 +219,7 @@ services:
     labels:
       - "hostname=mariadb.websites.containers.local"
     networks:
-      default:
-        ipv4_address: 172.19.2.251
+      - default
   rethinkdb:
     image: rethinkdb
     command: rethinkdb --bind all -n rdb
@@ -238,8 +237,7 @@ services:
     labels:
       - "hostname=rethinkdb.websites.containers.local"
     networks:
-      default:
-        ipv4_address: 172.19.2.252
+      - default
   redis:
     image: redis:alpine
     command: redis-server --disable-thp yes --supervised no --bind 0.0.0.0 --requirepass "$REDIS_PASSWORD"
@@ -261,8 +259,7 @@ services:
     labels:
       - "hostname=redis.websites.containers.local"
     networks:
-      default:
-        ipv4_address: 172.19.2.254
+      - default
 networks:
   default:
     name: websites
@@ -270,5 +267,8 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.19.2.0/24
-          gateway: 172.19.2.1
+        - subnet: 172.19.2.0/27
+        # network: 172.19.2.0
+        # gateway: 172.19.2.1
+        # broadcast: 172.19.2.31
+        # usable: 29 Addresses

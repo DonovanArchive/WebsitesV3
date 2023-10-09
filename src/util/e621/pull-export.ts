@@ -42,6 +42,13 @@ export const get = async<T = unknown>(sql: string, params?: unknown) => new Prom
 		else resolve(row);
 	});
 });
+export const all = async<T = unknown>(sql: string, params?: unknown) => new Promise<Array<T>>(async(resolve, reject) => {
+	if (!initialized) await init();
+	db.all(sql, params, function(err, rows: Array<T>) {
+		if (err) reject(err);
+		else resolve(rows);
+	});
+});
 
 export async function init() {
 	initialized = true;

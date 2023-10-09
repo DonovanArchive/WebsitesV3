@@ -7,6 +7,7 @@ x-shared: &shared
     resources:
       limits:
         memory: 256M
+        cpus: 1
   restart: always
   healthcheck:
     interval: 10s
@@ -190,6 +191,7 @@ services:
       resources:
         limits:
           memory: 256M
+          cpus: 1
     environment:
       READONLY: "${READONLY:-0}"
     hostname: imgen.websites.containers.local
@@ -270,8 +272,8 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.19.2.0/25
+        - subnet: 172.19.2.0/27
         # network: 172.19.2.0
         # gateway: 172.19.2.1
-        # broadcast: 172.19.2.127
-        # usable: 125 Addresses
+        # broadcast: 172.19.2.31
+        # usable: 29 Addresses

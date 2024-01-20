@@ -9,7 +9,7 @@ export default class FurryCool extends Website {
 			.setSecure(true)
 			.setPort(443)
 			.disableNonce()
-			.setCSPExtra("script", "data:")
+			.setCSPExtra("default", "data:")
 			.init();
 
 		this

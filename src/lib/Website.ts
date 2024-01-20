@@ -257,8 +257,8 @@ export default class Website {
 					].join("; "),
 					"Content-Security-Policy": [
 						`default-src 'self' ${this.name} *.${this.name} ${this.cspExtra.default}`.trim(),
-						`script-src 'self' 'unsafe-inline' ${this.cspNonce ? `'nonce-${nonce}' ` : ""}${this.name} *.${this.name} cdnjs.cloudflare.com ${this.cspExtra.script}`.trim(),
-						`style-src 'self' 'unsafe-inline' ${this.cspNonce ? `'nonce-${nonce}' ` : ""}${this.name} *.${this.name} cdnjs.cloudflare.com fonts.googleapis.com ${this.cspExtra.style}`.trim(),
+						`script-src 'self' 'unsafe-inline' ${this.cspNonce ? `'nonce-${nonce}' ` : ""}${this.name} *.${this.name} https://cdnjs.cloudflare.com https://static.cloudflareinsights.com ${this.cspExtra.script}`.trim(),
+						`style-src 'self' 'unsafe-inline' ${this.cspNonce ? `'nonce-${nonce}' ` : ""}${this.name} *.${this.name} https://cdnjs.cloudflare.com https://fonts.googleapis.com ${this.cspExtra.style}`.trim(),
 						"img-src 'self' https: data:",
 						"font-src 'self' https: data:",
 						"report-uri https://yiff.report-uri.com/r/d/csp/enforce",

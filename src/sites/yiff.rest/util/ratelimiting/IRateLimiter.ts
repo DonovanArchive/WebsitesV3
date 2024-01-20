@@ -42,7 +42,7 @@ export default abstract class IRateLimiter {
 		const expRoute = await this.getRouteTTL("yiffy2", domain, path, ip);
 		const remaining = (routeLimit - rRoute) < 0 ? 0 : (routeLimit - rRoute),
 			reset = (expRoute === null ? routeWindow : new Date(Date.now() + expRoute).getTime()).toString(),
-			resetAfter = (expRoute === null ? 0 : expRoute).toString(),
+			resetAfter = expRoute === null ? 0 : expRoute,
 			bucket = this.routeBucket(domain, path);
 		res.header({
 			"X-RateLimit-Limit":       routeLimit,
@@ -52,6 +52,8 @@ export default abstract class IRateLimiter {
 			"X-RateLimit-Bucket":      bucket,
 			"X-RateLimit-Precision":   "millisecond"
 		});
+		const rlHeader = `limit=${routeLimit}, remaining=${remaining}, reset=${Math.floor(resetAfter / 1000)}`;
+		const rlPolicy = `${routeLimit};w=${routeWindow / 1000};comment="bucket:${bucket}"`;
 		if ((rRoute - 1) >= routeLimit) {
 			// we still need to fetch the global headers so they're present when we exit early
 			const rGlobal = await this.getGlobal("yiffy2", ip).then(v => v || 0);
@@ -59,13 +61,15 @@ export default abstract class IRateLimiter {
 			await this.fixInfiniteExpiry(this.globalKey("yiffy2", ip), expGlobal, globalWindow);
 			const globalRemaining = (globalLimit - rGlobal) < 0 ? 0 : (globalLimit - rGlobal),
 				globalReset = (expGlobal === null ? globalWindow : new Date(Date.now() + expGlobal).getTime()).toString(),
-				globalResetAfter = (expGlobal === null ? 0 : expGlobal).toString();
+				globalResetAfter = expGlobal === null ? 0 : expGlobal;
 			res.header({
 				"X-RateLimit-Global-Limit":       globalLimit,
 				"X-RateLimit-Global-Remaining":   globalRemaining,
 				"X-RateLimit-Global-Reset":       globalReset,
 				"X-RateLimit-Global-Reset-After": globalResetAfter,
-				"X-RateLimit-Global-Precision":   "millisecond"
+				"X-RateLimit-Global-Precision":   "millisecond",
+				"RateLimit":                      [rlHeader, `limit=${globalLimit}, remaining=${globalRemaining}, reset=${Math.floor(globalResetAfter / 1000)}`],
+				"RateLimit-Policy":               `${rlPolicy}, limit=${globalLimit};w=${globalWindow / 1000};comment="global"`
 			});
 			await Webhooks.get("rateLimit").execute({
 				embeds: [
@@ -113,13 +117,15 @@ export default abstract class IRateLimiter {
 		await this.fixInfiniteExpiry(this.globalKey("yiffy2", ip), expGlobal, globalWindow);
 		const globalRemaining = (globalLimit - rGlobal) < 0 ? 0 : (globalLimit - rGlobal),
 			globalReset = (expGlobal === null ? globalWindow : new Date(Date.now() + expGlobal).getTime()).toString(),
-			globalResetAfter = (expGlobal === null ? 0 : expGlobal).toString();
+			globalResetAfter = expGlobal === null ? 0 : expGlobal;
 		res.header({
 			"X-RateLimit-Global-Limit":       globalLimit,
 			"X-RateLimit-Global-Remaining":   globalRemaining,
 			"X-RateLimit-Global-Reset":       globalReset,
 			"X-RateLimit-Global-Reset-After": globalResetAfter,
-			"X-RateLimit-Global-Precision":   "millisecond"
+			"X-RateLimit-Global-Precision":   "millisecond",
+			"RateLimit":                      [rlHeader, `limit=${globalLimit}, remaining=${globalRemaining}, reset=${Math.floor(globalResetAfter / 1000)}`],
+			"RateLimit-Policy":               `${rlPolicy}, limit=${globalLimit};w=${globalWindow / 1000};comment="global"`
 		});
 		if ((rGlobal - 1) >= globalLimit) {
 			// since the request isn't going through, we need to undo one of the uses we put in

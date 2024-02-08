@@ -2,12 +2,10 @@ import IStorageProvider from "./IStorageProvider";
 import AWS from "aws-sdk";
 
 export default class S3Provider extends IStorageProvider {
-	private readonly baseURL: string;
 	private readonly bucket: string;
 	private readonly s3: AWS.S3;
 	constructor(baseURL: string, accessKey: string, secretKey: string, endpoint: string, bucket: string, s3BucketEndpoint = false) {
-		super();
-		this.baseURL = baseURL;
+		super(baseURL);
 		this.bucket = bucket;
 		this.s3 = new AWS.S3({
 			credentials: new AWS.Credentials(accessKey, secretKey),

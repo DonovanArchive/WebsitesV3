@@ -12,7 +12,6 @@ export default class YiffMedia extends Website {
 		this
 			.addSubdomain("assets", express.static("/app/public/assets"))
 			.addSubdomain("i", express.static("/app/public/images"))
-			.addSubdomain("thumbs", express.static("/data/e621-thumbnails"))
 			.addStatic("/app/public")
 			.addSubdomain("report", express.Router().use(async(req,res) => res.end("Resources cannot be reported through this method. Please contact a developer for removal of content.")))
 			.addHandler(

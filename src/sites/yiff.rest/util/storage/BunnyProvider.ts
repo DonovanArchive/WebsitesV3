@@ -21,12 +21,10 @@ interface FileListEntry {
 }
 export default class BunnyProvider extends IStorageProvider {
 	private readonly accessKey: string;
-	private readonly baseURL: string;
 	private readonly storageZoneName: string;
 	constructor(baseURL: string, accessKey: string, storageZoneName: string) {
-		super();
+		super(baseURL);
 		this.accessKey = accessKey;
-		this.baseURL = baseURL;
 		this.storageZoneName = storageZoneName;
 	}
 

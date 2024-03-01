@@ -13,7 +13,6 @@ export interface RawShortURL {
 	creator_ua: string;
 	management_code: string | null;
 	url: string;
-	pos: number;
 }
 export type ShortURLKV = DataTypes<ShortURL>;
 export type ShortURLFilterTypes = Record<"id" | "owner", string>;
@@ -32,7 +31,6 @@ export default class ShortURL {
 	};
 	managementCode: string | null;
 	url: string;
-	pos: number;
 	constructor(data: RawShortURL) {
 		this.code = data.code;
 		this.createdAt = data.created_at;
@@ -45,7 +43,6 @@ export default class ShortURL {
 		};
 		this.managementCode = data.management_code;
 		this.url = data.url;
-		this.pos = data.pos;
 	}
 
 	static async get(code: string) {
@@ -60,11 +57,11 @@ export default class ShortURL {
 		return db.query<UpsertResult>(`DELETE FROM ${ShortURL.DB}.${ShortURL.TABLE} WHERE code = ?`, [code]);
 	}
 
-	static async new(data: Omit<ConvertFromRaw<RawShortURL>, "modified_at" | "pos">) {
+	static async new(data: Omit<ConvertFromRaw<RawShortURL>, "modified_at">) {
 		return db.query<UpsertResult>(`INSERT INTO ${ShortURL.DB}.${ShortURL.TABLE} (${Object.keys(data).join(", ")}) VALUES (${Object.values(data).map(() => "?").join(", ")})`, Object.values(data)).then(r => r.affectedRows === 1 ? this.get(data.code) : null);
 	}
 
-	static async override(data: Omit<ConvertFromRaw<RawShortURL>, "modified_at" | "pos">) {
+	static async override(data: Omit<ConvertFromRaw<RawShortURL>, "modified_at" >) {
 		const exists = await this.get(data.code);
 		if (exists) await exists.delete();
 		return this.new(data);
@@ -94,7 +91,6 @@ export default class ShortURL {
 			createdAt:  this.createdAt,
 			modifiedAt: this.modifiedAt,
 			url:        this.url,
-			pos:        this.pos,
 			credit:     this.creator.name,
 			fullURL:    this.fullURL
 		};

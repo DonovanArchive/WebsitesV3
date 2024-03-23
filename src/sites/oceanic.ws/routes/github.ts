@@ -1,3 +1,4 @@
+import Logger from "../../../util/Logger";
 import type { PushEvent } from "@octokit/webhooks-types/schema";
 import { services } from "@config";
 import { Webhooks } from "@octokit/webhooks";
@@ -5,8 +6,8 @@ import simpleGit from "simple-git";
 import {
 	access,
 	cp,
+	lstat,
 	mkdir,
-	readdir,
 	readFile,
 	rm,
 	writeFile
@@ -15,6 +16,7 @@ import type { PathLike } from "fs";
 import { mkdtempSync } from "fs";
 import { execSync } from "child_process";
 import { tmpdir } from "os";
+import { dirname, resolve } from "path";
 
 const hook = new Webhooks({
 	secret: services.octo["oceanic-secret"]
@@ -23,43 +25,28 @@ const exists = async(path: PathLike) => access(path).then(() => true).catch(() =
 const baseDir = "/data/docs";
 hook.on("push", async({ payload: data }) => {
 	if (data.ref.startsWith("refs/tags/")) {
-		void tagPush(data);
-	} else if (data.ref === "refs/heads/dev") {
-		void devPush(data);
+		void push(data, "tag");
+	} else if (data.ref.startsWith("refs/heads/")) {
+		void push(data, "branch");
+	}
+});
+hook.on("delete", async({ payload: data }) => {
+	const branch = data.ref.split("/")[2];
+	const path = sanitizedPathFor(branch);
+	await checkBranch(path, branch);
+	const versions = await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [];
+	if (versions.includes(branch)) {
+		versions.splice(versions.indexOf(branch), 1);
+		await writeFile(`${baseDir}/versions.json`, JSON.stringify(versions));
 	}
 });
 
-async function tagPush(data: PushEvent) {
-	const tmp = `${tmpdir()}/${mkdtempSync("oceanic.")}`;
-	await mkdir(tmp, { recursive: true });
-	const tag = data.ref.split("/")[2];
-	if (await exists(`${baseDir}/${tag}`)) await rm(`${baseDir}/${tag}`, { force: true, recursive: true });
-	const git = simpleGit(tmp);
-	await git
-		.init()
-		.addRemote("origin", "https://github.com/OceanicJS/Oceanic")
-		.fetch("origin", `${tag}:${tag}`)
-		.checkout(tag);
-	await rm(`${tmp}/.npmrc`);
-	execSync("npx pnpm i --frozen-lockfile --ignore-scripts", { cwd: tmp, stdio: "inherit" });
-	execSync("npx pnpm run test:docs", { cwd: tmp, stdio: "inherit" });
-	await cp(`${tmp}/docs`, `${baseDir}/${tag}`, { recursive: true });
-	await rm(tmp, { force: true, recursive: true });
-	const versions = await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [];
-	if (!versions.includes(tag)) {
-		versions.push(tag);
-		await writeFile(`${baseDir}/versions.json`, JSON.stringify(versions));
-	}
-	/* const list = await createList(`${baseDir}/${tag}`, tag);
-    await replaceAll(`${baseDir}/${tag}`, list.replacements, list.localReplacements);
-    await writeFile(`${baseDir}/${tag}/conversions.json`, JSON.stringify(list, null, "\t")); */
-}
-
-async function devPush(data: PushEvent) {
-	const tmp = `${tmpdir()}/${mkdtempSync("oceanic.")}`;
-	await mkdir(tmp, { recursive: true });
+async function push(data: PushEvent, type: "tag" | "branch") {
 	const branch = data.ref.split("/")[2];
-	if (await exists(`${baseDir}/${branch}`)) await rm(`${baseDir}/${branch}`, { force: true, recursive: true });
+	const path = sanitizedPathFor(branch);
+	await checkBranch(path, branch);
+	const tmp = `${tmpdir()}/${mkdtempSync("oceanic.")}`;
+	await mkdir(tmp, { recursive: true });
 	const git = simpleGit(tmp);
 	await git
 		.init()
@@ -69,110 +56,51 @@ async function devPush(data: PushEvent) {
 	await rm(`${tmp}/.npmrc`);
 	execSync("npx pnpm i --frozen-lockfile --ignore-scripts", { cwd: tmp, stdio: "inherit" });
 	execSync("npx pnpm run test:docs", { cwd: tmp, stdio: "inherit" });
-	await cp(`${tmp}/docs`, `${baseDir}/${branch}`, { recursive: true });
+	await cp(`${tmp}/docs`, path, { recursive: true });
 	await rm(tmp, { force: true, recursive: true });
-}
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function createList(path: string, refName: string) {
-	const replacements: Array<[string, string]> = [
-		["assets/", `/${refName}/assets/`],
-		["favicon.ico", `/${refName}/favicon.ico`]
-	];
-	const localReplacements: Array<{ dir: string; from: string; to: string; }> = [];
-	const classes: Record<string, string> = {};
-	const enums: Record<string, string> = {};
-	const functions: Record<string, string> = {};
-	const interfaces: Record<string, string> = {};
-	const types: Record<string, string> = {};
-	const variables: Record<string, string> = {};
-	const modules: Record<string, string> = {};
-	for (const file of await readdir(`${path}/classes`)) {
-		const [, name] = file.split(".");
-		replacements.push([`classes/${file}`, `/${refName}/class/${name}`]);
-		localReplacements.push({ dir: "classes", from: file, to: `/${refName}/class/${name}` });
-		classes[name] = `classes/${file}`;
-	}
-	for (const file of await readdir(`${path}/enums`)) {
-		const [, name] = file.split(".");
-		replacements.push([`enums/${file}`, `/${refName}/enum/${name}`]);
-		localReplacements.push({ dir: "enums", from: file, to: `/${refName}/enum/${name}` });
-		enums[name] = `enums/${file}`;
-	}
-	for (const file of await readdir(`${path}/functions`)) {
-		const [start, name] = file.split(".");
-		const className = start.split("_").slice(-1)[0];
-		replacements.push([`functions/${file}`, `/${refName}/function/${className}/${name}`]);
-		localReplacements.push({ dir: "functions", from: file, to: `/${refName}/function/${className}/${name}` });
-		functions[`${className}/${name}`] = `functions/${file}`;
-	}
-	for (const file of await readdir(`${path}/interfaces`)) {
-		const [, name] = file.split(".");
-		replacements.push([`interfaces/${file}`, `/${refName}/interface/${name}`]);
-		localReplacements.push({ dir: "interfaces", from: file, to: `/${refName}/interface/${name}` });
-		interfaces[name] = `interfaces/${file}`;
-	}
-	for (const file of await readdir(`${path}/types`)) {
-		const [, name] = file.split(".");
-		replacements.push([`types/${file}`, `/${refName}/types/${name}`]);
-		localReplacements.push({ dir: "types", from: file, to: `/${refName}/type/${name}` });
-		types[name] = `types/${file}`;
-	}
-	for (const file of await readdir(`${path}/variables`)) {
-		const [, name] = file.split(".");
-		replacements.push([`variables/${file}`, `/${refName}/variable/${name}`]);
-		localReplacements.push({ dir: "variables", from: file, to: `/${refName}/variable/${name}` });
-		variables[name] = `variables/${file}`;
-	}
-	for (const file of await readdir(`${path}/modules`)) {
-		const name = (await readFile(`${path}/modules/${file}`)).toString().match(/<title>(.*)<\/title>/)?.[1].split("|")[0].trim() || file.replace(".html", "");
-		replacements.push([`modules/${file}`, `/${refName}/module/${name}`]);
-		localReplacements.push({ dir: "modules", from: file, to: `/${refName}/module/${name}` });
-		modules[name] = `modules/${file}`;
-	}
-
-	return { classes, enums, functions, interfaces, types, variables, modules, replacements, localReplacements } as Parsed;
-}
-
-async function getAllHTML(path: string): Promise<Array<string>> {
-	const list: Array<string> = [];
-	for (const d of await readdir(path, { withFileTypes: true })) {
-		if (d.isDirectory()) list.push(...await getAllHTML(`${path}/${d.name}`));
-		else if (d.name.endsWith(".html")) list.push(`${path}/${d.name}`);
-	}
-
-	return list;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function replaceAll(path: string, replacements: Array<[string, string]>, localReplacements: Array<{ dir: string; from: string; to: string; }>) {
-	const files = (await Promise.all((await getAllHTML(path)).map(async(file) => ({
-		[file]: (await readFile(file)).toString()
-	})))).reduce((a, b) => ({ ...a, ...b }));
-	const original = JSON.parse(JSON.stringify(files)) as typeof files;
-	for (const [from, to] of replacements) {
-		const reg = new RegExp(`(?:../)*${from}`, "g");
-		for (const [file, content] of Object.entries(files)) {
-			files[file] = content.replace(reg, to);
+	const versions = await exists(`${baseDir}/versions.json`) ? JSON.parse(await readFile(`${baseDir}/versions.json`, "utf8")) as Array<string> : [];
+	if (!versions.includes(branch)) {
+		if (type === "branch") {
+			const hasDev = versions[0] === "dev";
+			if (hasDev) versions.splice(1, 0, branch);
+			else versions.unshift(branch);
+		} else {
+			versions.push(branch);
 		}
-	}
-	// eslint-disable-next-line prefer-const
-	for (let [file, content] of Object.entries(files)) {
-		const local = localReplacements.filter(({ dir }) => file.includes(dir));
-		if (local.length) local.forEach(l => content = content.replace(l.from, l.to));
-		if (content !== original[file]) await writeFile(file, content);
+		await writeFile(`${baseDir}/versions.json`, JSON.stringify(versions));
 	}
 }
 
-export interface Parsed {
-	classes: Record<string, string>;
-	enums: Record<string, string>;
-	functions: Record<string, string>;
-	interfaces: Record<string, string>;
-	types: Record<string, string>;
-	variables: Record<string, string>;
-	modules: Record<string, string>;
-	replacements: Array<[string, string]>;
-	localReplacements: Array<{ dir: string; from: string; to: string; }>;
+function sanitizedPathFor(str: string) {
+	str = str.replace(/^(\.\.(\/|\\|$))+/, "");
+	const p = resolve(baseDir, str);
+	if (dirname(p) !== baseDir) {
+		// if we smell funny business, exit immediately
+		throw new Error(`Dirname of path "${p}" does not match "${baseDir}"`);
+	}
+
+	return p;
 }
+
+async function checkBranch(path: string, branch: string) {
+	if (branch.startsWith("dependabot")) {
+		Logger.getLogger("Github").info(`Ignoring dependabot branch ${branch}`);
+		return;
+	}
+	if (branch.includes("/")) {
+		Logger.getLogger("Github").warn(`Refusing to process branch "${branch}"`);
+		return;
+	}
+	if (await exists(path)) {
+		if (await lstat(path).then(stat => stat.isFile())) {
+			throw new Error(`Refusing to overwrite file "${path}" for branch "${branch}"`);
+		}
+		await rm(path, { force: true, recursive: true });
+	}
+
+	return path;
+}
+
+// https://github.com/DonovanDMC/Websites/blob/7834354b78053d3f0a6755cdcd703406667c5b11/src/sites/oceanic.ws/routes/github.ts
 
 export default hook;

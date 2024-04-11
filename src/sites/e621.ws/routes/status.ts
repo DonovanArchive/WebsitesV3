@@ -11,6 +11,7 @@ import { Client, DiscordRESTError, JSONErrorCodes } from "oceanic.js";
 import { EmbedBuilder } from "@oceanicjs/builders";
 import { STATUS_CODES } from "http";
 import { writeFile } from "fs/promises";
+let lastStatus: number;
 async function check() {
 	let status: number;
 	try {
@@ -46,7 +47,10 @@ async function check() {
 	}
 	const old = await get(true);
 
-	return status === old.status ? old : write(status);
+	const rStatus = lastStatus === status; // only return the status if we've seen it twice, else return the previously seen status
+	lastStatus = status;
+
+	return status === old.status || !rStatus ? old : write(status);
 }
 
 async function get(noLoop = false): Promise<{ status: number; since: string; }> {

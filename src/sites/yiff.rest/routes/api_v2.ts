@@ -201,12 +201,12 @@ app
 		const auth = req.query._auth as string || req.headers.authorization;
 		const hasNSFW = Object.keys(req.body as object).some(k => !sfwCategories.includes(k));
 		if (!READONLY) {
-			await db.r.incr("yiffy2:images:bulk");
 			const m = db.r.multi()
+				.incr("yiffy2:images:bulk")
 				.incrby(`yiffy2:stats:images:ip:${req.ip}`, total)
 				.incr(`yiffy2:stats:images:ip:${req.ip}:bulk`)
 				.incrby("yiffy2:stats:images:total", total)
-				.incr("yiffy2:stats:images:total:bulk");
+				.incrby("yiffy2:stats:images:total:bulk", total);
 			if (auth) {
 				m.incrby(`yiffy2:stats:images:key:${auth}`, total)
 					.incr(`yiffy2:stats:images:key:${auth}:bulk`);

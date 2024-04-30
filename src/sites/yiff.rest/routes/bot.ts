@@ -1,5 +1,13 @@
+import { getStats } from "./api_v2";
 import CleanupActions from "../../../util/CleanupActions";
-import { READONLY, cacheDir, dev, discord } from "@config";
+import db from "../../../db";
+import {
+	READONLY,
+	cacheDir,
+	dev,
+	discord,
+	services
+} from "@config";
 import { APIKey, DEFAULT_FLAGS } from "@models";
 import Webhooks from "@util/Webhooks";
 import { ApplicationCommandBuilder, ButtonColors, ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
@@ -44,6 +52,40 @@ client.once("ready", async() => {
 			})
 			.addOption("list", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
 				sub.setDescription("List your API keys");
+			})
+			.toJSON(),
+		new ApplicationCommandBuilder(ApplicationCommandTypes.CHAT_INPUT, "apidev")
+			.setDescription("Manage API keys (developer only)")
+			.addOption("list", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
+				sub.setDescription("List a user's api keys.")
+					.addOption("user", ApplicationCommandOptionTypes.USER, (option) => {
+						option.setDescription("The user to list the api keys of.")
+							.setRequired();
+					});
+			})
+			.addOption("disable", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
+				sub.setDescription("Disable an api key.")
+					.addOption("key", ApplicationCommandOptionTypes.STRING, (option) => {
+						option.setDescription("The api key to disable.")
+							.setRequired();
+					})
+					.addOption("reason", ApplicationCommandOptionTypes.STRING, (option) => {
+						option.setDescription("The reason for deactivating the key.");
+					});
+			})
+			.addOption("enable", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
+				sub.setDescription("Enable an api key.")
+					.addOption("key", ApplicationCommandOptionTypes.STRING, (option) => {
+						option.setDescription("The api key to enable.")
+							.setRequired();
+					});
+			})
+			.addOption("stats", ApplicationCommandOptionTypes.SUB_COMMAND, (sub) => {
+				sub.setDescription("Get the stats of an api key.")
+					.addOption("key", ApplicationCommandOptionTypes.STRING, (option) => {
+						option.setDescription("The api key to get the stats of.")
+							.setRequired();
+					});
 			})
 			.toJSON()
 	];
@@ -170,6 +212,124 @@ client.on("interactionCreate", async(interaction) => {
 							});
 						}
 					}
+					break;
+				}
+
+				case "apidev": {
+					const [subcommand] = interaction.data.options.getSubCommand<["list" | "disable" | "enable" | "stats"]>(true);
+					if (!services.yiffy2.dev.includes(interaction.user.id)) {
+						return interaction.createMessage({
+							content: "You are not allowed to use that.",
+							flags:   MessageFlags.EPHEMERAL
+						});
+					}
+					switch (subcommand) {
+						case "list": {
+							const user = interaction.data.options.getUser("user", true);
+							const keys = await APIKey.getOwned(user.id);
+
+							if (keys.length === 0) return interaction.createMessage({
+								content: "That user does not have any API keys.",
+								flags:   MessageFlags.EPHEMERAL
+							});
+
+							return interaction.createMessage({
+								content: `We found the following api keys for <@${user.id}>:\n\n${keys.map((k, i) => [
+									`${i + 1}.)`,
+									`- Key: ||${k.id}||`,
+									`- Application: \`${k.application}\``,
+									`- Contact: \`${k.contact || "NONE"}\``,
+									`- Active: ${k.active ? greenTick : redTick}`,
+									`- Disabled: ${k.disabled ? `${greenTick} (Reason: ${k.disabledReason ?? "NONE"})` : redTick}`,
+									`- Unlimited: ${k.unlimited ? greenTick : redTick}`,
+									`- Services: ${k.servicesString}`,
+									`- SFW Only: ${k.sfwOnly ? greenTick : redTick}`
+								].join("\n")).join("\n\n")}`,
+								flags:           MessageFlags.EPHEMERAL,
+								allowedMentions: {
+									users: false
+								}
+							});
+							break;
+						}
+
+						case "disable": {
+							const key = interaction.data.options.getString("key", true);
+							const reason = interaction.data.options.getString("reason") || "None Provided";
+							const apikey = await APIKey.get(key);
+							if (apikey === null) {
+								return interaction.createMessage({
+									content: "I couldn't find that api key.",
+									flags:   MessageFlags.EPHEMERAL
+								});
+							}
+
+							if (apikey.disabled) {
+								return interaction.createMessage({
+									content: "That api key is already disabled.",
+									flags:   MessageFlags.EPHEMERAL
+								});
+							}
+
+							await db.query("UPDATE yiffy2.api_keys SET disabled = ?, disabled_reason = ? WHERE id = ?", [true, reason, key]);
+
+							return interaction.createMessage({
+								content: "Api key successfully disabled.",
+								flags:   MessageFlags.EPHEMERAL
+							});
+							break;
+						}
+
+						case "enable": {
+							const key = interaction.data.options.getString("key", true);
+							const apikey = await APIKey.get(key);
+							if (apikey === null) {
+								return interaction.createMessage({
+									content: "I couldn't find that api key.",
+									flags:   MessageFlags.EPHEMERAL
+								});
+							}
+
+							if (!apikey.disabled) {
+								return interaction.createMessage({
+									content: "That api key is not disabled.",
+									flags:   MessageFlags.EPHEMERAL
+								});
+							}
+
+							await db.query("UPDATE yiffy2.api_keys SET disabled = ?, disabled_reason = ? WHERE id = ?", [false, null, key]);
+
+							return interaction.createMessage({
+								content: "Api key successfully enabled.",
+								flags:   MessageFlags.EPHEMERAL
+							});
+							break;
+						}
+
+						case "stats": {
+							const key = interaction.data.options.getString("key", true);
+							const apikey = await APIKey.get(key);
+							if (apikey === null) {
+								return interaction.createMessage({
+									content: "I couldn't find that api key.",
+									flags:   MessageFlags.EPHEMERAL
+								});
+							}
+
+							const { root: { key: stats } } = await getStats(undefined, key);
+							let text = `Stats for **${apikey.application}** (||${key}||)\n`;
+							for (const [name, value] of Object.entries(stats!)) {
+								text += `**${name}**: ${value.toLocaleString()}\n`;
+							}
+
+							return interaction.createMessage({
+								content: text,
+								flags:   MessageFlags.EPHEMERAL
+							});
+							break;
+						}
+					}
+					break;
 				}
 			}
 			break;

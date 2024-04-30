@@ -20,50 +20,68 @@ import { Router } from "express";
 import bytes from "bytes";
 import dot from "dot-object";
 
-async function getStats(ip: string, key?: string) {
+export async function getStats(ip?: string, key?: string) {
 	const list = categories.enabled.map(c => c.db);
 	const enabledCount = categories.enabled.length;
 	const pr = (str: string) => categories.enabled.map(c => `${str}:${c.db}`);
 	const keys = [
 		"yiffy2:stats:images:total",
-		...pr("yiffy2:stats:images:total"),
-		`yiffy2:stats:images:ip:${ip}`,
-		...pr(`yiffy2:stats:images:ip:${ip}`)
+		...pr("yiffy2:stats:images:total")
 	];
+	if (ip) {
+		keys.push(`yiffy2:stats:images:ip:${ip}`, ...pr(`yiffy2:stats:images:ip:${ip}`));
+	}
 	if (key) {
 		keys.push(`yiffy2:stats:images:key:${key}`, ...pr(`yiffy2:stats:images:key:${key}`));
 	}
 	const values = await db.r.mget(keys);
 	const total = Number(values.shift()!);
 	const totalSpecific = values.splice(0, enabledCount);
-	const ipTotal = Number(values.shift()!);
-	const ipSpecific = values.splice(0, enabledCount);
+	const ipTotal = ip ? Number(values.shift()!) : 0;
+	const ipSpecific = ip ? values.splice(0, enabledCount) : [];
 	const keyTotal = key ? Number(values.shift()!) : 0;
 	const keySpecific = key ? values.splice(0, enabledCount) : [];
 	const stats = {
 		global: {
 			total
 		} as Record<string, number | Record<string, number | Record<string, number>>>,
-		ip: {
+		ip: (ip ? {
 			total: ipTotal
-		} as Record<string, number | Record<string, number | Record<string, number>>>,
+		} : null) as Record<string, number | Record<string, number | Record<string, number>>> | null,
 		key: (key ? {
 			total: keyTotal
 		} : null) as Record<string, number | Record<string, number | Record<string, number>>> | null
+	};
+	const rootStats = {
+		global: {
+			total
+		} as Record<string, number>,
+		ip: (ip ? {
+			total: ipTotal
+		} : null) as Record<string, number > | null,
+		key: (key ? {
+			total: keyTotal
+		} : null) as Record<string, number> | null
 	};
 	for (const cat of list) {
 		const statTotal = totalSpecific[list.indexOf(cat)];
 		const statIP = ipSpecific[list.indexOf(cat)];
 		const statKey = keySpecific[list.indexOf(cat)];
 		dot.set(cat, Number(statTotal), stats.global);
-		dot.set(cat, Number(statIP), stats.ip);
+		rootStats.global[cat] = Number(statTotal);
+		if (ip) {
+			dot.set(cat, Number(statIP), stats.ip!);
+			rootStats.ip![cat] = Number(statIP);
+		}
 		if (key) {
 			dot.set(cat, Number(statKey), stats.key!);
+			rootStats.key![cat] = Number(statKey);
 		}
 	}
 
-	return stats;
+	return { stats, root: rootStats };
 }
+
 const app = Router();
 app
 	.get("/robots.txt", async(req, res) => res.header("Content-Type", "text/plain").status(200).end("User-Agent: *\nDisallow: /"))
@@ -85,7 +103,7 @@ app
 	.get("/online", async (req, res) => res.status(200).json({ success: true, uptime: process.uptime() }))
 	.get("/stats", async(req, res) => res.status(200).json({
 		success: true,
-		data:    await getStats(req.ip, req.query._auth as string || req.headers.authorization)
+		data:    (await getStats(req.ip, req.query._auth as string || req.headers.authorization)).stats
 	}))
 	.get("/categories", async (req, res) => res.status(200).json({ success: true, data: categories }))
 	.get("/categories/:db", async (req, res) => {

@@ -204,12 +204,12 @@ app
 			await db.r.incr("yiffy2:images:bulk");
 			const m = db.r.multi()
 				.incrby(`yiffy2:stats:images:ip:${req.ip}`, total)
-				.incrby(`yiffy2:stats:images:ip:${req.ip}:bulk`, total)
+				.incr(`yiffy2:stats:images:ip:${req.ip}:bulk`)
 				.incrby("yiffy2:stats:images:total", total)
-				.incrby("yiffy2:stats:images:total:bulk", total);
+				.incr("yiffy2:stats:images:total:bulk");
 			if (auth) {
 				m.incrby(`yiffy2:stats:images:key:${auth}`, total)
-					.incrby(`yiffy2:stats:images:key:${auth}:bulk`, total);
+					.incr(`yiffy2:stats:images:key:${auth}:bulk`);
 			}
 			for (const [cat, amount] of Object.entries(req.body as object)) {
 				m.incrby(`yiffy2:stats:images:ip:${req.ip}:${cat}`, Number(amount))

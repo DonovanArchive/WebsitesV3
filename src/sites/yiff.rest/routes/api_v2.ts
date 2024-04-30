@@ -198,19 +198,18 @@ app
 			data[cat] = await Promise.all(images.map(i => i.toJSON()));
 		}
 
-
 		const auth = req.query._auth as string || req.headers.authorization;
 		const hasNSFW = Object.keys(req.body as object).some(k => !sfwCategories.includes(k));
 		if (!READONLY) {
 			await db.r.incr("yiffy2:images:bulk");
 			const m = db.r.multi()
-				.incr(`yiffy2:stats:images:ip:${req.ip}`)
-				.incr(`yiffy2:stats:images:ip:${req.ip}:bulk`)
-				.incr("yiffy2:stats:images:total")
-				.incr("yiffy2:stats:images:total:bulk");
+				.incrby(`yiffy2:stats:images:ip:${req.ip}`, total)
+				.incrby(`yiffy2:stats:images:ip:${req.ip}:bulk`, total)
+				.incrby("yiffy2:stats:images:total", total)
+				.incrby("yiffy2:stats:images:total:bulk", total);
 			if (auth) {
-				m.incr(`yiffy2:stats:images:key:${auth}`)
-					.incr(`yiffy2:stats:images:key:${auth}:bulk`);
+				m.incrby(`yiffy2:stats:images:key:${auth}`, total)
+					.incrby(`yiffy2:stats:images:key:${auth}:bulk`, total);
 			}
 			for (const [cat, amount] of Object.entries(req.body as object)) {
 				m.incrby(`yiffy2:stats:images:ip:${req.ip}:${cat}`, Number(amount))

@@ -1,13 +1,7 @@
 import { getStats } from "./api_v2";
 import CleanupActions from "../../../util/CleanupActions";
 import db from "../../../db";
-import {
-	READONLY,
-	cacheDir,
-	dev,
-	discord,
-	services
-} from "@config";
+import { READONLY, cacheDir, dev, discord } from "@config";
 import { APIKey, DEFAULT_FLAGS } from "@models";
 import Webhooks from "@util/Webhooks";
 import { ApplicationCommandBuilder, ButtonColors, ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
@@ -95,7 +89,7 @@ client.once("ready", async() => {
 	}
 
 	if (JSON.stringify(cache) !== JSON.stringify(commands)) {
-		await client.application.bulkEditGuildCommands(discord["yiffy-bot"].guild, commands);
+		await client.application.bulkEditGlobalCommands(commands);
 		await writeFile(`${cacheDir}/commands.json`, JSON.stringify(commands));
 	}
 });
@@ -217,7 +211,7 @@ client.on("interactionCreate", async(interaction) => {
 
 				case "apidev": {
 					const [subcommand] = interaction.data.options.getSubCommand<["list" | "disable" | "enable" | "stats"]>(true);
-					if (!services.yiffy2.dev.includes(interaction.user.id)) {
+					if (!discord["yiffy-bot"].dev.includes(interaction.user.id)) {
 						return interaction.createMessage({
 							content: "You are not allowed to use that.",
 							flags:   MessageFlags.EPHEMERAL
